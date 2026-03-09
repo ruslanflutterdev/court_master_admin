@@ -31,4 +31,25 @@ class GroupsRepository {
       throw Exception(e.response?.data['message'] ?? 'Ошибка создания группы');
     }
   }
+
+  // Получить детали одной группы
+  Future<GroupModel> getGroupDetails(String groupId) async {
+    try {
+      final response = await apiClient.dio.get('/groups/$groupId');
+      return GroupModel.fromJson(response.data);
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Ошибка загрузки группы');
+    }
+  }
+
+  // Добавить ученика в группу
+  Future<void> addStudentToGroup(String groupId, String studentId) async {
+    try {
+      await apiClient.dio.post('/groups/$groupId/students', data: {
+        'studentId': studentId
+      });
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Ошибка при добавлении ученика');
+    }
+  }
 }

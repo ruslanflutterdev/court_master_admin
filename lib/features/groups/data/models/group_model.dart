@@ -1,9 +1,12 @@
+import 'student_model.dart';
+
 class GroupModel {
   final String id;
   final String name;
   final String? scheduleText;
   final String coachName;
-  final int studentsCount; 
+  final int studentsCount;
+  final List<StudentModel>? students;
 
   GroupModel({
     required this.id,
@@ -11,6 +14,7 @@ class GroupModel {
     this.scheduleText,
     required this.coachName,
     required this.studentsCount,
+    this.students,
   });
 
   factory GroupModel.fromJson(Map<String, dynamic> json) {
@@ -19,12 +23,21 @@ class GroupModel {
         ? '${coach['firstName']} ${coach['lastName']}'
         : 'Без тренера';
 
+    List<StudentModel>? parsedStudents;
+    if (json['students'] != null) {
+      final List list = json['students'];
+      parsedStudents = list.map((s) => StudentModel.fromJson(s)).toList();
+    }
+
+    final count = json['_count']?['students'] ?? parsedStudents?.length ?? 0;
+
     return GroupModel(
       id: json['id'],
       name: json['name'],
       scheduleText: json['scheduleText'],
       coachName: coachFullName,
-      studentsCount: json['_count']?['students'] ?? 0,
+      studentsCount: count,
+      students: parsedStudents,
     );
   }
 }

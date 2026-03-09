@@ -3,6 +3,8 @@ import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/employees/data/repositories/employees_repository.dart';
 import '../../features/employees/presentation/bloc/employees_bloc.dart';
 import '../../features/groups/data/repositories/groups_repository.dart';
+import '../../features/groups/data/repositories/students_repository.dart';
+import '../../features/groups/presentation/bloc/group_details_bloc.dart';
 import '../../features/groups/presentation/bloc/groups_bloc.dart';
 import '../api/api_client.dart';
 import '../../features/auth/data/repositories/auth_repository.dart';
@@ -20,4 +22,6 @@ Future<void> initInjection() async {
   sl.registerFactory(() => EmployeesBloc(repository: sl()));
   sl.registerLazySingleton<GroupsRepository>(() => GroupsRepository(sl()));
   sl.registerFactory(() => GroupsBloc(repository: sl()));
+  sl.registerLazySingleton<StudentsRepository>(() => StudentsRepository(sl()));
+  sl.registerFactory(() => GroupDetailsBloc(repository: sl()));
 }

@@ -1,5 +1,8 @@
 import 'package:get_it/get_it.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/clients/data/repositories/clients_repository.dart';
+import '../../features/clients/presentation/bloc/client_details_bloc.dart';
+import '../../features/clients/presentation/bloc/clients_bloc.dart';
 import '../../features/employees/data/repositories/employees_repository.dart';
 import '../../features/employees/presentation/bloc/employees_bloc.dart';
 import '../../features/groups/data/repositories/groups_repository.dart';
@@ -31,4 +34,7 @@ Future<void> initInjection() async {
     () =>
         ScheduleBloc(scheduleRepo: sl(), groupsRepo: sl(), employeesRepo: sl()),
   );
+  sl.registerLazySingleton<ClientsRepository>(() => ClientsRepository(sl()));
+  sl.registerFactory(() => ClientsBloc(repository: sl()));
+  sl.registerFactory(() => ClientDetailsBloc(repository: sl()));
 }

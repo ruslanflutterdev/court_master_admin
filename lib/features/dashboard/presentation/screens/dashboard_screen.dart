@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../clients/presentation/screens/admin_clients_tab.dart';
 import '../../../employees/presentation/screens/admin_employees_tab.dart';
 import '../../../groups/presentation/screens/admin_groups_tab.dart';
 import '../../../schedule/presentation/screens/admin_schedule_tab.dart';
@@ -17,7 +18,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const AdminScheduleTab(),
     const AdminEmployeesTab(),
     const AdminGroupsTab(),
-    const Center(child: Text('Здесь будет Профиль (Выход)')),
+    const AdminClientsTab(),
   ];
 
   @override
@@ -44,7 +45,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             label: 'Сотрудники',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Группы'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Профиль'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_search),
+            label: 'Клиенты',
+          ),
         ],
       ),
     );

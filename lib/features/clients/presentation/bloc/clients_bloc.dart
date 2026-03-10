@@ -20,6 +20,11 @@ class ClientsError extends ClientsState {
   ClientsError(this.message);
 }
 
+class QuickSaleRequested extends ClientsEvent {
+  final Map<String, dynamic> saleData;
+  QuickSaleRequested(this.saleData);
+}
+
 class ClientsBloc extends Bloc<ClientsEvent, ClientsState> {
   final ClientsRepository repository;
 
@@ -29,6 +34,16 @@ class ClientsBloc extends Bloc<ClientsEvent, ClientsState> {
       try {
         final clients = await repository.getClients();
         emit(ClientsLoaded(clients));
+      } catch (e) {
+        emit(ClientsError(e.toString().replaceAll('Exception: ', '')));
+      }
+    });
+    on<QuickSaleRequested>((event, emit) async {
+      try {
+        await repository.quickSale(event.saleData);
+        // После успешной продажи сразу перезапрашиваем список клиентов,
+        // чтобы новый клиент (если он был) появился в базе!
+        add(LoadClientsEvent());
       } catch (e) {
         emit(ClientsError(e.toString().replaceAll('Exception: ', '')));
       }

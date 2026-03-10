@@ -60,4 +60,14 @@ class ClientsRepository {
       );
     }
   }
+
+  Future<void> quickSale(Map<String, dynamic> saleData) async {
+    try {
+      await apiClient.dio.post('/clients/quick-sale', data: saleData);
+    } on DioException catch (e) {
+      throw Exception(
+        e.response?.data['message'] ?? 'Ошибка при быстрой продаже',
+      );
+    }
+  }
 }

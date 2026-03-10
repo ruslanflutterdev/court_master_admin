@@ -93,6 +93,15 @@ class _CreateGroupSheetState extends State<CreateGroupSheet> {
 
               ElevatedButton(
                 onPressed: () {
+                  if (_selectedCoachId == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Сначала выберите тренера!'),
+                      ),
+                    );
+                    return;
+                  }
+
                   if (_formKey.currentState!.validate()) {
                     context.read<GroupsBloc>().add(
                       CreateGroupEvent(

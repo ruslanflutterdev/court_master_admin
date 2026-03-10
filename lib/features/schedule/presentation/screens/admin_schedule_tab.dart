@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/event_attendance_bloc.dart';
 import '../bloc/schedule_bloc.dart';
 import '../../data/models/schedule_event_model.dart';
 import '../widgets/create_court_dialog.dart';
 import '../widgets/create_schedule_event_sheet.dart';
+import '../widgets/event_attendance_sheet.dart';
 import '../widgets/weekly_calendar.dart';
 import '../widgets/schedule_grid_view.dart';
 import '../../../../core/di/dependencies_container.dart';
@@ -24,6 +26,25 @@ class AdminScheduleTab extends StatelessWidget {
     int hour, {
     ScheduleEventModel? existingEvent,
   }) {
+    // ЕСЛИ ЭТО СУЩЕСТВУЮЩЕЕ ГРУППОВОЕ ЗАНЯТИЕ -> ОТКРЫВАЕМ ЖУРНАЛ
+    if (existingEvent != null && existingEvent.eventType == 'group') {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (_) => BlocProvider(
+          // Здесь мы создаем новый EventAttendanceBloc специально для этой шторки
+          create: (context) => sl<EventAttendanceBloc>(),
+          child: EventAttendanceSheet(
+            eventId: existingEvent.id,
+            groupName:
+                'Групповая тренировка', // Позже можно будет доставать реальное имя группы
+          ),
+        ),
+      );
+      return; // Прерываем выполнение, чтобы не открылась шторка редактирования
+    }
+
+    // В ОСТАЛЬНЫХ СЛУЧАЯХ (создание нового или аренда) -> ОТКРЫВАЕМ ШТОРКУ СОЗДАНИЯ/РЕДАКТИРОВАНИЯ
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -83,6 +104,14 @@ class AdminScheduleTab extends StatelessWidget {
           sl<ScheduleBloc>()..add(LoadScheduleData(DateTime.now())),
       child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
+          if (state is ScheduleError) {
+            return Center(
+              child: Text(
+                'Ошибка: ${state.message}',
+                style: const TextStyle(color: Colors.red, fontSize: 16),
+              ),
+            );
+          }
           if (state is ScheduleLoading) {
             return const Center(child: CircularProgressIndicator());
           }

@@ -33,15 +33,17 @@ class AdminClientDetailsScreen extends StatelessWidget {
           ),
           body: BlocBuilder<ClientDetailsBloc, ClientDetailsState>(
             builder: (context, state) {
-              if (state is ClientDetailsLoading)
+              if (state is ClientDetailsLoading) {
                 return const Center(child: CircularProgressIndicator());
-              if (state is ClientDetailsError)
+              }
+              if (state is ClientDetailsError) {
                 return Center(
                   child: Text(
                     'Ошибка: ${state.message}',
                     style: const TextStyle(color: Colors.red),
                   ),
                 );
+              }
 
               if (state is ClientDetailsLoaded) {
                 final client = state.client;

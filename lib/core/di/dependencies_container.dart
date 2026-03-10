@@ -1,4 +1,6 @@
 import 'package:get_it/get_it.dart';
+import '../../features/analytics/data/repositories/analytics_repository.dart';
+import '../../features/analytics/presentation/bloc/analytics_bloc.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/clients/data/repositories/clients_repository.dart';
 import '../../features/clients/presentation/bloc/client_details_bloc.dart';
@@ -10,6 +12,7 @@ import '../../features/groups/data/repositories/students_repository.dart';
 import '../../features/groups/presentation/bloc/group_details_bloc.dart';
 import '../../features/groups/presentation/bloc/groups_bloc.dart';
 import '../../features/schedule/data/repositories/schedule_repository.dart';
+import '../../features/schedule/presentation/bloc/event_attendance_bloc.dart';
 import '../../features/schedule/presentation/bloc/schedule_bloc.dart';
 import '../api/api_client.dart';
 import '../../features/auth/data/repositories/auth_repository.dart';
@@ -37,4 +40,9 @@ Future<void> initInjection() async {
   sl.registerLazySingleton<ClientsRepository>(() => ClientsRepository(sl()));
   sl.registerFactory(() => ClientsBloc(repository: sl()));
   sl.registerFactory(() => ClientDetailsBloc(repository: sl()));
+  sl.registerFactory(() => EventAttendanceBloc(repository: sl()));
+  sl.registerLazySingleton<AnalyticsRepository>(
+    () => AnalyticsRepository(sl()),
+  );
+  sl.registerFactory(() => AnalyticsBloc(repository: sl()));
 }

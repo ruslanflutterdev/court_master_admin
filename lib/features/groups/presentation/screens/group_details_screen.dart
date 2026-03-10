@@ -12,7 +12,8 @@ class GroupDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => sl<GroupDetailsBloc>()..add(LoadGroupDetails(groupId)),
+      create: (context) =>
+          sl<GroupDetailsBloc>()..add(LoadGroupDetails(groupId)),
       child: Scaffold(
         appBar: AppBar(title: const Text('Детали группы')),
         body: BlocBuilder<GroupDetailsBloc, GroupDetailsState>(
@@ -20,7 +21,12 @@ class GroupDetailsScreen extends StatelessWidget {
             if (state is GroupDetailsLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is GroupDetailsError) {
-              return Center(child: Text('Ошибка: ${state.message}', style: const TextStyle(color: Colors.red)));
+              return Center(
+                child: Text(
+                  'Ошибка: ${state.message}',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              );
             } else if (state is GroupDetailsLoaded) {
               final group = state.group;
               final students = group.students ?? [];
@@ -38,10 +44,22 @@ class GroupDetailsScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text(group.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                            Text(
+                              group.name,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             const SizedBox(height: 8),
-                            Text('Тренер: ${group.coachName}', style: const TextStyle(fontSize: 16)),
-                            Text('Расписание: ${group.scheduleText ?? "Нет"}', style: const TextStyle(fontSize: 16)),
+                            Text(
+                              'Тренер: ${group.coachName}',
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            Text(
+                              'Расписание: ${group.scheduleText ?? "Нет"}',
+                              style: const TextStyle(fontSize: 16),
+                            ),
                           ],
                         ),
                       ),
@@ -50,29 +68,42 @@ class GroupDetailsScreen extends StatelessWidget {
 
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text('Список учеников:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      'Список учеников:',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
 
                   Expanded(
                     child: students.isEmpty
-                        ? const Center(child: Text('В группе пока нет учеников.'))
+                        ? const Center(
+                            child: Text('В группе пока нет учеников.'),
+                          )
                         : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: students.length,
-                      itemBuilder: (context, index) {
-                        final student = students[index];
-                        return Card(
-                          child: ListTile(
-                            leading: const CircleAvatar(
-                              backgroundColor: Colors.blue,
-                              child: Icon(Icons.person, color: Colors.white),
-                            ),
-                            title: Text('${student.firstName} ${student.lastName}'),
-                            subtitle: Text(student.email),
+                            padding: const EdgeInsets.all(16),
+                            itemCount: students.length,
+                            itemBuilder: (context, index) {
+                              final student = students[index];
+                              return Card(
+                                child: ListTile(
+                                  leading: const CircleAvatar(
+                                    backgroundColor: Colors.blue,
+                                    child: Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    '${student.firstName} ${student.lastName}',
+                                  ),
+                                  subtitle: Text(student.email),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ),
                 ],
               );
@@ -82,22 +113,22 @@ class GroupDetailsScreen extends StatelessWidget {
         ),
 
         floatingActionButton: Builder(
-            builder: (ctx) {
-              return FloatingActionButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: ctx,
-                    isScrollControlled: true,
-                    builder: (_) => BlocProvider.value(
-                      value: ctx.read<GroupDetailsBloc>(),
-                      child: AddStudentSheet(groupId: groupId),
-                    ),
-                  );
-                },
-                backgroundColor: Colors.blue,
-                child: const Icon(Icons.person_add, color: Colors.white),
-              );
-            }
+          builder: (ctx) {
+            return FloatingActionButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: ctx,
+                  isScrollControlled: true,
+                  builder: (_) => BlocProvider.value(
+                    value: ctx.read<GroupDetailsBloc>(),
+                    child: AddStudentSheet(groupId: groupId),
+                  ),
+                );
+              },
+              backgroundColor: Colors.blue,
+              child: const Icon(Icons.person_add, color: Colors.white),
+            );
+          },
         ),
       ),
     );

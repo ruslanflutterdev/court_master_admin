@@ -42,14 +42,19 @@ class _AddStudentSheetState extends State<AddStudentSheet> {
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
-        left: 16, right: 16, top: 16,
+        left: 16,
+        right: 16,
+        top: 16,
       ),
       child: Form(
         key: _formKey,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Добавить ученика', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text(
+              'Добавить ученика',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
 
             if (_isLoading)
@@ -58,7 +63,10 @@ class _AddStudentSheetState extends State<AddStudentSheet> {
               const Text('В клубе пока нет свободных учеников')
             else
               DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Выберите ученика', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                  labelText: 'Выберите ученика',
+                  border: OutlineInputBorder(),
+                ),
                 initialValue: _selectedStudentId,
                 items: _students.map((student) {
                   return DropdownMenuItem(
@@ -67,7 +75,8 @@ class _AddStudentSheetState extends State<AddStudentSheet> {
                   );
                 }).toList(),
                 onChanged: (val) => setState(() => _selectedStudentId = val),
-                validator: (value) => value == null ? 'Обязательное поле' : null,
+                validator: (value) =>
+                    value == null ? 'Обязательное поле' : null,
               ),
 
             const SizedBox(height: 24),
@@ -84,7 +93,10 @@ class _AddStudentSheetState extends State<AddStudentSheet> {
                 minimumSize: const Size(double.infinity, 50),
                 backgroundColor: Colors.blue,
               ),
-              child: const Text('Добавить в группу', style: TextStyle(fontSize: 16, color: Colors.white)),
+              child: const Text(
+                'Добавить в группу',
+                style: TextStyle(fontSize: 16, color: Colors.white),
+              ),
             ),
             const SizedBox(height: 24),
           ],

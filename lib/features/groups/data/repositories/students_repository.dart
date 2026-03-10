@@ -13,7 +13,9 @@ class StudentsRepository {
       final List data = response.data;
       return data.map((json) => StudentModel.fromJson(json)).toList();
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Ошибка загрузки учеников');
+      throw Exception(
+        e.response?.data['message'] ?? 'Ошибка загрузки учеников',
+      );
     }
   }
 }

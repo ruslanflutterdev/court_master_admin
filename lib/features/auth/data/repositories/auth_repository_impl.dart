@@ -22,7 +22,6 @@ class AuthRepositoryImpl implements AuthRepository {
       await prefs.setString('jwt_token', data['token']);
 
       return data['user'];
-
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Ошибка сети или сервера');
     } catch (e) {

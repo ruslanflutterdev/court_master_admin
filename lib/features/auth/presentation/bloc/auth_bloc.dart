@@ -12,7 +12,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSignOutRequested>(_onSignOutRequested);
   }
 
-  Future<void> _onSignInRequested(AuthSignInRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onSignInRequested(
+    AuthSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     try {
       final user = await authRepository.signIn(event.email, event.password);
@@ -22,7 +25,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onSignOutRequested(AuthSignOutRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onSignOutRequested(
+    AuthSignOutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     await authRepository.signOut();
     emit(AuthInitial());

@@ -20,13 +20,16 @@ class GroupsRepository {
   }
 
   // Заготовка для создания группы (используем на следующем шаге)
-  Future<void> createGroup(String name, String scheduleText, String coachId) async {
+  Future<void> createGroup(
+    String name,
+    String scheduleText,
+    String coachId,
+  ) async {
     try {
-      await apiClient.dio.post('/groups', data: {
-        'name': name,
-        'scheduleText': scheduleText,
-        'coachId': coachId,
-      });
+      await apiClient.dio.post(
+        '/groups',
+        data: {'name': name, 'scheduleText': scheduleText, 'coachId': coachId},
+      );
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Ошибка создания группы');
     }
@@ -45,11 +48,14 @@ class GroupsRepository {
   // Добавить ученика в группу
   Future<void> addStudentToGroup(String groupId, String studentId) async {
     try {
-      await apiClient.dio.post('/groups/$groupId/students', data: {
-        'studentId': studentId
-      });
+      await apiClient.dio.post(
+        '/groups/$groupId/students',
+        data: {'studentId': studentId},
+      );
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Ошибка при добавлении ученика');
+      throw Exception(
+        e.response?.data['message'] ?? 'Ошибка при добавлении ученика',
+      );
     }
   }
 }

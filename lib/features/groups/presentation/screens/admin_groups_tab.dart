@@ -52,7 +52,9 @@ class AdminGroupsTab extends StatelessWidget {
                         children: [
                           const SizedBox(height: 4),
                           Text('Тренер: ${group.coachName}'),
-                          Text('Расписание: ${group.scheduleText ?? "Не указано"}'),
+                          Text(
+                            'Расписание: ${group.scheduleText ?? "Не указано"}',
+                          ),
                           Text(
                             'Учеников: ${group.studentsCount}',
                             style: const TextStyle(color: Colors.green),

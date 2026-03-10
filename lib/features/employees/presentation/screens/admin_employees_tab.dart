@@ -17,7 +17,12 @@ class AdminEmployeesTab extends StatelessWidget {
             if (state is EmployeesLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is EmployeesError) {
-              return Center(child: Text('Ошибка: ${state.message}', style: const TextStyle(color: Colors.red)));
+              return Center(
+                child: Text(
+                  'Ошибка: ${state.message}',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              );
             } else if (state is EmployeesLoaded) {
               if (state.coaches.isEmpty) {
                 return const Center(child: Text('Нет добавленных тренеров.'));
@@ -35,7 +40,10 @@ class AdminEmployeesTab extends StatelessWidget {
                         backgroundColor: Colors.green,
                         child: Icon(Icons.sports_tennis, color: Colors.white),
                       ),
-                      title: Text('${coach.firstName} ${coach.lastName}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      title: Text(
+                        '${coach.firstName} ${coach.lastName}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       subtitle: Text(coach.email),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () {

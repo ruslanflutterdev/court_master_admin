@@ -3,6 +3,7 @@ import '../../data/models/group_model.dart';
 import '../../data/repositories/groups_repository.dart';
 
 abstract class GroupsEvent {}
+
 class LoadGroupsEvent extends GroupsEvent {}
 
 class CreateGroupEvent extends GroupsEvent {
@@ -18,12 +19,16 @@ class CreateGroupEvent extends GroupsEvent {
 }
 
 abstract class GroupsState {}
+
 class GroupsInitial extends GroupsState {}
+
 class GroupsLoading extends GroupsState {}
+
 class GroupsLoaded extends GroupsState {
   final List<GroupModel> groups;
   GroupsLoaded(this.groups);
 }
+
 class GroupsError extends GroupsState {
   final String message;
   GroupsError(this.message);
@@ -45,7 +50,11 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
 
     on<CreateGroupEvent>((event, emit) async {
       try {
-        await repository.createGroup(event.name, event.scheduleText, event.coachId);
+        await repository.createGroup(
+          event.name,
+          event.scheduleText,
+          event.coachId,
+        );
         add(LoadGroupsEvent());
       } catch (e) {
         emit(GroupsError(e.toString().replaceAll('Exception: ', '')));

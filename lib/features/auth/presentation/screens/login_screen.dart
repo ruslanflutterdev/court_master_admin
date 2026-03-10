@@ -12,7 +12,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final formKey = GlobalKey<FormState>();
-  final emailController = TextEditingController(text: 'admin@test.com'); 
+  final emailController = TextEditingController(text: 'admin@test.com');
   final passwordController = TextEditingController(text: '12345678');
   bool isPasswordVisible = false;
 
@@ -35,13 +35,18 @@ class _LoginScreenState extends State<LoginScreen> {
               context.go('/admin');
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Доступ только для администраторов!')),
+                const SnackBar(
+                  content: Text('Доступ только для администраторов!'),
+                ),
               );
             }
           }
           if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
             );
           }
         },
@@ -54,7 +59,10 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 TextFormField(
                   controller: emailController,
-                  decoration: const InputDecoration(labelText: 'Почта', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                    labelText: 'Почта',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -64,8 +72,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     labelText: 'Пароль',
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
-                      icon: Icon(isPasswordVisible ? Icons.visibility : Icons.visibility_off),
-                      onPressed: () => setState(() => isPasswordVisible = !isPasswordVisible),
+                      icon: Icon(
+                        isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () => setState(
+                        () => isPasswordVisible = !isPasswordVisible,
+                      ),
                     ),
                   ),
                 ),
@@ -77,8 +91,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
                     return ElevatedButton(
                       onPressed: login,
-                      style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
-                      child: const Text('Войти', style: TextStyle(fontSize: 16)),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                      child: const Text(
+                        'Войти',
+                        style: TextStyle(fontSize: 16),
+                      ),
                     );
                   },
                 ),

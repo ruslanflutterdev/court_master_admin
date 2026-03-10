@@ -13,7 +13,9 @@ class EmployeesRepository {
       final List data = response.data;
       return data.map((json) => CoachModel.fromJson(json)).toList();
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Ошибка загрузки тренеров');
+      throw Exception(
+        e.response?.data['message'] ?? 'Ошибка загрузки тренеров',
+      );
     } catch (e) {
       throw Exception('Непредвиденная ошибка: $e');
     }

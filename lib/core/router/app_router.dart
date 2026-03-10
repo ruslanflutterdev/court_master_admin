@@ -6,10 +6,7 @@ import '../../features/groups/presentation/screens/group_details_screen.dart';
 final appRouter = GoRouter(
   initialLocation: '/',
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const LoginScreen(),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const LoginScreen()),
     GoRoute(
       path: '/admin',
       builder: (context, state) => const DashboardScreen(),

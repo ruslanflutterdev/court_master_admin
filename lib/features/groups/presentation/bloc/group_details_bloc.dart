@@ -16,11 +16,14 @@ class AddStudentEvent extends GroupDetailsEvent {
 }
 
 abstract class GroupDetailsState {}
+
 class GroupDetailsLoading extends GroupDetailsState {}
+
 class GroupDetailsLoaded extends GroupDetailsState {
   final GroupModel group;
   GroupDetailsLoaded(this.group);
 }
+
 class GroupDetailsError extends GroupDetailsState {
   final String message;
   GroupDetailsError(this.message);
@@ -30,7 +33,6 @@ class GroupDetailsBloc extends Bloc<GroupDetailsEvent, GroupDetailsState> {
   final GroupsRepository repository;
 
   GroupDetailsBloc({required this.repository}) : super(GroupDetailsLoading()) {
-
     on<LoadGroupDetails>((event, emit) async {
       emit(GroupDetailsLoading());
       try {

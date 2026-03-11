@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../groups/data/models/group_model.dart';
+
+import '../../../../groups/data/models/group_model.dart';
 
 class ScheduleGroupForm extends StatelessWidget {
   final List<GroupModel> groups;

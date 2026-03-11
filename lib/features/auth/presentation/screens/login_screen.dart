@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import '../bloc/auth_bloc.dart';
+import '../bloc/auth_event.dart';
+import '../bloc/auth_state.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,92 +12,75 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final formKey = GlobalKey<FormState>();
-  final emailController = TextEditingController(text: 'admin@test.com');
-  final passwordController = TextEditingController(text: '12345678');
-  bool isPasswordVisible = false;
-
-  void login() {
-    if (formKey.currentState!.validate()) {
-      context.read<AuthBloc>().add(
-        AuthSignInRequested(emailController.text, passwordController.text),
-      );
-    }
-  }
+  final _emailController = TextEditingController(text: 'admin@test.com');
+  final _passwordController = TextEditingController(text: '123456');
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Вход (Админ)')),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthSuccess) {
-            if (state.role == 'admin') {
-              context.go('/admin');
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Доступ только для администраторов!'),
-                ),
-              );
-            }
-          }
-          if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
+          if (state is AuthError) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: formKey,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TextFormField(
-                  controller: emailController,
+                const Icon(Icons.sports_tennis, size: 80, color: Colors.green),
+                const SizedBox(height: 16),
+                const Text(
+                  'CourtMaster CRM',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 32),
+
+                TextField(
+                  controller: _emailController,
                   decoration: const InputDecoration(
-                    labelText: 'Почта',
+                    labelText: 'Email',
                     border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: passwordController,
-                  obscureText: !isPasswordVisible,
-                  decoration: InputDecoration(
+
+                TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
                     labelText: 'Пароль',
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        isPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                      ),
-                      onPressed: () => setState(
-                        () => isPasswordVisible = !isPasswordVisible,
-                      ),
-                    ),
+                    border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 24),
+
                 BlocBuilder<AuthBloc, AuthState>(
                   builder: (context, state) {
                     if (state is AuthLoading) {
                       return const CircularProgressIndicator();
                     }
                     return ElevatedButton(
-                      onPressed: login,
+                      onPressed: () {
+                        final email = _emailController.text.trim();
+                        final password = _passwordController.text.trim();
+
+                        context.read<AuthBloc>().add(
+                          LoginRequested(email, password),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 50),
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
                       ),
                       child: const Text(
                         'Войти',
-                        style: TextStyle(fontSize: 16),
+                        style: TextStyle(fontSize: 18),
                       ),
                     );
                   },

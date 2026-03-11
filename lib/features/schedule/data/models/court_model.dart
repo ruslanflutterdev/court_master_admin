@@ -5,6 +5,6 @@ class CourtModel {
   CourtModel({required this.id, required this.name});
 
   factory CourtModel.fromJson(Map<String, dynamic> json) {
-    return CourtModel(id: json['id'], name: json['name']);
+    return CourtModel(id: json['id'] ?? '', name: json['name'] ?? '');
   }
 }

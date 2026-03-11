@@ -1,22 +1,17 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiClient {
   late final Dio dio;
 
   ApiClient() {
-    String baseUrl = 'http://localhost:3000/api';
-
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      baseUrl = 'http://10.0.2.2:3000/api';
-    }
+    const String baseUrl = 'https://courtmaster-backend.onrender.com/api';
 
     dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
         contentType: 'application/json',
       ),
     );

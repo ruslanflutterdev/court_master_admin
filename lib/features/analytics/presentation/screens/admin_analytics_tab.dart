@@ -1,51 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../clients/presentation/bloc/clients_bloc.dart';
-import '../../../clients/presentation/widgets/quick_sale_sheet.dart';
+import '../../../clients/presentation/widgets/sheets/quick_sale_sheet.dart';
 import '../bloc/analytics_bloc.dart';
+import '../bloc/analytics_event.dart';
+import '../bloc/analytics_state.dart';
+import '../widgets/metric_card.dart';
 import '../../../../core/di/dependencies_container.dart';
 
 class AdminAnalyticsTab extends StatelessWidget {
   const AdminAnalyticsTab({super.key});
-
-  Widget _buildMetricCard(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withAlpha(2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 28),
-            ),
-            const Spacer(),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 13, color: Colors.grey),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,19 +35,15 @@ class AdminAnalyticsTab extends StatelessWidget {
             floatingActionButton: FloatingActionButton.extended(
               heroTag: 'quick_sale_fab',
               onPressed: () async {
-                // Берем общую базу клиентов из контекста
                 final sharedClientsBloc = innerContext.read<ClientsBloc>();
-
                 await showModalBottomSheet(
                   context: innerContext,
                   isScrollControlled: true,
                   builder: (ctx) => BlocProvider.value(
-                    value: sharedClientsBloc, // Передаем ее в шторку!
+                    value: sharedClientsBloc,
                     child: const QuickSaleSheet(),
                   ),
                 );
-
-                // Когда шторка закрылась:
                 if (!innerContext.mounted) return;
                 innerContext.read<AnalyticsBloc>().add(LoadAnalyticsEvent());
               },
@@ -136,17 +96,17 @@ class AdminAnalyticsTab extends StatelessWidget {
                           childAspectRatio: 1.1,
                           physics: const NeverScrollableScrollPhysics(),
                           children: [
-                            _buildMetricCard(
-                              'Выручка',
-                              '${d.monthlyRevenue} ₸',
-                              Icons.account_balance_wallet,
-                              Colors.green,
+                            MetricCard(
+                              title: 'Выручка',
+                              value: '${d.monthlyRevenue} ₸',
+                              icon: Icons.account_balance_wallet,
+                              color: Colors.green,
                             ),
-                            _buildMetricCard(
-                              'Долги клиентов',
-                              '${d.totalDebt} ₸',
-                              Icons.money_off,
-                              Colors.red,
+                            MetricCard(
+                              title: 'Долги клиентов',
+                              value: '${d.totalDebt} ₸',
+                              icon: Icons.money_off,
+                              color: Colors.red,
                             ),
                           ],
                         ),
@@ -167,17 +127,17 @@ class AdminAnalyticsTab extends StatelessWidget {
                           childAspectRatio: 1.1,
                           physics: const NeverScrollableScrollPhysics(),
                           children: [
-                            _buildMetricCard(
-                              'Ученики',
-                              '${d.clientsCount}',
-                              Icons.people,
-                              Colors.blue,
+                            MetricCard(
+                              title: 'Ученики',
+                              value: '${d.clientsCount}',
+                              icon: Icons.people,
+                              color: Colors.blue,
                             ),
-                            _buildMetricCard(
-                              'Акт. абонементы',
-                              '${d.activeSubsCount}',
-                              Icons.card_membership,
-                              Colors.orange,
+                            MetricCard(
+                              title: 'Акт. абонементы',
+                              value: '${d.activeSubsCount}',
+                              icon: Icons.card_membership,
+                              color: Colors.orange,
                             ),
                           ],
                         ),

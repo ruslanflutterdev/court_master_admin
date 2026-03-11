@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/groups_bloc.dart';
-import '../../../employees/presentation/bloc/employees_bloc.dart';
-import '../../../../core/di/dependencies_container.dart';
+import '../../../../employees/presentation/bloc/employees_event.dart';
+import '../../../../employees/presentation/bloc/employees_state.dart';
+import '../../bloc/groups_bloc.dart';
+import '../../../../employees/presentation/bloc/employees_bloc.dart';
+import '../../../../../core/di/dependencies_container.dart';
+import '../../bloc/groups_event.dart';
 
 class CreateGroupSheet extends StatefulWidget {
   const CreateGroupSheet({super.key});
@@ -20,7 +23,7 @@ class _CreateGroupSheetState extends State<CreateGroupSheet> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => sl<EmployeesBloc>()..add(LoadCoachesEvent()),
+      create: (context) => sl<EmployeesBloc>()..add(LoadEmployeesEvent()),
       child: Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,

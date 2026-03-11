@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/client_details_bloc.dart';
+import '../../bloc/client_details_bloc.dart';
+import '../../bloc/client_details_event.dart';
 
 class AddSubscriptionSheet extends StatefulWidget {
   final String clientId;

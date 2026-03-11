@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../employees/data/models/coach_model.dart';
+import '../../../../employees/data/models/coach_model.dart';
 
 class ScheduleRentForm extends StatelessWidget {
   final TextEditingController clientNameController;

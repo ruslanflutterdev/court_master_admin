@@ -1,12 +1,13 @@
-import 'package:court_master_admin/features/schedule/presentation/widgets/schedule_color_picker_row.dart';
-import 'package:court_master_admin/features/schedule/presentation/widgets/schedule_event_type_selector.dart';
-import 'package:court_master_admin/features/schedule/presentation/widgets/schedule_group_form.dart';
-import 'package:court_master_admin/features/schedule/presentation/widgets/schedule_rent_form.dart';
-import 'package:court_master_admin/features/schedule/presentation/widgets/schedule_time_picker_row.dart';
+import 'package:court_master_admin/features/schedule/presentation/widgets/forms/schedule_color_picker_row.dart';
+import 'package:court_master_admin/features/schedule/presentation/widgets/forms/schedule_event_type_selector.dart';
+
 import 'package:flutter/material.dart';
-import '../../../groups/data/models/group_model.dart';
-import '../../../employees/data/models/coach_model.dart';
-import '../../data/models/schedule_event_model.dart';
+import '../../../../groups/data/models/group_model.dart';
+import '../../../../employees/data/models/coach_model.dart';
+import '../../../data/models/schedule_event_model.dart';
+import '../forms/schedule_group_form.dart';
+import '../forms/schedule_rent_form.dart';
+import '../forms/schedule_time_picker_row.dart';
 
 class CreateScheduleEventSheet extends StatefulWidget {
   final String courtId;

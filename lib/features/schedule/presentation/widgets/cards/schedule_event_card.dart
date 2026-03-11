@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/models/schedule_event_model.dart';
+import '../../../data/models/schedule_event_model.dart';
 
 class ScheduleEventCard extends StatelessWidget {
   final ScheduleEventModel event;

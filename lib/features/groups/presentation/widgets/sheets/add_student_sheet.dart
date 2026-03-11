@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/group_details_bloc.dart';
-import '../../data/models/student_model.dart';
-import '../../data/repositories/students_repository.dart';
-import '../../../../core/di/dependencies_container.dart';
+import '../../bloc/group_details_bloc.dart';
+import '../../../data/models/student_model.dart';
+import '../../../data/repositories/students_repository.dart';
+import '../../../../../core/di/dependencies_container.dart';
+import '../../bloc/group_details_event.dart';
 
 class AddStudentSheet extends StatefulWidget {
   final String groupId;

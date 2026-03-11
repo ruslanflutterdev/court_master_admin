@@ -23,7 +23,7 @@ final sl = GetIt.instance;
 Future<void> initInjection() async {
   sl.registerLazySingleton<ApiClient>(() => ApiClient());
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
-  sl.registerFactory(() => AuthBloc(authRepository: sl()));
+  sl.registerFactory(() => AuthBloc(repository: sl()));
   sl.registerLazySingleton<EmployeesRepository>(
     () => EmployeesRepository(sl()),
   );

@@ -1,59 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/models/court_model.dart';
-import '../../data/models/schedule_event_model.dart';
 import '../../data/repositories/schedule_repository.dart';
-import '../../../groups/data/models/group_model.dart';
 import '../../../groups/data/repositories/groups_repository.dart';
-import '../../../employees/data/models/coach_model.dart';
 import '../../../employees/data/repositories/employees_repository.dart';
-
-abstract class ScheduleEvent {}
-
-class LoadScheduleData extends ScheduleEvent {
-  final DateTime date;
-  LoadScheduleData(this.date);
-}
-
-class CreateCourtRequested extends ScheduleEvent {
-  final String name;
-  CreateCourtRequested(this.name);
-}
-
-class UpdateCourtRequested extends ScheduleEvent {
-  final String courtId;
-  final String name;
-  UpdateCourtRequested(this.courtId, this.name);
-}
-
-class CreateScheduleEventRequested extends ScheduleEvent {
-  final Map<String, dynamic> eventData;
-  CreateScheduleEventRequested(this.eventData);
-}
-
-abstract class ScheduleState {}
-
-class ScheduleLoading extends ScheduleState {}
-
-class ScheduleError extends ScheduleState {
-  final String message;
-  ScheduleError(this.message);
-}
-
-class ScheduleLoaded extends ScheduleState {
-  final DateTime scheduleDate;
-  final List<CourtModel> courts;
-  final List<ScheduleEventModel> scheduleEvents;
-  final List<GroupModel> groups;
-  final List<CoachModel> coaches;
-
-  ScheduleLoaded({
-    required this.scheduleDate,
-    required this.courts,
-    required this.scheduleEvents,
-    required this.groups,
-    required this.coaches,
-  });
-}
+import 'schedule_event.dart';
+import 'schedule_state.dart';
 
 class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   final ScheduleRepository scheduleRepo;
@@ -75,6 +25,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         final allEvents = await scheduleRepo.getEvents();
         final groups = await groupsRepo.getGroups();
         final coaches = await employeesRepo.getCoaches();
+
         final dailyEvents = allEvents
             .where(
               (e) =>

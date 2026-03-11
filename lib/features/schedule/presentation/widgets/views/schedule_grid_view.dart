@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:court_master_admin/features/schedule/presentation/widgets/schedule_event_card.dart';
-import '../bloc/schedule_bloc.dart';
-import '../../data/models/schedule_event_model.dart';
+import '../../../data/models/schedule_event_model.dart';
+import '../../bloc/schedule_state.dart';
+import '../cards/schedule_event_card.dart';
 
 class ScheduleGridView extends StatelessWidget {
   final ScheduleLoaded state;
   final bool isPastDate;
   final Function(String courtId, String courtName) onEditCourt;
-  final Function(String courtId, int hour, int minute)
-  onTimeSlotTapped; // <--- Обновили коллбэк
+  final Function(String courtId, int hour, int minute) onTimeSlotTapped;
   final Function(ScheduleEventModel event) onEventTapped;
 
   const ScheduleGridView({

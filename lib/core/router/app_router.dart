@@ -1,30 +1,85 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/auth/presentation/bloc/auth_state.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/clients/presentation/screens/admin_client_details_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../../features/coach_dashboard/presentation/screens/coach_dashboard_screen.dart';
+import '../../features/clients/presentation/screens/admin_client_details_screen.dart';
 import '../../features/groups/presentation/screens/group_details_screen.dart';
 
-final appRouter = GoRouter(
-  initialLocation: '/',
-  routes: [
-    GoRoute(path: '/', builder: (context, state) => const LoginScreen()),
-    GoRoute(
-      path: '/admin',
-      builder: (context, state) => const DashboardScreen(),
-    ),
-    GoRoute(
-      path: '/group-details/:id',
-      builder: (context, state) {
-        final groupId = state.pathParameters['id']!;
-        return GroupDetailsScreen(groupId: groupId);
-      },
-    ),
-    GoRoute(
-      path: '/client-details/:id',
-      builder: (context, state) {
-        final clientId = state.pathParameters['id']!;
-        return AdminClientDetailsScreen(clientId: clientId);
-      },
-    ),
-  ],
-);
+class AppRouter {
+  final AuthBloc authBloc;
+
+  AppRouter(this.authBloc);
+
+  late final GoRouter router = GoRouter(
+    initialLocation: '/login',
+    refreshListenable: GoRouterRefreshStream(authBloc.stream),
+
+    redirect: (context, state) {
+      final authState = authBloc.state;
+      final isLoggingIn = state.matchedLocation == '/login';
+
+      if (authState is AuthAuthenticated) {
+        if (isLoggingIn || state.matchedLocation == '/') {
+          if (authState.role == 'coach') {
+            return '/coach-dashboard';
+          }
+
+          return '/dashboard';
+        }
+      } else if (authState is AuthUnauthenticated) {
+        if (!isLoggingIn) {
+          return '/login';
+        }
+      }
+
+      return null;
+    },
+
+    routes: [
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/dashboard', // Главная панель Админа
+        builder: (context, state) => const DashboardScreen(),
+      ),
+      GoRoute(
+        path: '/coach-dashboard', // Главная панель Тренера
+        builder: (context, state) => const CoachDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/client-details/:id',
+        builder: (context, state) {
+          final clientId = state.pathParameters['id']!;
+          return AdminClientDetailsScreen(clientId: clientId);
+        },
+      ),
+      GoRoute(
+        path: '/group-details/:id',
+        builder: (context, state) {
+          final groupId = state.pathParameters['id']!;
+          return GroupDetailsScreen(groupId: groupId);
+        },
+      ),
+    ],
+  );
+}
+
+class GoRouterRefreshStream extends ChangeNotifier {
+  late final StreamSubscription<dynamic> _subscription;
+
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _subscription = stream.asBroadcastStream().listen(
+      (dynamic _) => notifyListeners(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}

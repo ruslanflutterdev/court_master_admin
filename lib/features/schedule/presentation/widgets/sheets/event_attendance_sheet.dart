@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/event_attendance_bloc.dart';
+import '../../bloc/event_attendance_bloc.dart';
+import '../../bloc/event_attendance_event.dart';
+import '../../bloc/event_attendance_state.dart';
 
 class EventAttendanceSheet extends StatefulWidget {
   final String eventId;

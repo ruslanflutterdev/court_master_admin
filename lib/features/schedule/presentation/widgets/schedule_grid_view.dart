@@ -1,5 +1,5 @@
-import 'package:court_master_admin/features/schedule/presentation/widgets/schedule_event_card.dart';
 import 'package:flutter/material.dart';
+import 'package:court_master_admin/features/schedule/presentation/widgets/schedule_event_card.dart';
 import '../bloc/schedule_bloc.dart';
 import '../../data/models/schedule_event_model.dart';
 
@@ -7,7 +7,8 @@ class ScheduleGridView extends StatelessWidget {
   final ScheduleLoaded state;
   final bool isPastDate;
   final Function(String courtId, String courtName) onEditCourt;
-  final Function(String courtId, int hour) onTimeSlotTapped;
+  final Function(String courtId, int hour, int minute)
+  onTimeSlotTapped; // <--- Обновили коллбэк
   final Function(ScheduleEventModel event) onEventTapped;
 
   const ScheduleGridView({
@@ -28,29 +29,39 @@ class ScheduleGridView extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Левая колонка со временем (каждые 30 минут)
         SizedBox(
           width: 60,
           child: SingleChildScrollView(
             physics: const NeverScrollableScrollPhysics(),
             child: Column(
               children: [
-                const SizedBox(height: 40),
+                const SizedBox(height: 40), // Отступ под шапку корта
                 ...List.generate(
-                  18,
-                  (index) => Container(
-                    height: 80,
-                    alignment: Alignment.topRight,
-                    padding: const EdgeInsets.only(right: 8, top: 4),
-                    child: Text(
-                      '${index + 6}:00',
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ),
+                  34, // С 6:00 до 22:30 = 34 слота по 30 минут
+                  (index) {
+                    final hour = 6 + (index ~/ 2);
+                    final minute = (index % 2) == 0 ? '00' : '30';
+                    return Container(
+                      height: 40, // 40 пикселей на полчаса (80 пикселей в час)
+                      alignment: Alignment.topRight,
+                      padding: const EdgeInsets.only(right: 8, top: 4),
+                      child: Text(
+                        '$hour:$minute',
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
           ),
         ),
+
+        // Сетка кортов
         Expanded(
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -70,6 +81,7 @@ class ScheduleGridView extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
+                        // Шапка корта
                         Container(
                           height: 40,
                           alignment: Alignment.center,
@@ -92,18 +104,23 @@ class ScheduleGridView extends StatelessWidget {
                             ],
                           ),
                         ),
+                        // Сама сетка для одного корта
                         SizedBox(
-                          height: 18 * 80.0,
+                          height: 34 * 40.0, // Общая высота: 34 слота по 40px
                           child: Stack(
                             children: [
                               Column(
-                                children: List.generate(
-                                  18,
-                                  (index) => GestureDetector(
-                                    onTap: () =>
-                                        onTimeSlotTapped(court.id, index + 6),
+                                children: List.generate(34, (index) {
+                                  final hour = 6 + (index ~/ 2);
+                                  final minute = (index % 2) == 0 ? 0 : 30;
+                                  return GestureDetector(
+                                    onTap: () => onTimeSlotTapped(
+                                      court.id,
+                                      hour,
+                                      minute,
+                                    ),
                                     child: Container(
-                                      height: 80,
+                                      height: 40,
                                       decoration: BoxDecoration(
                                         border: Border(
                                           bottom: BorderSide(
@@ -112,9 +129,10 @@ class ScheduleGridView extends StatelessWidget {
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
+                                  );
+                                }),
                               ),
+                              // Отрисовка карточек событий поверх сетки
                               ...courtEvents.map(
                                 (e) => ScheduleEventCard(
                                   event: e,

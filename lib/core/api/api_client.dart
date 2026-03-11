@@ -1,11 +1,14 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart'; // <--- Импортируем kDebugMode
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiClient {
   late final Dio dio;
 
   ApiClient() {
-    const String baseUrl = 'https://courtmaster-backend.onrender.com/api';
+    final String baseUrl = kDebugMode
+        ? 'http://localhost:3000/api'
+        : 'https://courtmaster-backend.onrender.com/api';
 
     dio = Dio(
       BaseOptions(

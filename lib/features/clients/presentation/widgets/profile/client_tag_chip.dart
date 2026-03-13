@@ -8,8 +8,9 @@ class ClientTagChip extends StatelessWidget {
   Color get _tagColor {
     final lowerTag = tag.toLowerCase();
     if (lowerTag.contains('vip')) return Colors.purple;
-    if (lowerTag.contains('проблемный') || lowerTag.contains('должник'))
+    if (lowerTag.contains('проблемный') || lowerTag.contains('должник')) {
       return Colors.red;
+    }
     if (lowerTag.contains('корпорат')) return Colors.indigo;
     return Colors.teal;
   }

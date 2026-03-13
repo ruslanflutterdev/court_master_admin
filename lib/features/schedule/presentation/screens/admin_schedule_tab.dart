@@ -6,8 +6,7 @@ import '../bloc/schedule_state.dart';
 import '../utils/schedule_actions.dart';
 import '../widgets/views/schedule_header.dart';
 import '../widgets/views/weekly_calendar.dart';
-import '../widgets/views/schedule_grid_view.dart';
-import '../widgets/dialogs/create_court_dialog.dart';
+import '../widgets/views/schedule_body.dart';
 
 class AdminScheduleTab extends StatelessWidget {
   const AdminScheduleTab({super.key});
@@ -18,17 +17,15 @@ class AdminScheduleTab extends StatelessWidget {
 
     return BlocBuilder<ScheduleBloc, ScheduleState>(
       builder: (context, state) {
-        if (state is ScheduleError) {
+        if (state is ScheduleError)
           return Center(
             child: Text(
               'Ошибка: ${state.message}',
-              style: const TextStyle(color: Colors.red, fontSize: 16),
+              style: const TextStyle(color: Colors.red),
             ),
           );
-        }
-        if (state is ScheduleLoading) {
+        if (state is ScheduleLoading)
           return const Center(child: CircularProgressIndicator());
-        }
 
         if (state is ScheduleLoaded) {
           final now = DateTime.now();
@@ -58,45 +55,32 @@ class AdminScheduleTab extends StatelessWidget {
                 ),
                 const Divider(height: 1),
               ],
-
               ScheduleHeader(isPastDate: isPastDate),
-
-              Expanded(
-                child: ScheduleGridView(
-                  state: state,
-                  isPastDate: isPastDate,
-                  onEditCourt: (courtId, courtName) => showDialog(
-                    context: context,
-                    builder: (_) => BlocProvider.value(
-                      value: context.read<ScheduleBloc>(),
-                      child: CreateCourtDialog(
-                        initialName: courtName,
-                        onSave: (newName) => context.read<ScheduleBloc>().add(
-                          UpdateCourtRequested(courtId, newName),
-                        ),
-                      ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SegmentedButton<ScheduleViewType>(
+                  segments: const [
+                    ButtonSegment(
+                      value: ScheduleViewType.day,
+                      label: Text('День'),
                     ),
-                  ),
-                  onTimeSlotTapped: (courtId, hour, minute) => isPastDate
-                      ? ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Нельзя изменять в прошлом'),
-                          ),
-                        )
-                      : ScheduleActions.openEventSheet(
-                          context,
-                          state,
-                          courtId,
-                          hour,
-                        ),
-                  onEventTapped: (event) => ScheduleActions.openEventSheet(
-                    context,
-                    state,
-                    event.courtId,
-                    event.startTime.hour,
-                    existingEvent: event,
-                  ),
+                    ButtonSegment(
+                      value: ScheduleViewType.week,
+                      label: Text('Неделя'),
+                    ),
+                    ButtonSegment(
+                      value: ScheduleViewType.month,
+                      label: Text('Месяц'),
+                    ),
+                  ],
+                  selected: {state.viewType},
+                  onSelectionChanged: (newSelection) => context
+                      .read<ScheduleBloc>()
+                      .add(ChangeScheduleViewTypeRequested(newSelection.first)),
                 ),
+              ),
+              Expanded(
+                child: ScheduleBody(state: state, isPastDate: isPastDate),
               ),
             ],
           );

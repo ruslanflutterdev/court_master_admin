@@ -6,10 +6,30 @@ import '../bloc/schedule_bloc.dart';
 import '../bloc/schedule_event.dart';
 import '../bloc/schedule_state.dart';
 import '../bloc/event_attendance_bloc.dart';
+import '../widgets/dialogs/create_court_dialog.dart';
 import '../widgets/sheets/create_schedule_event_sheet.dart';
 import '../widgets/sheets/event_attendance_sheet.dart';
 
 class ScheduleActions {
+  static void openEditCourtDialog(
+    BuildContext context,
+    String courtId,
+    String courtName,
+  ) {
+    showDialog(
+      context: context,
+      builder: (_) => BlocProvider.value(
+        value: context.read<ScheduleBloc>(),
+        child: CreateCourtDialog(
+          initialName: courtName,
+          onSave: (newName) => context.read<ScheduleBloc>().add(
+            UpdateCourtRequested(courtId, newName),
+          ),
+        ),
+      ),
+    );
+  }
+
   static void changeWeek(
     BuildContext context,
     DateTime current,

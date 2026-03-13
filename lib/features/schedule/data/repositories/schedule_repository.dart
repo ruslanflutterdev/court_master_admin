@@ -25,8 +25,14 @@ class ScheduleRepository {
     await apiClient.dio.put('/courts/$id', data: {'name': name});
   }
 
-  Future<List<ScheduleEventModel>> getEvents() async {
-    final response = await apiClient.dio.get('/events');
+  Future<List<ScheduleEventModel>> getEvents({
+    String? startDate,
+    String? endDate,
+  }) async {
+    final response = await apiClient.dio.get(
+      '/events',
+      queryParameters: {'startDate': ?startDate, 'endDate': ?endDate},
+    );
     return (response.data as List)
         .map((json) => ScheduleEventModel.fromJson(json))
         .toList();

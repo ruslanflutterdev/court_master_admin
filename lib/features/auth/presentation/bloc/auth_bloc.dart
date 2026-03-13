@@ -7,19 +7,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository repository;
 
   AuthBloc({required this.repository}) : super(AuthInitial()) {
+    // 1. Логин
     on<LoginRequested>((event, emit) async {
       emit(AuthLoading());
       try {
-        final authData = await repository.login(event.email, event.password);
-        // Передаем и токен, и роль!
-        emit(
-          AuthAuthenticated(token: authData['token']!, role: authData['role']!),
+        // Теперь repository.login возвращает объект AuthResponse
+        final authResponse = await repository.login(
+          event.email,
+          event.password,
         );
+
+        // Передаем модель юзера в стейт
+        emit(AuthAuthenticated(user: authResponse.user));
       } catch (e) {
         emit(AuthError(e.toString().replaceAll('Exception: ', '')));
       }
     });
 
+    // 2. Выход
     on<LogoutEvent>((event, emit) async {
       await repository.logout();
       emit(AuthUnauthenticated());
@@ -28,14 +33,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<CheckAuthEvent>((event, emit) async {
       emit(AuthLoading());
       try {
-        final authData = await repository.checkAuth();
-        if (authData != null) {
-          emit(
-            AuthAuthenticated(
-              token: authData['token']!,
-              role: authData['role']!,
-            ),
-          );
+        final user = await repository.checkAuth();
+
+        if (user != null) {
+          emit(AuthAuthenticated(user: user));
         } else {
           emit(AuthUnauthenticated());
         }

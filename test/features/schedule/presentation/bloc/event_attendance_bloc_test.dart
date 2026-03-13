@@ -29,7 +29,9 @@ void main() {
     blocTest<EventAttendanceBloc, EventAttendanceState>(
       'Успешная загрузка списка учеников: [EventAttendanceLoading, EventAttendanceLoaded]',
       build: () {
-        when(() => mockRepo.getEventAttendance('e1')).thenAnswer((_) async => []);
+        when(
+          () => mockRepo.getEventAttendance('e1'),
+        ).thenAnswer((_) async => []);
         return bloc;
       },
       act: (bloc) => bloc.add(LoadAttendanceEvent('e1')),
@@ -43,14 +45,20 @@ void main() {
       'Отметка студента вызывает перезагрузку списка',
       build: () {
         // Сначала отрабатывает отметка (возвращаем пустоту)
-        when(() => mockRepo.markAttendance('e1', 's1', 1)).thenAnswer((_) async {});
+        when(
+          () => mockRepo.markAttendance('e1', 's1', 1),
+        ).thenAnswer((_) async {});
         // Затем BLoC сам вызывает перезагрузку списка
-        when(() => mockRepo.getEventAttendance('e1')).thenAnswer((_) async => []);
+        when(
+          () => mockRepo.getEventAttendance('e1'),
+        ).thenAnswer((_) async => []);
         return bloc;
       },
       act: (bloc) => bloc.add(MarkStudentEvent('e1', 's1', 1)),
       expect: () => [
-        isA<EventAttendanceLoading>(), // Вызывается внутренним LoadAttendanceEvent
+        isA<
+          EventAttendanceLoading
+        >(), // Вызывается внутренним LoadAttendanceEvent
         isA<EventAttendanceLoaded>(),
       ],
     );

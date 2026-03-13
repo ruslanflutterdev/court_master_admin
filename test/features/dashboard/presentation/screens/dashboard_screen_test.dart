@@ -34,19 +34,36 @@ import 'package:court_master_admin/features/schedule/presentation/bloc/event_att
 import 'package:court_master_admin/features/schedule/presentation/bloc/event_attendance_state.dart';
 
 // 1. Создаем подделки
-class MockClientsBloc extends MockBloc<ClientsEvent, ClientsState> implements ClientsBloc {}
-class MockScheduleBloc extends MockBloc<ScheduleEvent, ScheduleState> implements ScheduleBloc {}
-class MockAnalyticsBloc extends MockBloc<AnalyticsEvent, AnalyticsState> implements AnalyticsBloc {}
-class MockEmployeesBloc extends MockBloc<EmployeesEvent, EmployeesState> implements EmployeesBloc {}
-class MockGroupsBloc extends MockBloc<GroupsEvent, GroupsState> implements GroupsBloc {}
-class MockEventAttendanceBloc extends MockBloc<EventAttendanceEvent, EventAttendanceState> implements EventAttendanceBloc {}
+class MockClientsBloc extends MockBloc<ClientsEvent, ClientsState>
+    implements ClientsBloc {}
+
+class MockScheduleBloc extends MockBloc<ScheduleEvent, ScheduleState>
+    implements ScheduleBloc {}
+
+class MockAnalyticsBloc extends MockBloc<AnalyticsEvent, AnalyticsState>
+    implements AnalyticsBloc {}
+
+class MockEmployeesBloc extends MockBloc<EmployeesEvent, EmployeesState>
+    implements EmployeesBloc {}
+
+class MockGroupsBloc extends MockBloc<GroupsEvent, GroupsState>
+    implements GroupsBloc {}
+
+class MockEventAttendanceBloc
+    extends MockBloc<EventAttendanceEvent, EventAttendanceState>
+    implements EventAttendanceBloc {}
 
 // 2. Фейковые события
 class FakeClientsEvent extends Fake implements ClientsEvent {}
+
 class FakeScheduleEvent extends Fake implements ScheduleEvent {}
+
 class FakeAnalyticsEvent extends Fake implements AnalyticsEvent {}
+
 class FakeEmployeesEvent extends Fake implements EmployeesEvent {}
+
 class FakeGroupsEvent extends Fake implements GroupsEvent {}
+
 class FakeEventAttendanceEvent extends Fake implements EventAttendanceEvent {}
 
 void main() {
@@ -80,7 +97,9 @@ void main() {
     when(() => mockAnalyticsBloc.state).thenReturn(AnalyticsLoading());
     when(() => mockEmployeesBloc.state).thenReturn(EmployeesLoading());
     when(() => mockGroupsBloc.state).thenReturn(GroupsLoading());
-    when(() => mockEventAttendanceBloc.state).thenReturn(EventAttendanceLoading());
+    when(
+      () => mockEventAttendanceBloc.state,
+    ).thenReturn(EventAttendanceLoading());
 
     // НАСТРОЙКА GetIt: Регистрируем ВСЕ моки
     final sl = GetIt.instance;
@@ -94,25 +113,28 @@ void main() {
   });
 
   Widget createWidgetUnderTest() {
-    return const MaterialApp(
-      home: DashboardScreen(),
-    );
+    return const MaterialApp(home: DashboardScreen());
   }
 
   group('DashboardScreen Widget Tests', () {
-    testWidgets('Отрисовывает DashboardDesktopView на широком экране (>800px)', (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1200, 800);
-      tester.view.devicePixelRatio = 1.0;
+    testWidgets(
+      'Отрисовывает DashboardDesktopView на широком экране (>800px)',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 800);
+        tester.view.devicePixelRatio = 1.0;
 
-      await tester.pumpWidget(createWidgetUnderTest());
+        await tester.pumpWidget(createWidgetUnderTest());
 
-      expect(find.byType(DashboardDesktopView), findsOneWidget);
-      expect(find.byType(DashboardMobileView), findsNothing);
+        expect(find.byType(DashboardDesktopView), findsOneWidget);
+        expect(find.byType(DashboardMobileView), findsNothing);
 
-      addTearDown(tester.view.resetPhysicalSize);
-    });
+        addTearDown(tester.view.resetPhysicalSize);
+      },
+    );
 
-    testWidgets('Отрисовывает DashboardMobileView на узком экране (<800px)', (WidgetTester tester) async {
+    testWidgets('Отрисовывает DashboardMobileView на узком экране (<800px)', (
+      WidgetTester tester,
+    ) async {
       tester.view.physicalSize = const Size(400, 800);
       tester.view.devicePixelRatio = 1.0;
 

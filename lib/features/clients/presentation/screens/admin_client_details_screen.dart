@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/di/dependencies_container.dart';
 import '../bloc/client_details_bloc.dart';
 import '../bloc/client_details_event.dart';
 import '../bloc/client_details_state.dart';
-import '../widgets/profile/client_info_header.dart';
 import '../widgets/profile/client_action_buttons.dart';
-import '../widgets/profile/client_subscriptions_list.dart';
+import '../widgets/profile/client_attendance_list.dar.dart';
+import '../widgets/profile/client_info_header.dart';
 import '../widgets/profile/client_payments_list.dart';
-import '../../../../core/di/dependencies_container.dart';
+import '../widgets/profile/client_subscriptions_list.dart';
 
 class AdminClientDetailsScreen extends StatelessWidget {
   final String clientId;
@@ -19,43 +20,62 @@ class AdminClientDetailsScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) =>
           sl<ClientDetailsBloc>()..add(LoadClientDetails(clientId)),
-      child: DefaultTabController(
-        length: 2,
-        child: Scaffold(
-          appBar: AppBar(
-            title: const Text('Профиль клиента'),
-            bottom: const TabBar(
-              tabs: [
-                Tab(text: 'Абонементы'),
-                Tab(text: 'История оплат'),
-              ],
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Профиль клиента'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Редактирование профиля будет доступно позже',
+                    ),
+                  ),
+                );
+              },
             ),
-          ),
-          body: BlocBuilder<ClientDetailsBloc, ClientDetailsState>(
+          ],
+        ),
+        body: DefaultTabController(
+          length: 3,
+          child: BlocBuilder<ClientDetailsBloc, ClientDetailsState>(
             builder: (context, state) {
-              if (state is ClientDetailsLoading)
+              if (state is ClientDetailsLoading) {
                 return const Center(child: CircularProgressIndicator());
-              if (state is ClientDetailsError)
+              } else if (state is ClientDetailsError) {
                 return Center(
                   child: Text(
-                    'Ошибка: ${state.message}',
+                    state.message,
                     style: const TextStyle(color: Colors.red),
                   ),
                 );
+              } else if (state is ClientDetailsLoaded) {
+                final client = state.client;
 
-              if (state is ClientDetailsLoaded) {
                 return Column(
                   children: [
-                    ClientInfoHeader(client: state.client),
+                    ClientInfoHeader(client: client),
                     ClientActionButtons(clientId: clientId),
+                    const TabBar(
+                      tabs: [
+                        Tab(text: 'Абонементы'),
+                        Tab(text: 'Платежи'),
+                        Tab(text: 'История'),
+                      ],
+                      labelColor: Colors.green,
+                      unselectedLabelColor: Colors.grey,
+                    ),
                     Expanded(
                       child: TabBarView(
                         children: [
                           ClientSubscriptionsList(
-                            subscriptions: state.client.subscriptions ?? [],
+                            subscriptions: client.subscriptions ?? [],
                           ),
-                          ClientPaymentsList(
-                            payments: state.client.payments ?? [],
+                          ClientPaymentsList(payments: client.payments ?? []),
+                          ClientAttendanceList(
+                            attendances: client.attendances ?? [],
                           ),
                         ],
                       ),

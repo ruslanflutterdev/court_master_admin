@@ -36,19 +36,22 @@ class AdminGroupsTab extends StatelessWidget {
             ),
             body: BlocBuilder<GroupsBloc, GroupsState>(
               builder: (context, state) {
-                if (state is GroupsLoading)
+                if (state is GroupsLoading) {
                   return const Center(child: CircularProgressIndicator());
-                if (state is GroupsError)
+                }
+                if (state is GroupsError) {
                   return Center(
                     child: Text(
                       'Ошибка: ${state.message}',
                       style: const TextStyle(color: Colors.red),
                     ),
                   );
+                }
 
                 if (state is GroupsLoaded) {
-                  if (state.groups.isEmpty)
+                  if (state.groups.isEmpty) {
                     return const Center(child: Text('Нет созданных групп'));
+                  }
 
                   return ListView.builder(
                     padding: const EdgeInsets.all(16),

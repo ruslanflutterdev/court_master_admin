@@ -10,7 +10,9 @@ import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_
 
 // Создаем сразу 3 "фейковых" репозитория
 class MockScheduleRepo extends Mock implements ScheduleRepository {}
+
 class MockGroupsRepo extends Mock implements GroupsRepository {}
+
 class MockEmployeesRepo extends Mock implements EmployeesRepository {}
 
 void main() {
@@ -50,24 +52,20 @@ void main() {
         return bloc;
       },
       act: (bloc) => bloc.add(LoadScheduleData(DateTime(2026, 3, 12))),
-      expect: () => [
-        isA<ScheduleLoading>(),
-        isA<ScheduleLoaded>(),
-      ],
+      expect: () => [isA<ScheduleLoading>(), isA<ScheduleLoaded>()],
     );
 
     blocTest<ScheduleBloc, ScheduleState>(
       'Ошибка сети при загрузке кортов: [ScheduleLoading, ScheduleError]',
       build: () {
         // Имитируем падение сервера при запросе кортов
-        when(() => mockScheduleRepo.getCourts()).thenThrow(Exception('Ошибка сети'));
+        when(
+          () => mockScheduleRepo.getCourts(),
+        ).thenThrow(Exception('Ошибка сети'));
         return bloc;
       },
       act: (bloc) => bloc.add(LoadScheduleData(DateTime(2026, 3, 12))),
-      expect: () => [
-        isA<ScheduleLoading>(),
-        isA<ScheduleError>(),
-      ],
+      expect: () => [isA<ScheduleLoading>(), isA<ScheduleError>()],
     );
   });
 }

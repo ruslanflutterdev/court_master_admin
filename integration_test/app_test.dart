@@ -8,7 +8,9 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('E2E Тесты приложения', () {
-    testWidgets('Сценарий: Успешный логин и загрузка Dashboard', (WidgetTester tester) async {
+    testWidgets('Сценарий: Успешный логин и загрузка Dashboard', (
+      WidgetTester tester,
+    ) async {
       // 1. Запускаем реальное приложение (вызывает твою функцию main)
       app.main();
 

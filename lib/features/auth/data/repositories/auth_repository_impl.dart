@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/api/api_client.dart';
+import '../models/user_model.dart';
 import 'auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -9,7 +10,7 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this.apiClient);
 
   @override
-  Future<Map<String, String>> login(String email, String password) async {
+  Future<AuthResponse> login(String email, String password) async {
     try {
       final response = await apiClient.dio.post(
         '/auth/login',
@@ -17,14 +18,15 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       final token = response.data['token'] as String;
-      final role = response.data['user']['role'] as String;
+      // Используем фабрику для создания объекта пользователя
+      final user = UserModel.fromJson(response.data['user']);
 
       final prefs = await SharedPreferences.getInstance();
-      // Сохраняем токен под правильным ключом, который ждет ApiClient
       await prefs.setString('jwt_token', token);
-      await prefs.setString('user_role', role);
+      await prefs.setString('user_role', user.role);
+      await prefs.setString('user_id', user.id);
 
-      return {'token': token, 'role': role};
+      return AuthResponse(token: token, user: user);
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Ошибка авторизации');
     }
@@ -35,17 +37,32 @@ class AuthRepositoryImpl implements AuthRepository {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('jwt_token');
     await prefs.remove('user_role');
+    await prefs.remove('user_id');
   }
 
   @override
-  Future<Map<String, String>?> checkAuth() async {
+  Future<UserModel?> checkAuth() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
-    final role = prefs.getString('user_role');
 
-    if (token != null && token.isNotEmpty && role != null) {
-      return {'token': token, 'role': role};
+    // Если токена нет, проверять нечего
+    if (token == null || token.isEmpty) return null;
+
+    try {
+      // Можно сделать запрос /auth/me, чтобы получить свежие данные пользователя
+      // Или пока просто вернуть модель на основе сохраненных данных, если API еще нет
+      final role = prefs.getString('user_role') ?? 'child';
+      final id = prefs.getString('user_id') ?? '';
+
+      return UserModel(
+        id: id,
+        firstName: '', // Можно дополнить полями, если сохранять их в prefs
+        lastName: '',
+        email: '',
+        role: role,
+      );
+    } catch (e) {
+      return null;
     }
-    return null;
   }
 }

@@ -3,7 +3,6 @@ import 'package:court_master_admin/features/employees/data/models/coach_model.da
 
 void main() {
   group('CoachModel Tests', () {
-
     test('Успешный парсинг из JSON со всеми полями', () {
       // 1. Arrange (Подготовка: имитируем полный ответ от бэкенда)
       final Map<String, dynamic> json = {
@@ -24,22 +23,21 @@ void main() {
       expect(result.phone, '+79990001122');
     });
 
-    test('Успешный парсинг из JSON, если пришло только Имя (без фамилии и телефона)', () {
-      // 1. Arrange (Подготовка: имитируем неполный ответ)
-      final Map<String, dynamic> json = {
-        'id': '456',
-        'firstName': 'Анна',
-      };
+    test(
+      'Успешный парсинг из JSON, если пришло только Имя (без фамилии и телефона)',
+      () {
+        // 1. Arrange (Подготовка: имитируем неполный ответ)
+        final Map<String, dynamic> json = {'id': '456', 'firstName': 'Анна'};
 
-      // 2. Act
-      final result = CoachModel.fromJson(json);
+        // 2. Act
+        final result = CoachModel.fromJson(json);
 
-      // 3. Assert
-      expect(result.id, '456');
-      expect(result.firstName, 'Анна');
-      expect(result.lastName, null); // Проверяем, что null не вызывает краш!
-      expect(result.phone, null);
-    });
-
+        // 3. Assert
+        expect(result.id, '456');
+        expect(result.firstName, 'Анна');
+        expect(result.lastName, null); // Проверяем, что null не вызывает краш!
+        expect(result.phone, null);
+      },
+    );
   });
 }

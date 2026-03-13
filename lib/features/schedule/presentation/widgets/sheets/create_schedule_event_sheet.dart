@@ -1,13 +1,15 @@
-import 'package:court_master_admin/features/schedule/presentation/widgets/forms/schedule_color_picker_row.dart';
-import 'package:court_master_admin/features/schedule/presentation/widgets/forms/schedule_event_type_selector.dart';
-
 import 'package:flutter/material.dart';
+import '../forms/schedule_time_picker_row.dart';
+import '../forms/schedule_color_picker_row.dart';
+import '../forms/schedule_event_type_selector.dart';
+import '../forms/schedule_dynamic_form_section.dart';
+import '../forms/schedule_recurrence_form.dart';
+import '../forms/schedule_price_display.dart';
+import '../forms/schedule_save_button.dart';
+import '../forms/schedule_form_types.dart';
+import '../../../data/models/schedule_event_model.dart';
 import '../../../../groups/data/models/group_model.dart';
 import '../../../../employees/data/models/coach_model.dart';
-import '../../../data/models/schedule_event_model.dart';
-import '../forms/schedule_group_form.dart';
-import '../forms/schedule_rent_form.dart';
-import '../forms/schedule_time_picker_row.dart';
 
 class CreateScheduleEventSheet extends StatefulWidget {
   final String courtId;
@@ -16,18 +18,7 @@ class CreateScheduleEventSheet extends StatefulWidget {
   final List<GroupModel> groups;
   final List<CoachModel> coaches;
   final ScheduleEventModel? existingEvent;
-
-  final Function({
-    required String eventType,
-    required TimeOfDay startTime,
-    required TimeOfDay endTime,
-    required String color,
-    String? groupId,
-    String? clientName,
-    String? clientPhone,
-    String? coachId,
-  })
-  onSave;
+  final OnSaveEvent onSave;
 
   const CreateScheduleEventSheet({
     super.key,
@@ -41,110 +32,98 @@ class CreateScheduleEventSheet extends StatefulWidget {
   });
 
   @override
-  State<CreateScheduleEventSheet> createState() =>
-      _CreateScheduleEventSheetState();
+  State<CreateScheduleEventSheet> createState() => _SheetState();
 }
 
-class _CreateScheduleEventSheetState extends State<CreateScheduleEventSheet> {
-  late String eventType;
-  late TimeOfDay startTime;
-  late TimeOfDay endTime;
-  late String selectedColor;
-
-  String? selectedGroupId;
-  final clientNameController = TextEditingController();
-  final clientPhoneController = TextEditingController();
-  String? selectedCoachId;
+class _SheetState extends State<CreateScheduleEventSheet> {
+  late String type, color;
+  late TimeOfDay start, end;
+  bool isRecurring = false;
+  int recurrenceWeeks = 1;
+  String? groupId, coachId;
+  final clientName = TextEditingController(),
+      clientPhone = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     final ev = widget.existingEvent;
-    if (ev != null) {
-      eventType = ev.eventType;
-      startTime = ev.startTime;
-      endTime = ev.endTime;
-      selectedColor = ev.color;
-      if (eventType == 'group') {
-        selectedGroupId = ev.groupId;
-      } else {
-        clientNameController.text = ev.clientName ?? '';
-        clientPhoneController.text = ev.clientPhone ?? '';
-        selectedCoachId = ev.coachId;
-      }
-    } else {
-      eventType = 'group';
-      startTime = TimeOfDay(hour: widget.startHour, minute: 0);
-      endTime = TimeOfDay(hour: widget.startHour + 1, minute: 0);
-      selectedColor = 'blue';
+    type = ev?.eventType ?? 'group';
+    start = ev?.startTime ?? TimeOfDay(hour: widget.startHour, minute: 0);
+    end = ev?.endTime ?? TimeOfDay(hour: widget.startHour + 1, minute: 0);
+    color = ev?.colorHex ?? '#2196F3';
+    if (ev != null && ev.eventType == 'group') groupId = ev.groupId;
+    if (ev != null && ev.eventType != 'group') {
+      clientName.text = ev.clientName ?? '';
+      clientPhone.text = ev.clientPhone ?? '';
+      coachId = ev.coachId;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      padding: EdgeInsets.fromLTRB(
+        16,
+        16,
+        16,
+        MediaQuery.of(context).viewInsets.bottom + 16,
       ),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
+            const Text(
               'Новая запись',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 10),
             ScheduleTimePickerRow(
-              startTime: startTime,
-              endTime: endTime,
-              onStartTimeChanged: (t) => setState(() => startTime = t),
-              onEndTimeChanged: (t) => setState(() => endTime = t),
+              startTime: start,
+              endTime: end,
+              onStartTimeChanged: (t) => setState(() => start = t),
+              onEndTimeChanged: (t) => setState(() => end = t),
             ),
-            const Divider(),
             ScheduleColorPickerRow(
-              selectedColor: selectedColor,
-              onColorSelected: (c) => setState(() => selectedColor = c),
+              selectedColor: color,
+              onColorSelected: (c) => setState(() => color = c),
             ),
-            const Divider(),
             ScheduleEventTypeSelector(
-              eventType: eventType,
-              onTypeChanged: (t) => setState(() => eventType = t),
+              selectedType: type,
+              onChanged: (t) => setState(() => type = t),
             ),
+            ScheduleDynamicFormSection(
+              type: type,
+              groups: widget.groups,
+              selectedGroupId: groupId,
+              onGroupSelected: (id) => setState(() => groupId = id),
+              coaches: widget.coaches,
+              selectedCoachId: coachId,
+              onCoachSelected: (id) => setState(() => coachId = id),
+              clientNameController: clientName,
+              clientPhoneController: clientPhone,
+            ),
+            if (widget.existingEvent == null)
+              ScheduleRecurrenceForm(
+                isRecurring: isRecurring,
+                recurrenceWeeks: recurrenceWeeks,
+                onRecurringChanged: (v) => setState(() => isRecurring = v),
+                onWeeksChanged: (v) => setState(() => recurrenceWeeks = v),
+              ),
+            const SchedulePriceDisplay(),
             const SizedBox(height: 16),
-            if (eventType == 'group')
-              ScheduleGroupForm(
-                groups: widget.groups,
-                selectedGroupId: selectedGroupId,
-                onGroupSelected: (id) => setState(() => selectedGroupId = id),
-              )
-            else
-              ScheduleRentForm(
-                clientNameController: clientNameController,
-                clientPhoneController: clientPhoneController,
-                coaches: widget.coaches,
-                selectedCoachId: selectedCoachId,
-                onCoachSelected: (id) => setState(() => selectedCoachId = id),
-              ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-              ),
+            ScheduleSaveButton(
               onPressed: () => widget.onSave(
-                eventType: eventType,
-                startTime: startTime,
-                endTime: endTime,
-                color: selectedColor,
-                groupId: selectedGroupId,
-                clientName: clientNameController.text,
-                clientPhone: clientPhoneController.text,
-                coachId: selectedCoachId,
+                type: type,
+                start: start,
+                end: end,
+                color: color,
+                isRecurring: isRecurring,
+                weeks: recurrenceWeeks,
+                groupId: groupId,
+                clientName: clientName.text,
+                clientPhone: clientPhone.text,
+                coachId: coachId,
               ),
-              child: const Text('Сохранить'),
             ),
           ],
         ),

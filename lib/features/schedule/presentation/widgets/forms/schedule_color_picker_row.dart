@@ -32,7 +32,7 @@ class ScheduleColorPickerRow extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: entry.value.withAlpha(7),
+                color: entry.value.withAlpha(200),
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isSelected ? Colors.black87 : Colors.transparent,

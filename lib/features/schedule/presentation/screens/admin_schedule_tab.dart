@@ -17,15 +17,17 @@ class AdminScheduleTab extends StatelessWidget {
 
     return BlocBuilder<ScheduleBloc, ScheduleState>(
       builder: (context, state) {
-        if (state is ScheduleError)
+        if (state is ScheduleError) {
           return Center(
             child: Text(
               'Ошибка: ${state.message}',
               style: const TextStyle(color: Colors.red),
             ),
           );
-        if (state is ScheduleLoading)
+        }
+        if (state is ScheduleLoading) {
           return const Center(child: CircularProgressIndicator());
+        }
 
         if (state is ScheduleLoaded) {
           final now = DateTime.now();

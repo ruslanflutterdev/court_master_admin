@@ -28,14 +28,16 @@ class _ScheduleWeekViewState extends State<ScheduleWeekView> {
   @override
   void initState() {
     super.initState();
-    if (widget.state.courts.isNotEmpty)
+    if (widget.state.courts.isNotEmpty) {
       _selectedCourtId = widget.state.courts.first.id;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.state.courts.isEmpty)
+    if (widget.state.courts.isEmpty) {
       return const Center(child: Text('Создайте первый корт'));
+    }
     if (_selectedCourtId != null &&
         !widget.state.courts.any((c) => c.id == _selectedCourtId)) {
       _selectedCourtId = widget.state.courts.first.id;

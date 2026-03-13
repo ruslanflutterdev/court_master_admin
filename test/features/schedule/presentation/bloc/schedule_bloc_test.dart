@@ -46,7 +46,15 @@ void main() {
       build: () {
         // Учим фейки отдавать пустые списки, чтобы избежать ошибок null
         when(() => mockScheduleRepo.getCourts()).thenAnswer((_) async => []);
-        when(() => mockScheduleRepo.getEvents()).thenAnswer((_) async => []);
+
+        // ИСПРАВЛЕНО: Указываем, что getEvents принимает параметры дат!
+        when(
+          () => mockScheduleRepo.getEvents(
+            startDate: any(named: 'startDate'),
+            endDate: any(named: 'endDate'),
+          ),
+        ).thenAnswer((_) async => []);
+
         when(() => mockGroupsRepo.getGroups()).thenAnswer((_) async => []);
         when(() => mockEmployeesRepo.getCoaches()).thenAnswer((_) async => []);
         return bloc;

@@ -22,17 +22,16 @@ void main() {
       expect(result.id, 'e1');
       expect(result.eventType, 'rent');
       expect(result.date, DateTime.parse('2026-03-12T00:00:00.000Z'));
-
-      // Проверяем, что парсер времени отработал верно!
       expect(result.startTime, const TimeOfDay(hour: 10, minute: 0));
       expect(result.endTime, const TimeOfDay(hour: 11, minute: 30));
-
-      expect(result.color, '#FF0000');
+      expect(result.colorHex, '#FF0000');
       expect(result.courtId, 'c1');
       expect(result.clientName, 'Иван');
-
       expect(result.groupId, null);
       expect(result.coachId, null);
+      expect(result.status, 'active');
+      expect(result.isPaid, false);
+      expect(result.price, null);
     });
   });
 }

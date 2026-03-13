@@ -13,30 +13,26 @@ import '../widgets/sheets/event_attendance_sheet.dart';
 class ScheduleActions {
   static void openEditCourtDialog(
     BuildContext context,
-    String courtId,
-    String courtName,
+    String id,
+    String name,
   ) {
+    final scheduleBloc = context.read<ScheduleBloc>();
     showDialog(
       context: context,
       builder: (_) => BlocProvider.value(
-        value: context.read<ScheduleBloc>(),
+        value: scheduleBloc,
         child: CreateCourtDialog(
-          initialName: courtName,
-          onSave: (newName) => context.read<ScheduleBloc>().add(
-            UpdateCourtRequested(courtId, newName),
-          ),
+          initialName: name,
+          onSave: (newName) =>
+              scheduleBloc.add(UpdateCourtRequested(id, newName)),
         ),
       ),
     );
   }
 
-  static void changeWeek(
-    BuildContext context,
-    DateTime current,
-    int daysOffset,
-  ) {
-    context.read<ScheduleBloc>().add(
-      LoadScheduleData(current.add(Duration(days: daysOffset))),
+  static void changeWeek(BuildContext ctx, DateTime cur, int offset) {
+    ctx.read<ScheduleBloc>().add(
+      LoadScheduleData(cur.add(Duration(days: offset))),
     );
   }
 
@@ -47,15 +43,17 @@ class ScheduleActions {
     int hour, {
     ScheduleEventModel? existingEvent,
   }) {
+    final scheduleBloc = context.read<ScheduleBloc>();
+
     if (existingEvent != null && existingEvent.eventType == 'group') {
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
         builder: (_) => BlocProvider(
-          create: (context) => sl<EventAttendanceBloc>(),
+          create: (_) => sl<EventAttendanceBloc>(),
           child: EventAttendanceSheet(
             eventId: existingEvent.id,
-            groupName: 'Групповая тренировка',
+            groupName: 'Группа',
           ),
         ),
       );
@@ -74,31 +72,34 @@ class ScheduleActions {
         existingEvent: existingEvent,
         onSave:
             ({
-              required eventType,
-              required startTime,
-              required endTime,
+              required type,
+              required start,
+              required end,
               required color,
+              required isRecurring,
+              required weeks,
+              groupId,
               clientName,
               clientPhone,
               coachId,
-              groupId,
             }) {
-              String formatTime(TimeOfDay t) =>
+              String fmt(TimeOfDay t) =>
                   "${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}";
-
               if (existingEvent == null) {
-                context.read<ScheduleBloc>().add(
+                scheduleBloc.add(
                   CreateScheduleEventRequested({
-                    'type': eventType,
+                    'type': type,
                     'date': state.scheduleDate.toIso8601String(),
-                    'startTime': formatTime(startTime),
-                    'endTime': formatTime(endTime),
+                    'startTime': fmt(start),
+                    'endTime': fmt(end),
                     'colorHex': color,
                     'courtId': courtId,
                     'groupId': groupId,
                     'clientName': clientName,
                     'clientPhone': clientPhone,
                     'coachId': coachId,
+                    'isRecurring': isRecurring,
+                    'recurrenceWeeks': weeks,
                   }),
                 );
               } else {

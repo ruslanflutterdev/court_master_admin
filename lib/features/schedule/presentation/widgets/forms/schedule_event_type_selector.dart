@@ -1,29 +1,41 @@
 import 'package:flutter/material.dart';
 
 class ScheduleEventTypeSelector extends StatelessWidget {
-  final String eventType;
-  final Function(String) onTypeChanged;
+  final String selectedType;
+  final ValueChanged<String> onChanged;
 
   const ScheduleEventTypeSelector({
     super.key,
-    required this.eventType,
-    required this.onTypeChanged,
+    required this.selectedType,
+    required this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SegmentedButton<String>(
-      segments: const [
-        ButtonSegment(value: 'group', label: Text('Групповая')),
-        ButtonSegment(value: 'rent', label: Text('Аренда')),
+    return DropdownButtonFormField<String>(
+      decoration: const InputDecoration(labelText: 'Тип события'),
+      initialValue: selectedType,
+      items: const [
+        DropdownMenuItem(value: 'rent', child: Text('Аренда корта')),
+        DropdownMenuItem(
+          value: 'individual',
+          child: Text('Индивидуальная тренировка'),
+        ),
+        DropdownMenuItem(value: 'group', child: Text('Групповая тренировка')),
+        DropdownMenuItem(
+          value: 'tournament',
+          child: Text('🏆 Турнир (Блокировка)'),
+        ),
+        DropdownMenuItem(
+          value: 'maintenance',
+          child: Text('🔧 Техобслуживание (Блокировка)'),
+        ),
       ],
-      selected: {eventType},
-      onSelectionChanged: (Set<String> newSelection) {
-        onTypeChanged(newSelection.first);
+      onChanged: (val) {
+        if (val != null) {
+          onChanged(val);
+        }
       },
-      style: SegmentedButton.styleFrom(
-        selectedBackgroundColor: Colors.green.shade100,
-      ),
     );
   }
 }

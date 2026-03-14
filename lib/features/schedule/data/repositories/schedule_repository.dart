@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import '../../../../core/api/api_client.dart';
 import '../models/court_model.dart';
 import '../models/schedule_event_model.dart';
+import '../models/waitlist_model.dart';
 
 class ScheduleRepository {
   final ApiClient apiClient;
@@ -75,5 +76,23 @@ class ScheduleRepository {
         e.response?.data['message'] ?? 'Ошибка при сохранении отметки',
       );
     }
+  }
+
+  Future<List<WaitlistModel>> getWaitlist(DateTime date) async {
+    final response = await apiClient.dio.get(
+      '/waitlists',
+      queryParameters: {'date': date.toIso8601String()},
+    );
+    return (response.data as List)
+        .map((json) => WaitlistModel.fromJson(json))
+        .toList();
+  }
+
+  Future<void> addToWaitlist(Map<String, dynamic> waitlistData) async {
+    await apiClient.dio.post('/waitlists', data: waitlistData);
+  }
+
+  Future<void> removeFromWaitlist(String id) async {
+    await apiClient.dio.delete('/waitlists/$id');
   }
 }

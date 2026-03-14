@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../data/models/schedule_event_model.dart';
+import '../../../../schedule/data/models/schedule_event_model.dart';
 import '../../bloc/schedule_state.dart';
 import '../cards/schedule_event_card.dart';
 
@@ -22,135 +22,109 @@ class ScheduleGridView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (state.courts.isEmpty) {
-      return const Center(child: Text('Создайте первый корт'));
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.0),
+          child: Text('Создайте первый корт, нажав на кнопку "+ Корт"'),
+        ),
+      );
     }
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Левая колонка со временем (каждые 30 минут)
-        SizedBox(
-          width: 60,
-          child: SingleChildScrollView(
-            physics: const NeverScrollableScrollPhysics(),
-            child: Column(
-              children: [
-                const SizedBox(height: 40), // Отступ под шапку корта
-                ...List.generate(
-                  34, // С 6:00 до 22:30 = 34 слота по 30 минут
-                  (index) {
-                    final hour = 6 + (index ~/ 2);
-                    final minute = (index % 2) == 0 ? '00' : '30';
-                    return Container(
-                      height: 40, // 40 пикселей на полчаса (80 пикселей в час)
-                      alignment: Alignment.topRight,
-                      padding: const EdgeInsets.only(right: 8, top: 4),
-                      child: Text(
-                        '$hour:$minute',
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
-                        ),
-                      ),
-                    );
-                  },
+      children: state.courts.map((court) {
+        final courtEvents = state.scheduleEvents
+            .where((e) => e.courtId == court.id)
+            .toList();
+
+        return Container(
+          width: 150,
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(color: Colors.grey.shade300),
+              right: BorderSide(color: Colors.grey.shade300),
+            ),
+          ),
+          child: Column(
+            children: [
+              Container(
+                height: 48,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  border: Border(
+                    bottom: BorderSide(color: Colors.grey.shade300),
+                  ),
                 ),
-              ],
-            ),
-          ),
-        ),
-
-        // Сетка кортов
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SingleChildScrollView(
-              child: Row(
-                children: state.courts.map((court) {
-                  final courtEvents = state.scheduleEvents
-                      .where((e) => e.courtId == court.id)
-                      .toList();
-
-                  return Container(
-                    width: 160,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        left: BorderSide(color: Colors.grey.shade300),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        court.name,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        // Шапка корта
-                        Container(
-                          height: 40,
-                          alignment: Alignment.center,
-                          color: Colors.green.shade50,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                court.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              if (!isPastDate)
-                                IconButton(
-                                  icon: const Icon(Icons.edit, size: 14),
-                                  onPressed: () =>
-                                      onEditCourt(court.id, court.name),
-                                ),
-                            ],
-                          ),
+                    if (!isPastDate)
+                      IconButton(
+                        icon: const Icon(
+                          Icons.edit,
+                          size: 16,
+                          color: Colors.blue,
                         ),
-                        // Сама сетка для одного корта
-                        SizedBox(
-                          height: 34 * 40.0, // Общая высота: 34 слота по 40px
-                          child: Stack(
-                            children: [
-                              Column(
-                                children: List.generate(34, (index) {
-                                  final hour = 6 + (index ~/ 2);
-                                  final minute = (index % 2) == 0 ? 0 : 30;
-                                  return GestureDetector(
-                                    onTap: () => onTimeSlotTapped(
-                                      court.id,
-                                      hour,
-                                      minute,
-                                    ),
-                                    child: Container(
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        border: Border(
-                                          bottom: BorderSide(
-                                            color: Colors.grey.shade200,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }),
-                              ),
-                              // Отрисовка карточек событий поверх сетки
-                              ...courtEvents.map(
-                                (e) => ScheduleEventCard(
-                                  event: e,
-                                  isPastDate: isPastDate,
-                                  onTap: () => onEventTapped(e),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                        onPressed: () => onEditCourt(court.id, court.name),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    const SizedBox(width: 8),
+                  ],
+                ),
               ),
-            ),
+
+              SizedBox(
+                height: 18 * 80.0,
+                child: Stack(
+                  children: [
+                    Column(
+                      children: List.generate(36, (index) {
+                        final hour = 6 + (index ~/ 2);
+                        final minute = (index % 2) == 0 ? 0 : 30;
+
+                        return GestureDetector(
+                          onTap: () => onTimeSlotTapped(court.id, hour, minute),
+                          child: Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: minute == 30
+                                      ? Colors.grey.shade300
+                                      : Colors.grey.shade100,
+                                  width: minute == 30 ? 1 : 0.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+
+                    ...courtEvents.map(
+                      (e) => ScheduleEventCard(
+                        event: e,
+                        isPastDate: isPastDate,
+                        onTap: () => onEventTapped(e),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
+        );
+      }).toList(),
     );
   }
 }

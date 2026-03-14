@@ -14,6 +14,7 @@ import '../../features/groups/presentation/bloc/groups_bloc.dart';
 import '../../features/schedule/data/repositories/schedule_repository.dart';
 import '../../features/schedule/presentation/bloc/event_attendance_bloc.dart';
 import '../../features/schedule/presentation/bloc/schedule_bloc.dart';
+import '../../features/schedule/presentation/bloc/waitlist_bloc.dart';
 import '../api/api_client.dart';
 import '../../features/auth/data/repositories/auth_repository.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
@@ -45,4 +46,5 @@ Future<void> initInjection() async {
     () => AnalyticsRepository(sl()),
   );
   sl.registerFactory(() => AnalyticsBloc(repository: sl()));
+  sl.registerFactory(() => WaitlistBloc(repository: sl()));
 }

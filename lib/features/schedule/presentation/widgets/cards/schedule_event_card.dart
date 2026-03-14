@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../data/models/schedule_event_model.dart';
+import '../../../../schedule/data/models/schedule_event_model.dart';
 import '../../utils/schedule_color_helper.dart';
 
 class ScheduleEventCard extends StatelessWidget {
@@ -16,53 +16,71 @@ class ScheduleEventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final topOffset =
-        ((event.startTime.hour - 6) * 80.0) +
-        (event.startTime.minute == 30 ? 40.0 : 0.0);
+    final startHour = event.startTime.hour;
+    final startMinute = event.startTime.minute;
+    final endHour = event.endTime.hour;
+    final endMinute = event.endTime.minute;
 
-    final durationMinutes =
-        (event.endTime.hour * 60 + event.endTime.minute) -
-        (event.startTime.hour * 60 + event.startTime.minute);
-    final height = (durationMinutes / 30.0) * 40.0;
+    final topOffset = ((startHour - 6) * 80.0) + (startMinute / 60.0 * 80.0);
+    final height =
+        ((endHour - startHour) * 80.0) +
+        ((endMinute - startMinute) / 60.0 * 80.0);
 
-    final cardColor = ScheduleColorHelper.getColorForEventType(
+    final color = ScheduleColorHelper.getColorForEventType(
       event.eventType,
       dbColorHex: event.colorHex,
     );
 
+    String fmt(TimeOfDay t) =>
+        "${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}";
+
     return Positioned(
       top: topOffset,
+      height: height,
       left: 4,
       right: 4,
-      height: height,
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          margin: const EdgeInsets.only(top: 2, bottom: 3),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
           decoration: BoxDecoration(
-            color: isPastDate ? cardColor.withAlpha(150) : cardColor,
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: Colors.black12),
+            color: color.withAlpha(isPastDate ? 120 : 250),
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(250),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '${event.startTime.format(context)} - ${event.endTime.format(context)}',
+                _getEventTitle(),
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 10,
                   fontWeight: FontWeight.bold,
+                  fontSize: 11,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              Expanded(
-                child: Text(
-                  _getEventTitle(),
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
+              const SizedBox(height: 2),
+              Text(
+                '${fmt(event.startTime)} - ${fmt(event.endTime)}',
+                style: const TextStyle(color: Colors.white, fontSize: 10),
+              ),
+              if (event.clientName != null && event.clientName!.isNotEmpty)
+                Text(
+                  event.clientName!,
+                  style: const TextStyle(color: Colors.white, fontSize: 10),
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
                 ),
-              ),
             ],
           ),
         ),
@@ -71,9 +89,19 @@ class ScheduleEventCard extends StatelessWidget {
   }
 
   String _getEventTitle() {
-    if (event.eventType == 'maintenance') return '🔧 Техобслуживание';
-    if (event.eventType == 'tournament') return '🏆 Турнир';
-    if (event.eventType == 'group') return '👥 Группа';
-    return event.clientName ?? 'Аренда';
+    switch (event.eventType) {
+      case 'rent':
+        return 'Аренда';
+      case 'group':
+        return 'Группа';
+      case 'individual':
+        return 'Инд. тренировка';
+      case 'tournament':
+        return '🏆 Турнир';
+      case 'maintenance':
+        return '🔧 Тех. работы';
+      default:
+        return 'Событие';
+    }
   }
 }

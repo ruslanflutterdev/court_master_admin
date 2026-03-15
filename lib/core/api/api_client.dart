@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart'; // Нужен для kDebugMode, kIsWeb и TargetPlatform
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 
 class ApiClient {
   late final Dio dio;
@@ -18,24 +17,69 @@ class ApiClient {
     dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 60),
-        receiveTimeout: const Duration(seconds: 60),
-        contentType: 'application/json',
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
       ),
     );
 
     dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final prefs = await SharedPreferences.getInstance();
-          final token = prefs.getString('jwt_token');
+        onError: (DioException error, handler) {
+          String customMessage = 'Неизвестная ошибка сервера';
 
-          if (token != null) {
-            options.headers['Authorization'] = 'Bearer $token';
+          if (error.response?.data != null) {
+            final data = error.response!.data;
+
+            if (data is Map && data['message'] != null) {
+              customMessage = data['message'].toString();
+            } else if (data is List &&
+                data.isNotEmpty &&
+                data.first is Map &&
+                data.first['message'] != null) {
+              customMessage = data.first['message'].toString();
+            } else {
+              customMessage =
+                  'Сбой сервера (Код ${error.response?.statusCode})';
+            }
+          } else {
+            customMessage = error.message ?? 'Нет ответа от сервера';
           }
-          return handler.next(options);
+
+          final safeResponse = Response(
+            requestOptions: error.requestOptions,
+            statusCode: error.response?.statusCode,
+            data: {'message': customMessage},
+          );
+
+          final customError = DioException(
+            requestOptions: error.requestOptions,
+            response: safeResponse,
+            type: error.type,
+            error: customMessage,
+          );
+
+          return handler.next(customError);
         },
       ),
     );
+  }
+
+  Future<Response> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    return await dio.get(path, queryParameters: queryParameters);
+  }
+
+  Future<Response> post(String path, {dynamic data}) async {
+    return await dio.post(path, data: data);
+  }
+
+  Future<Response> put(String path, {dynamic data}) async {
+    return await dio.put(path, data: data);
+  }
+
+  Future<Response> delete(String path) async {
+    return await dio.delete(path);
   }
 }

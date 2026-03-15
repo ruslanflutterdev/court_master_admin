@@ -19,7 +19,14 @@ void main() {
       ),
     ];
     final dummyCoaches = [
-      CoachModel(id: 'c1', firstName: 'Иван', phone: '123'),
+      CoachModel(
+        id: 'c1',
+        firstName: 'Иван',
+        phone: '123',
+        lastName: '',
+        email: '',
+        role: '',
+      ),
     ];
 
     Widget buildTestWidget({OnSaveEvent? onSave}) {

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../schedule/data/models/schedule_event_model.dart';
 import '../../bloc/schedule_state.dart';
+import '../../bloc/schedule_bloc.dart';
+import '../../bloc/schedule_event.dart';
 import '../cards/schedule_event_card.dart';
 
 class ScheduleGridView extends StatelessWidget {
@@ -92,21 +95,69 @@ class ScheduleGridView extends StatelessWidget {
                         final hour = 6 + (index ~/ 2);
                         final minute = (index % 2) == 0 ? 0 : 30;
 
-                        return GestureDetector(
-                          onTap: () => onTimeSlotTapped(court.id, hour, minute),
-                          child: Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(
-                                  color: minute == 30
-                                      ? Colors.grey.shade300
-                                      : Colors.grey.shade100,
-                                  width: minute == 30 ? 1 : 0.5,
+                        return DragTarget<ScheduleEventModel>(
+                          onWillAcceptWithDetails: (details) => !isPastDate,
+                          onAcceptWithDetails: (details) {
+                            final draggedEvent = details.data;
+
+                            final durationMinutes =
+                                (draggedEvent.endTime.hour * 60 +
+                                    draggedEvent.endTime.minute) -
+                                (draggedEvent.startTime.hour * 60 +
+                                    draggedEvent.startTime.minute);
+
+                            final newStartTotalMinutes = hour * 60 + minute;
+                            final newEndTotalMinutes =
+                                newStartTotalMinutes + durationMinutes;
+
+                            final newEndHour = newEndTotalMinutes ~/ 60;
+                            final newEndMinute = newEndTotalMinutes % 60;
+
+                            String fmt(int h, int m) =>
+                                "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}";
+
+                            context.read<ScheduleBloc>().add(
+                              UpdateScheduleEvent(
+                                eventId: draggedEvent.id,
+                                currentDate: state.scheduleDate,
+                                eventData: {
+                                  'courtId': court.id,
+                                  'startTime': fmt(hour, minute),
+                                  'endTime': fmt(newEndHour, newEndMinute),
+                                  'type': draggedEvent.eventType,
+                                  'colorHex': draggedEvent.colorHex,
+                                  'groupId': draggedEvent.groupId,
+                                  'clientName': draggedEvent.clientName,
+                                  'clientPhone': draggedEvent.clientPhone,
+                                  'coachId': draggedEvent.coachId,
+                                },
+                              ),
+                            );
+                          },
+                          builder: (context, candidateData, rejectedData) {
+                            final isHovered = candidateData.isNotEmpty;
+
+                            return GestureDetector(
+                              onTap: () =>
+                                  onTimeSlotTapped(court.id, hour, minute),
+                              child: Container(
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: isHovered
+                                      ? Colors.blue.withAlpha(40)
+                                      : Colors.transparent,
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: minute == 30
+                                          ? Colors.grey.shade300
+                                          : Colors.grey.shade100,
+                                      width: minute == 30 ? 1 : 0.5,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         );
                       }),
                     ),

@@ -39,13 +39,16 @@ class WaitlistListSheet extends StatelessWidget {
           Expanded(
             child: BlocBuilder<WaitlistBloc, WaitlistState>(
               builder: (context, state) {
-                if (state is WaitlistLoading)
+                if (state is WaitlistLoading) {
                   return const Center(child: CircularProgressIndicator());
-                if (state is WaitlistError)
+                }
+                if (state is WaitlistError) {
                   return Center(child: Text(state.message));
+                }
                 if (state is WaitlistLoaded) {
-                  if (state.waitlist.isEmpty)
+                  if (state.waitlist.isEmpty) {
                     return const Center(child: Text('Пока никого нет'));
+                  }
                   return ListView.builder(
                     itemCount: state.waitlist.length,
                     itemBuilder: (ctx, i) {

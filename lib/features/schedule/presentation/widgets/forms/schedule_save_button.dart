@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 
 class ScheduleSaveButton extends StatelessWidget {
   final VoidCallback onPressed;
+  final String text;
 
-  const ScheduleSaveButton({super.key, required this.onPressed});
+  const ScheduleSaveButton({
+    super.key,
+    required this.onPressed,
+    this.text = 'Сохранить',
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +17,7 @@ class ScheduleSaveButton extends StatelessWidget {
         minimumSize: const Size(double.infinity, 50),
       ),
       onPressed: onPressed,
-      child: const Text('Сохранить'),
+      child: Text(text),
     );
   }
 }

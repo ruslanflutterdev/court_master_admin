@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import '../forms/schedule_time_picker_row.dart';
-import '../forms/schedule_color_picker_row.dart';
+import '../../../../employees/data/models/coach_model.dart';
+import '../../../../groups/data/models/group_model.dart';
+import '../../../data/models/schedule_event_model.dart';
 import '../forms/schedule_event_type_selector.dart';
 import '../forms/schedule_dynamic_form_section.dart';
+import '../forms/schedule_time_picker_row.dart';
+import '../forms/schedule_color_picker_row.dart';
 import '../forms/schedule_recurrence_form.dart';
 import '../forms/schedule_price_display.dart';
 import '../forms/schedule_save_button.dart';
-import '../forms/schedule_form_types.dart';
-import '../../../data/models/schedule_event_model.dart';
-import '../../../../groups/data/models/group_model.dart';
-import '../../../../employees/data/models/coach_model.dart';
 
 class CreateScheduleEventSheet extends StatefulWidget {
   final String courtId;
@@ -18,7 +17,20 @@ class CreateScheduleEventSheet extends StatefulWidget {
   final List<GroupModel> groups;
   final List<CoachModel> coaches;
   final ScheduleEventModel? existingEvent;
-  final OnSaveEvent onSave;
+
+  final Function({
+    required String type,
+    required TimeOfDay start,
+    required TimeOfDay end,
+    required String color,
+    required bool isRecurring,
+    required int weeks,
+    String? groupId,
+    String? clientName,
+    String? clientPhone,
+    String? coachId,
+  })
+  onSave;
 
   const CreateScheduleEventSheet({
     super.key,
@@ -32,32 +44,54 @@ class CreateScheduleEventSheet extends StatefulWidget {
   });
 
   @override
-  State<CreateScheduleEventSheet> createState() => _SheetState();
+  State<CreateScheduleEventSheet> createState() =>
+      _CreateScheduleEventSheetState();
 }
 
-class _SheetState extends State<CreateScheduleEventSheet> {
-  late String type, color;
-  late TimeOfDay start, end;
+class _CreateScheduleEventSheetState extends State<CreateScheduleEventSheet> {
+  late String selectedType;
+  late TimeOfDay startTime;
+  late TimeOfDay endTime;
+  late String colorHex;
+
+  String? selectedGroupId;
+  String? selectedCoachId;
+
+  final _clientNameController = TextEditingController();
+  final _clientPhoneController = TextEditingController();
+
   bool isRecurring = false;
   int recurrenceWeeks = 1;
-  String? groupId, coachId;
-  final clientName = TextEditingController(),
-      clientPhone = TextEditingController();
+
+  bool get isEditMode => widget.existingEvent != null;
 
   @override
   void initState() {
     super.initState();
-    final ev = widget.existingEvent;
-    type = ev?.eventType ?? 'group';
-    start = ev?.startTime ?? TimeOfDay(hour: widget.startHour, minute: 0);
-    end = ev?.endTime ?? TimeOfDay(hour: widget.startHour + 1, minute: 0);
-    color = ev?.colorHex ?? '#2196F3';
-    if (ev != null && ev.eventType == 'group') groupId = ev.groupId;
-    if (ev != null && ev.eventType != 'group') {
-      clientName.text = ev.clientName ?? '';
-      clientPhone.text = ev.clientPhone ?? '';
-      coachId = ev.coachId;
+
+    if (isEditMode) {
+      final e = widget.existingEvent!;
+      selectedType = e.eventType;
+      startTime = e.startTime;
+      endTime = e.endTime;
+      colorHex = e.colorHex;
+      selectedGroupId = e.groupId;
+      selectedCoachId = e.coachId;
+      _clientNameController.text = e.clientName ?? '';
+      _clientPhoneController.text = e.clientPhone ?? '';
+    } else {
+      selectedType = 'rent';
+      startTime = TimeOfDay(hour: widget.startHour, minute: 0);
+      endTime = TimeOfDay(hour: widget.startHour + 1, minute: 0);
+      colorHex = 'blue';
     }
+  }
+
+  @override
+  void dispose() {
+    _clientNameController.dispose();
+    _clientPhoneController.dispose();
+    super.dispose();
   }
 
   @override
@@ -72,58 +106,88 @@ class _SheetState extends State<CreateScheduleEventSheet> {
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Новая запись',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              isEditMode ? 'Редактировать событие' : 'Новая запись',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 16),
+
+            IgnorePointer(
+              ignoring: isEditMode,
+              child: Opacity(
+                opacity: isEditMode ? 0.6 : 1.0,
+                child: ScheduleEventTypeSelector(
+                  selectedType: selectedType,
+                  onChanged: (val) => setState(
+                    () => selectedType = val,
+                  ), // ИСПРАВЛЕНИЕ параметра
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
             ScheduleTimePickerRow(
-              startTime: start,
-              endTime: end,
-              onStartTimeChanged: (t) => setState(() => start = t),
-              onEndTimeChanged: (t) => setState(() => end = t),
+              startTime: startTime,
+              endTime: endTime,
+              onStartTimeChanged: (val) => setState(() => startTime = val),
+              onEndTimeChanged: (val) => setState(() => endTime = val),
             ),
-            ScheduleColorPickerRow(
-              selectedColor: color,
-              onColorSelected: (c) => setState(() => color = c),
-            ),
-            ScheduleEventTypeSelector(
-              selectedType: type,
-              onChanged: (t) => setState(() => type = t),
-            ),
+            const SizedBox(height: 16),
+
             ScheduleDynamicFormSection(
-              type: type,
+              type: selectedType,
               groups: widget.groups,
-              selectedGroupId: groupId,
-              onGroupSelected: (id) => setState(() => groupId = id),
               coaches: widget.coaches,
-              selectedCoachId: coachId,
-              onCoachSelected: (id) => setState(() => coachId = id),
-              clientNameController: clientName,
-              clientPhoneController: clientPhone,
+              selectedGroupId: selectedGroupId,
+              clientNameController: _clientNameController,
+              clientPhoneController: _clientPhoneController,
+              selectedCoachId: selectedCoachId,
+              onGroupSelected: (val) => setState(() => selectedGroupId = val),
+              onCoachSelected: (val) => setState(() => selectedCoachId = val),
             ),
-            if (widget.existingEvent == null)
+            const SizedBox(height: 16),
+
+            ScheduleColorPickerRow(
+              selectedColor: colorHex,
+              onColorSelected: (val) => setState(() => colorHex = val),
+            ),
+            const SizedBox(height: 16),
+
+            if (!isEditMode) ...[
               ScheduleRecurrenceForm(
                 isRecurring: isRecurring,
                 recurrenceWeeks: recurrenceWeeks,
-                onRecurringChanged: (v) => setState(() => isRecurring = v),
-                onWeeksChanged: (v) => setState(() => recurrenceWeeks = v),
+                onRecurringChanged: (val) => setState(() => isRecurring = val),
+                onWeeksChanged: (val) => setState(() => recurrenceWeeks = val),
               ),
+              const SizedBox(height: 16),
+            ],
+
             const SchedulePriceDisplay(),
             const SizedBox(height: 16),
+
             ScheduleSaveButton(
-              onPressed: () => widget.onSave(
-                type: type,
-                start: start,
-                end: end,
-                color: color,
-                isRecurring: isRecurring,
-                weeks: recurrenceWeeks,
-                groupId: groupId,
-                clientName: clientName.text,
-                clientPhone: clientPhone.text,
-                coachId: coachId,
-              ),
+              text: isEditMode ? 'Сохранить изменения' : 'Создать запись',
+              onPressed: () {
+                widget.onSave(
+                  type: selectedType,
+                  start: startTime,
+                  end: endTime,
+                  color: colorHex,
+                  isRecurring: isRecurring,
+                  weeks: recurrenceWeeks,
+                  groupId: selectedGroupId,
+                  clientName: _clientNameController.text.isNotEmpty
+                      ? _clientNameController.text
+                      : null,
+                  clientPhone: _clientPhoneController.text.isNotEmpty
+                      ? _clientPhoneController.text
+                      : null,
+                  coachId: selectedCoachId,
+                );
+              },
             ),
           ],
         ),

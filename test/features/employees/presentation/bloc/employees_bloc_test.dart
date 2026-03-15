@@ -38,7 +38,14 @@ void main() {
         // Учим наш фейковый репозиторий отдавать список из одного тренера
         when(() => mockRepository.getCoaches()).thenAnswer(
           (_) async => [
-            CoachModel(id: '1', firstName: 'Иван', phone: '+79991234567'),
+            CoachModel(
+              id: '1',
+              firstName: 'Иван',
+              phone: '+79991234567',
+              lastName: '',
+              email: '',
+              role: '',
+            ),
           ],
         );
         return employeesBloc;

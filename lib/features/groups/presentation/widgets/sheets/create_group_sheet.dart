@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../employees/presentation/bloc/employees_bloc.dart';
 import '../../../../employees/presentation/bloc/employees_event.dart';
 import '../../../../employees/presentation/bloc/employees_state.dart';
 import '../../bloc/groups_bloc.dart';
-import '../../../../employees/presentation/bloc/employees_bloc.dart';
-import '../../../../../core/di/dependencies_container.dart';
 import '../../bloc/groups_event.dart';
 
 class CreateGroupSheet extends StatefulWidget {
@@ -15,115 +14,137 @@ class CreateGroupSheet extends StatefulWidget {
 }
 
 class _CreateGroupSheetState extends State<CreateGroupSheet> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _scheduleController = TextEditingController();
-  String? _selectedCoachId;
+  final nameCtrl = TextEditingController();
+  String selectedLevel = 'Начинающие';
+  int maxStudents = 4;
+  String? selectedCoachId;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<EmployeesBloc>().add(LoadEmployeesEvent());
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => sl<EmployeesBloc>()..add(LoadEmployeesEvent()),
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 16,
-          right: 16,
-          top: 16,
-        ),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Новая группа',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        16,
+        16,
+        16,
+        MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Создать новую группу',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Название группы (например: Дети 5-7 лет)',
               ),
-              const SizedBox(height: 16),
+            ),
+            const SizedBox(height: 8),
 
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Название группы',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) =>
-                    value!.isEmpty ? 'Введите название' : null,
-              ),
-              const SizedBox(height: 12),
+            // ВЫПАДАЮЩИЙ СПИСОК С ТРЕНЕРАМИ
+            BlocBuilder<EmployeesBloc, EmployeesState>(
+              builder: (context, state) {
+                if (state is EmployeesLoading) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: LinearProgressIndicator(),
+                  );
+                }
 
-              TextFormField(
-                controller: _scheduleController,
-                decoration: const InputDecoration(
-                  labelText: 'Расписание (напр. Пн, Ср 15:00)',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              BlocBuilder<EmployeesBloc, EmployeesState>(
-                builder: (context, state) {
-                  if (state is EmployeesLoading) {
-                    return const CircularProgressIndicator();
-                  } else if (state is EmployeesLoaded) {
-                    if (state.coaches.isEmpty) {
-                      return const Text('Сначала добавьте тренеров!');
-                    }
-
-                    return DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(
-                        labelText: 'Выберите тренера',
-                        border: OutlineInputBorder(),
-                      ),
-                      initialValue: _selectedCoachId,
-                      items: state.coaches.map((coach) {
-                        return DropdownMenuItem(
-                          value: coach.id,
-                          child: Text('${coach.firstName} ${coach.lastName}'),
-                        );
-                      }).toList(),
-                      onChanged: (val) =>
-                          setState(() => _selectedCoachId = val),
-                      validator: (value) =>
-                          value == null ? 'Выберите тренера' : null,
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-              const SizedBox(height: 24),
-
-              ElevatedButton(
-                onPressed: () {
-                  if (_selectedCoachId == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Сначала выберите тренера!'),
+                if (state is EmployeesLoaded) {
+                  if (state.coaches.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text(
+                        'Нет тренеров! Сначала добавьте тренера.',
+                        style: TextStyle(color: Colors.red),
                       ),
                     );
-                    return;
                   }
 
-                  if (_formKey.currentState!.validate()) {
-                    context.read<GroupsBloc>().add(
-                      CreateGroupEvent(
-                        name: _nameController.text,
-                        scheduleText: _scheduleController.text,
-                        coachId: _selectedCoachId!,
-                      ),
-                    );
-                    Navigator.pop(context);
+                  if (selectedCoachId == null && state.coaches.isNotEmpty) {
+                    selectedCoachId = state.coaches.first.id;
                   }
-                },
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                child: const Text('Создать', style: TextStyle(fontSize: 16)),
+
+                  return DropdownButtonFormField<String>(
+                    initialValue: selectedCoachId,
+                    decoration: const InputDecoration(
+                      labelText: 'Выберите тренера',
+                    ),
+                    items: state.coaches.map((coach) {
+                      return DropdownMenuItem(
+                        value: coach.id,
+                        child: Text('${coach.firstName} ${coach.lastName}'),
+                      );
+                    }).toList(),
+                    onChanged: (val) => setState(() => selectedCoachId = val),
+                  );
+                }
+
+                return const Text(
+                  'Не удалось загрузить тренеров',
+                  style: TextStyle(color: Colors.red),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+
+            DropdownButtonFormField<String>(
+              initialValue: selectedLevel,
+              decoration: const InputDecoration(
+                labelText: 'Уровень подготовки',
               ),
-              const SizedBox(height: 24),
-            ],
-          ),
+              items: ['Начинающие', 'Средний', 'Продвинутый']
+                  .map((val) => DropdownMenuItem(value: val, child: Text(val)))
+                  .toList(),
+              onChanged: (val) => setState(() => selectedLevel = val!),
+            ),
+            const SizedBox(height: 8),
+
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Макс. количество учеников: $maxStudents',
+              ),
+              keyboardType: TextInputType.number,
+              onChanged: (val) {
+                final num = int.tryParse(val);
+                if (num != null) maxStudents = num;
+              },
+            ),
+
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+              ),
+              onPressed: () {
+                if (nameCtrl.text.isEmpty || selectedCoachId == null) return;
+
+                context.read<GroupsBloc>().add(
+                  CreateGroupEvent(
+                    name: nameCtrl.text,
+                    coachId: selectedCoachId!,
+                    scheduleText: 'Расписание не задано',
+                  ),
+                );
+
+                Navigator.pop(context);
+              },
+              child: const Text('Создать группу'),
+            ),
+          ],
         ),
       ),
     );

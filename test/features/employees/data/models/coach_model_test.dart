@@ -4,40 +4,82 @@ import 'package:court_master_admin/features/employees/data/models/coach_model.da
 void main() {
   group('CoachModel Tests', () {
     test('Успешный парсинг из JSON со всеми полями', () {
-      // 1. Arrange (Подготовка: имитируем полный ответ от бэкенда)
-      final Map<String, dynamic> json = {
-        'id': '123',
+      final json = {
+        'id': '1',
         'firstName': 'Иван',
         'lastName': 'Иванов',
         'email': 'ivan@test.com',
-        'phone': '+79990001122',
+        'role': 'tennisCoach',
+        'phone': '+79991234567',
+        'qualification': 'МСМК',
+        'specialization': 'Теннис',
+        'rating': 4.8,
+        'salaryType': 'hourly',
+        // Передаем строку, чтобы проверить нашу новую супер-защиту от type mismatch
+        'salaryRate': '5000',
       };
 
-      // 2. Act (Действие: пытаемся создать модель через fromJson)
-      final result = CoachModel.fromJson(json);
+      final model = CoachModel.fromJson(json);
 
-      // 3. Assert (Проверка: убеждаемся, что все поля легли куда надо)
-      expect(result.id, '123');
-      expect(result.firstName, 'Иван');
-      expect(result.lastName, 'Иванов');
-      expect(result.phone, '+79990001122');
+      expect(model.id, '1');
+      expect(model.firstName, 'Иван');
+      expect(model.lastName, 'Иванов');
+      expect(model.email, 'ivan@test.com');
+      expect(model.role, 'tennisCoach');
+      expect(model.phone, '+79991234567');
+      expect(model.qualification, 'МСМК');
+      expect(model.specialization, 'Теннис');
+      expect(model.rating, 4.8);
+      expect(model.salaryType, 'hourly');
+      expect(model.salaryRate, 5000); // Должно корректно стать числом int
     });
 
     test(
-      'Успешный парсинг из JSON, если пришло только Имя (без фамилии и телефона)',
+      'Успешный парсинг из JSON, если пришло только Имя (без фамилии, email и телефона)',
       () {
-        // 1. Arrange (Подготовка: имитируем неполный ответ)
-        final Map<String, dynamic> json = {'id': '456', 'firstName': 'Анна'};
+        final json = {'id': '2', 'firstName': 'Петр'};
 
-        // 2. Act
-        final result = CoachModel.fromJson(json);
+        final model = CoachModel.fromJson(json);
 
-        // 3. Assert
-        expect(result.id, '456');
-        expect(result.firstName, 'Анна');
-        expect(result.lastName, null); // Проверяем, что null не вызывает краш!
-        expect(result.phone, null);
+        expect(model.id, '2');
+        expect(model.firstName, 'Петр');
+        expect(model.lastName, ''); // Ожидаем пустую строку, а не краш
+        expect(model.email, '');
+        expect(model.role, 'tennisCoach'); // Подставит значение по умолчанию
+        expect(model.phone, null);
+        expect(model.specialization, null);
+        expect(model.rating, 5.0); // Значение по умолчанию
+        expect(model.salaryRate, null);
       },
     );
+
+    test('Проверка toJson', () {
+      final model = CoachModel(
+        id: '3',
+        firstName: 'Анна',
+        lastName: 'Сидорова',
+        email: 'anna@test.com',
+        role: 'tennisCoach',
+        phone: '+70001112233',
+        qualification: 'КМС',
+        specialization: 'Дети',
+        rating: 5.0,
+        salaryType: 'percentage',
+        salaryRate: 40,
+      );
+
+      final json = model.toJson();
+
+      expect(json['id'], '3');
+      expect(json['firstName'], 'Анна');
+      expect(json['lastName'], 'Сидорова');
+      expect(json['email'], 'anna@test.com');
+      expect(json['phone'], '+70001112233');
+      expect(json['qualification'], 'КМС');
+      expect(json['specialization'], 'Дети');
+      expect(json['rating'], 5.0);
+      expect(json['salaryType'], 'percentage');
+      expect(json['salaryRate'], 40);
+    });
   });
 }

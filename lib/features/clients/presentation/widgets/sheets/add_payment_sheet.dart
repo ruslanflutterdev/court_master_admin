@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/client_details_bloc.dart';
 import '../../bloc/client_details_event.dart';
+import '../../utils/payment_helper.dart';
 
 class AddPaymentSheet extends StatefulWidget {
   final String clientId;
+
   const AddPaymentSheet({super.key, required this.clientId});
 
   @override
@@ -12,99 +14,103 @@ class AddPaymentSheet extends StatefulWidget {
 }
 
 class _AddPaymentSheetState extends State<AddPaymentSheet> {
-  final _amountController = TextEditingController();
-  final _descController = TextEditingController();
-  int _selectedType = 1; // 1 - Пополнение, 2 - Списание
-  int _selectedMethod = 1; // 1 - Наличные, 2 - Карта, 3 - Перевод
+  final amountCtrl = TextEditingController();
+  final descCtrl = TextEditingController();
+  int selectedType = 1;
+  int selectedMethod = 2;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      padding: EdgeInsets.fromLTRB(
+        16,
+        16,
+        16,
+        MediaQuery.of(context).viewInsets.bottom + 16,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Провести платеж',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          SegmentedButton<int>(
-            segments: const [
-              ButtonSegment(value: 1, label: Text('Пополнение')),
-              ButtonSegment(value: 2, label: Text('Списание')),
-            ],
-            selected: {_selectedType},
-            onSelectionChanged: (set) =>
-                setState(() => _selectedType = set.first),
-            style: SegmentedButton.styleFrom(
-              selectedBackgroundColor: _selectedType == 1
-                  ? Colors.green.shade100
-                  : Colors.red.shade100,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Добавить платеж',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _amountController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Сумма',
-              border: OutlineInputBorder(),
+            const SizedBox(height: 16),
+
+            TextField(
+              controller: amountCtrl,
+              decoration: const InputDecoration(labelText: 'Сумма (₸)'),
+              keyboardType: TextInputType.number,
+              autofocus: true,
             ),
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<int>(
-            initialValue: _selectedMethod,
-            decoration: const InputDecoration(
-              labelText: 'Способ оплаты',
-              border: OutlineInputBorder(),
+            const SizedBox(height: 8),
+
+            DropdownButtonFormField<int>(
+              initialValue: selectedType,
+              decoration: const InputDecoration(labelText: 'Тип операции'),
+              items: [1, 2, 3]
+                  .map(
+                    (val) => DropdownMenuItem(
+                      value: val,
+                      child: Text(PaymentHelper.getTypeName(val)),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (val) => setState(() => selectedType = val!),
             ),
-            items: const [
-              DropdownMenuItem(value: 1, child: Text('Наличные')),
-              DropdownMenuItem(value: 2, child: Text('Карта/Терминал')),
-              DropdownMenuItem(value: 3, child: Text('Перевод/СБП')),
-            ],
-            onChanged: (val) => setState(() => _selectedMethod = val!),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _descController,
-            decoration: const InputDecoration(
-              labelText: 'Комментарий (опционально)',
-              border: OutlineInputBorder(),
+            const SizedBox(height: 8),
+
+            DropdownButtonFormField<int>(
+              initialValue: selectedMethod,
+              decoration: const InputDecoration(labelText: 'Способ оплаты'),
+              items: [1, 2, 3]
+                  .map(
+                    (val) => DropdownMenuItem(
+                      value: val,
+                      child: Text(PaymentHelper.getMethodName(val)),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (val) => setState(() => selectedMethod = val!),
             ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 50),
-              backgroundColor: Colors.blue,
+            const SizedBox(height: 8),
+
+            TextField(
+              controller: descCtrl,
+              decoration: const InputDecoration(
+                labelText:
+                    'Комментарий (например: "Оплата за Пакет 8 занятий")',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+              ),
             ),
-            onPressed: () {
-              final amount = int.tryParse(_amountController.text);
-              if (amount != null && amount > 0) {
+
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                backgroundColor: PaymentHelper.getTypeColor(selectedType),
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                final amount = int.tryParse(amountCtrl.text) ?? 0;
+                if (amount <= 0) return;
+
                 context.read<ClientDetailsBloc>().add(
                   AddPaymentEvent(widget.clientId, {
                     'amount': amount,
-                    'type': _selectedType,
-                    'method': _selectedMethod,
-                    'description': _descController.text,
+                    'type': selectedType,
+                    'method': selectedMethod,
+                    'description': descCtrl.text.isEmpty ? null : descCtrl.text,
                   }),
                 );
                 Navigator.pop(context);
-              }
-            },
-            child: const Text(
-              'Сохранить',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              },
+              child: const Text('Провести платеж'),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

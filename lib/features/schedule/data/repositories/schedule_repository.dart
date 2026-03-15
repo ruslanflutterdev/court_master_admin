@@ -39,6 +39,14 @@ class ScheduleRepository {
         .toList();
   }
 
+  Future<void> updateEvent(String id, Map<String, dynamic> eventData) async {
+    try {
+      await apiClient.put('/events/$id', data: eventData);
+    } catch (e) {
+      throw Exception('Не удалось обновить событие: $e');
+    }
+  }
+
   Future<void> createEvent(Map<String, dynamic> data) async {
     await apiClient.dio.post('/events', data: data);
   }

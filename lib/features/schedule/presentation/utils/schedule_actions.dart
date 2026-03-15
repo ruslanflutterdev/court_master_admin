@@ -45,21 +45,73 @@ class ScheduleActions {
   }) {
     final scheduleBloc = context.read<ScheduleBloc>();
 
-    if (existingEvent != null && existingEvent.eventType == 'group') {
+    if (existingEvent != null) {
+      if (existingEvent.eventType == 'group') {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          builder: (_) => BlocProvider(
+            create: (_) => sl<EventAttendanceBloc>(),
+            child: EventAttendanceSheet(
+              eventId: existingEvent.id,
+              groupName: 'Группа',
+            ),
+          ),
+        );
+        return;
+      }
+
+      // ИСПРАВЛЕНИЕ: Открытие формы для РЕДАКТИРОВАНИЯ
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
-        builder: (_) => BlocProvider(
-          create: (_) => sl<EventAttendanceBloc>(),
-          child: EventAttendanceSheet(
-            eventId: existingEvent.id,
-            groupName: 'Группа',
-          ),
+        builder: (ctx) => CreateScheduleEventSheet(
+          courtId: existingEvent.courtId,
+          startHour: existingEvent.startTime.hour,
+          date: state.scheduleDate,
+          groups: state.groups,
+          coaches: state.coaches,
+          existingEvent: existingEvent,
+          onSave:
+              ({
+                required type,
+                required start,
+                required end,
+                required color,
+                required isRecurring,
+                required weeks,
+                groupId,
+                clientName,
+                clientPhone,
+                coachId,
+              }) {
+                String fmt(TimeOfDay t) =>
+                    "${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}";
+
+                scheduleBloc.add(
+                  UpdateScheduleEvent(
+                    eventId: existingEvent.id,
+                    currentDate: state.scheduleDate,
+                    eventData: {
+                      'startTime': fmt(start),
+                      'endTime': fmt(end),
+                      'colorHex': color,
+                      'courtId': existingEvent.courtId,
+                      'groupId': groupId,
+                      'clientName': clientName,
+                      'clientPhone': clientPhone,
+                      'coachId': coachId,
+                    },
+                  ),
+                );
+                Navigator.pop(ctx);
+              },
         ),
       );
       return;
     }
 
+    // Открытие формы для СОЗДАНИЯ (остается как было)
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -69,7 +121,6 @@ class ScheduleActions {
         date: state.scheduleDate,
         groups: state.groups,
         coaches: state.coaches,
-        existingEvent: existingEvent,
         onSave:
             ({
               required type,
@@ -85,30 +136,23 @@ class ScheduleActions {
             }) {
               String fmt(TimeOfDay t) =>
                   "${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}";
-              if (existingEvent == null) {
-                scheduleBloc.add(
-                  CreateScheduleEventRequested({
-                    'type': type,
-                    'date': state.scheduleDate.toIso8601String(),
-                    'startTime': fmt(start),
-                    'endTime': fmt(end),
-                    'colorHex': color,
-                    'courtId': courtId,
-                    'groupId': groupId,
-                    'clientName': clientName,
-                    'clientPhone': clientPhone,
-                    'coachId': coachId,
-                    'isRecurring': isRecurring,
-                    'recurrenceWeeks': weeks,
-                  }),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Редактирование пока недоступно'),
-                  ),
-                );
-              }
+
+              scheduleBloc.add(
+                CreateScheduleEventRequested({
+                  'type': type,
+                  'date': state.scheduleDate.toIso8601String(),
+                  'startTime': fmt(start),
+                  'endTime': fmt(end),
+                  'colorHex': color,
+                  'courtId': courtId,
+                  'groupId': groupId,
+                  'clientName': clientName,
+                  'clientPhone': clientPhone,
+                  'coachId': coachId,
+                  'isRecurring': isRecurring,
+                  'recurrenceWeeks': weeks,
+                }),
+              );
               Navigator.pop(ctx);
             },
       ),

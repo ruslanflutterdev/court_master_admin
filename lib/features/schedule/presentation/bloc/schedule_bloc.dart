@@ -82,5 +82,14 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     on<ChangeScheduleViewTypeRequested>((event, emit) {
       add(LoadScheduleData(_currentDate, viewType: event.viewType));
     });
+
+    on<UpdateScheduleEvent>((event, emit) async {
+      try {
+        await scheduleRepo.updateEvent(event.eventId, event.eventData);
+        add(LoadScheduleData(event.currentDate));
+      } catch (e) {
+        emit(ScheduleError(e.toString().replaceAll('Exception: ', '')));
+      }
+    });
   }
 }

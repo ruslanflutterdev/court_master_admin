@@ -28,3 +28,15 @@ class ChangeScheduleViewTypeRequested extends ScheduleEvent {
   final ScheduleViewType viewType;
   ChangeScheduleViewTypeRequested(this.viewType);
 }
+
+class UpdateScheduleEvent extends ScheduleEvent {
+  final String eventId;
+  final Map<String, dynamic> eventData;
+  final DateTime currentDate;
+
+  UpdateScheduleEvent({
+    required this.eventId,
+    required this.eventData,
+    required this.currentDate,
+  });
+}

@@ -34,57 +34,74 @@ class ScheduleEventCard extends StatelessWidget {
     String fmt(TimeOfDay t) =>
         "${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}";
 
+    final cardWidget = Container(
+      margin: const EdgeInsets.only(top: 2, bottom: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withAlpha(isPastDate ? 80 : 150),
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(150),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            _getEventTitle(),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '${fmt(event.startTime)} - ${fmt(event.endTime)}',
+            style: const TextStyle(color: Colors.white, fontSize: 10),
+          ),
+          if (event.clientName != null && event.clientName!.isNotEmpty)
+            Text(
+              event.clientName!,
+              style: const TextStyle(color: Colors.white, fontSize: 10),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+        ],
+      ),
+    );
+
     return Positioned(
       top: topOffset,
       height: height,
       left: 4,
       right: 4,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          margin: const EdgeInsets.only(top: 2, bottom: 3),
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-          decoration: BoxDecoration(
-            color: color.withAlpha(isPastDate ? 120 : 250),
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(250),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                _getEventTitle(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11,
+      child: isPastDate
+          ? GestureDetector(onTap: onTap, child: cardWidget)
+          : LongPressDraggable<ScheduleEventModel>(
+              data: event,
+              delay: const Duration(milliseconds: 300),
+              feedback: Material(
+                color: Colors.transparent,
+                child: Opacity(
+                  opacity: 0.8,
+                  child: SizedBox(
+                    width: 150,
+                    height: height,
+                    child: cardWidget,
+                  ),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 2),
-              Text(
-                '${fmt(event.startTime)} - ${fmt(event.endTime)}',
-                style: const TextStyle(color: Colors.white, fontSize: 10),
-              ),
-              if (event.clientName != null && event.clientName!.isNotEmpty)
-                Text(
-                  event.clientName!,
-                  style: const TextStyle(color: Colors.white, fontSize: 10),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-            ],
-          ),
-        ),
-      ),
+              childWhenDragging: Opacity(opacity: 0.3, child: cardWidget),
+              child: GestureDetector(onTap: onTap, child: cardWidget),
+            ),
     );
   }
 

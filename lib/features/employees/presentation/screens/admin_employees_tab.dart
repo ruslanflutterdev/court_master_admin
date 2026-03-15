@@ -5,6 +5,7 @@ import '../bloc/employees_bloc.dart';
 import '../bloc/employees_event.dart';
 import '../bloc/employees_state.dart';
 import '../widgets/cards/employee_list_card.dart';
+import 'admin_coach_profile_screen.dart'; // <--- Импорт нового экрана
 
 class AdminEmployeesTab extends StatelessWidget {
   const AdminEmployeesTab({super.key});
@@ -41,7 +42,14 @@ class AdminEmployeesTab extends StatelessWidget {
                   return EmployeeListCard(
                     coach: state.coaches[index],
                     onTap: () {
-                      // Позже здесь будет переход на профиль тренера
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AdminCoachProfileScreen(
+                            coach: state.coaches[index],
+                          ),
+                        ),
+                      );
                     },
                   );
                 },

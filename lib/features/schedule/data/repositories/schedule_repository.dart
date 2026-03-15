@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import '../../../../core/api/api_client.dart';
 import '../models/court_model.dart';
 import '../models/schedule_event_model.dart';
+import '../models/waitlist_model.dart';
 
 class ScheduleRepository {
   final ApiClient apiClient;
@@ -25,11 +26,25 @@ class ScheduleRepository {
     await apiClient.dio.put('/courts/$id', data: {'name': name});
   }
 
-  Future<List<ScheduleEventModel>> getEvents() async {
-    final response = await apiClient.dio.get('/events');
+  Future<List<ScheduleEventModel>> getEvents({
+    String? startDate,
+    String? endDate,
+  }) async {
+    final response = await apiClient.dio.get(
+      '/events',
+      queryParameters: {'startDate': ?startDate, 'endDate': ?endDate},
+    );
     return (response.data as List)
         .map((json) => ScheduleEventModel.fromJson(json))
         .toList();
+  }
+
+  Future<void> updateEvent(String id, Map<String, dynamic> eventData) async {
+    try {
+      await apiClient.put('/events/$id', data: eventData);
+    } catch (e) {
+      throw Exception('Не удалось обновить событие: $e');
+    }
   }
 
   Future<void> createEvent(Map<String, dynamic> data) async {
@@ -69,5 +84,23 @@ class ScheduleRepository {
         e.response?.data['message'] ?? 'Ошибка при сохранении отметки',
       );
     }
+  }
+
+  Future<List<WaitlistModel>> getWaitlist(DateTime date) async {
+    final response = await apiClient.dio.get(
+      '/waitlists',
+      queryParameters: {'date': date.toIso8601String()},
+    );
+    return (response.data as List)
+        .map((json) => WaitlistModel.fromJson(json))
+        .toList();
+  }
+
+  Future<void> addToWaitlist(Map<String, dynamic> waitlistData) async {
+    await apiClient.dio.post('/waitlists', data: waitlistData);
+  }
+
+  Future<void> removeFromWaitlist(String id) async {
+    await apiClient.dio.delete('/waitlists/$id');
   }
 }

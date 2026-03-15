@@ -31,15 +31,14 @@ void main() {
       'Успешная загрузка списка групп: [GroupsLoading, GroupsLoaded]',
       build: () {
         when(() => mockRepo.getGroups()).thenAnswer(
-              (_) async => [GroupModel(id: '1', name: 'Профи', scheduleText: '', coachId: '')],
+          (_) async => [
+            GroupModel(id: '1', name: 'Профи', scheduleText: '', coachId: ''),
+          ],
         );
         return groupsBloc;
       },
       act: (bloc) => bloc.add(LoadGroupsEvent()),
-      expect: () => [
-        isA<GroupsLoading>(),
-        isA<GroupsLoaded>(),
-      ],
+      expect: () => [isA<GroupsLoading>(), isA<GroupsLoaded>()],
     );
 
     blocTest<GroupsBloc, GroupsState>(
@@ -49,10 +48,7 @@ void main() {
         return groupsBloc;
       },
       act: (bloc) => bloc.add(LoadGroupsEvent()),
-      expect: () => [
-        isA<GroupsLoading>(),
-        isA<GroupsError>(),
-      ],
+      expect: () => [isA<GroupsLoading>(), isA<GroupsError>()],
     );
   });
 }

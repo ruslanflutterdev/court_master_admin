@@ -1,3 +1,5 @@
+import '../../data/models/user_model.dart';
+
 abstract class AuthState {}
 
 class AuthInitial extends AuthState {}
@@ -5,10 +7,9 @@ class AuthInitial extends AuthState {}
 class AuthLoading extends AuthState {}
 
 class AuthAuthenticated extends AuthState {
-  final String token;
-  final String role;
+  final UserModel user;
 
-  AuthAuthenticated({required this.token, required this.role});
+  AuthAuthenticated({required this.user});
 }
 
 class AuthUnauthenticated extends AuthState {}

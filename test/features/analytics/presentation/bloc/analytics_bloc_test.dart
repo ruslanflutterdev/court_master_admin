@@ -32,7 +32,7 @@ void main() {
       build: () {
         // ИСПОЛЬЗУЕМ ПРАВИЛЬНОЕ НАЗВАНИЕ МЕТОДА: getDashboardData()
         when(() => mockRepo.getDashboardData()).thenAnswer(
-              (_) async => AnalyticsModel(
+          (_) async => AnalyticsModel(
             clientsCount: 150,
             totalDebt: 0,
             monthlyRevenue: 120000,
@@ -42,24 +42,20 @@ void main() {
         return bloc;
       },
       act: (bloc) => bloc.add(LoadAnalyticsEvent()),
-      expect: () => [
-        isA<AnalyticsLoading>(),
-        isA<AnalyticsLoaded>(),
-      ],
+      expect: () => [isA<AnalyticsLoading>(), isA<AnalyticsLoaded>()],
     );
 
     blocTest<AnalyticsBloc, AnalyticsState>(
       'Ошибка загрузки: [AnalyticsLoading, AnalyticsError]',
       build: () {
         // ИСПОЛЬЗУЕМ ПРАВИЛЬНОЕ НАЗВАНИЕ МЕТОДА: getDashboardData()
-        when(() => mockRepo.getDashboardData()).thenThrow(Exception('Server crash'));
+        when(
+          () => mockRepo.getDashboardData(),
+        ).thenThrow(Exception('Server crash'));
         return bloc;
       },
       act: (bloc) => bloc.add(LoadAnalyticsEvent()),
-      expect: () => [
-        isA<AnalyticsLoading>(),
-        isA<AnalyticsError>(),
-      ],
+      expect: () => [isA<AnalyticsLoading>(), isA<AnalyticsError>()],
     );
   });
 }

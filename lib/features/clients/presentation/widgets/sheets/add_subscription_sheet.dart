@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/client_details_bloc.dart';
-import '../../bloc/client_details_event.dart';
+import '../../bloc/client_details_event.dart'; // Импорт событий
+import '../../utils/subscription_helper.dart';
 
 class AddSubscriptionSheet extends StatefulWidget {
   final String clientId;
+
   const AddSubscriptionSheet({super.key, required this.clientId});
 
   @override
@@ -12,88 +14,123 @@ class AddSubscriptionSheet extends StatefulWidget {
 }
 
 class _AddSubscriptionSheetState extends State<AddSubscriptionSheet> {
-  int _selectedType = 2; // По умолчанию выбран "Пакет занятий"
-  final _classesController = TextEditingController(text: '8');
-  final _priceController = TextEditingController();
+  int selectedType = 2;
+  final classesCtrl = TextEditingController(text: '8');
+  final priceCtrl = TextEditingController();
+  DateTime? validUntil;
 
   @override
   Widget build(BuildContext context) {
+    final types = List.generate(7, (index) => index + 1);
+
     return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      padding: EdgeInsets.fromLTRB(
+        16,
+        16,
+        16,
+        MediaQuery.of(context).viewInsets.bottom + 16,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Продать абонемент',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<int>(
-            initialValue: _selectedType,
-            decoration: const InputDecoration(
-              labelText: 'Тип абонемента',
-              border: OutlineInputBorder(),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Оформить абонемент',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            items: const [
-              DropdownMenuItem(value: 1, child: Text('Разовое занятие')),
-              DropdownMenuItem(value: 2, child: Text('Пакет занятий')),
-              DropdownMenuItem(value: 3, child: Text('Безлимит')),
-            ],
-            onChanged: (val) => setState(() => _selectedType = val!),
-          ),
-          const SizedBox(height: 16),
-          if (_selectedType == 2)
-            TextField(
-              controller: _classesController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Количество занятий',
-                border: OutlineInputBorder(),
+            const SizedBox(height: 16),
+
+            DropdownButtonFormField<int>(
+              initialValue: selectedType, // ИСПРАВЛЕНИЕ: Вернули initialValue
+              decoration: const InputDecoration(labelText: 'Тип абонемента'),
+              items: types.map((type) {
+                return DropdownMenuItem(
+                  value: type,
+                  child: Text(SubscriptionHelper.getTypeName(type)),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) {
+                  setState(() => selectedType = val);
+                }
+              },
+            ),
+
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 12),
+              child: Text(
+                SubscriptionHelper.getTypeDescription(selectedType),
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ),
-          if (_selectedType == 2) const SizedBox(height: 16),
-          TextField(
-            controller: _priceController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Стоимость абонемента',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 50),
-              backgroundColor: Colors.green,
-            ),
-            onPressed: () {
-              final price = int.tryParse(_priceController.text) ?? 0;
-              final classes = _selectedType == 2
-                  ? (int.tryParse(_classesController.text) ?? 1)
-                  : 1;
 
-              if (price > 0) {
+            if (SubscriptionHelper.requiresManualClassCount(selectedType))
+              TextField(
+                controller: classesCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Количество занятий',
+                ),
+                keyboardType: TextInputType.number,
+              ),
+
+            TextField(
+              controller: priceCtrl,
+              decoration: const InputDecoration(labelText: 'Стоимость (₸)'),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 16),
+
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                validUntil == null
+                    ? 'Срок действия: Не ограничен'
+                    : 'Действует до: ${validUntil!.day}.${validUntil!.month}.${validUntil!.year}',
+              ),
+              trailing: const Icon(Icons.calendar_today),
+              onTap: () async {
+                final date = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now().add(const Duration(days: 30)),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+                );
+                if (date != null) setState(() => validUntil = date);
+              },
+            ),
+
+            const SizedBox(height: 16),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+              ),
+              onPressed: () {
+                int totalClasses = int.tryParse(classesCtrl.text) ?? 1;
+                if (selectedType == 1) totalClasses = 1;
+                if (selectedType == 3) totalClasses = 9999;
+
+                // ИСПРАВЛЕНИЕ: Используем правильное имя класса (AddSubscriptionEvent)
+                // и передаем параметры как позиционные (сначала clientId, потом Map)
                 context.read<ClientDetailsBloc>().add(
                   AddSubscriptionEvent(widget.clientId, {
-                    'type': _selectedType,
-                    'totalClasses': classes,
-                    'price': price,
+                    'type': selectedType,
+                    'totalClasses': totalClasses,
+                    'price': int.tryParse(priceCtrl.text) ?? 0,
+                    if (validUntil != null)
+                      'validUntil': validUntil!.toIso8601String(),
                   }),
                 );
                 Navigator.pop(context);
-              }
-            },
-            child: const Text(
-              'Продать',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              },
+              child: const Text('Сохранить'),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

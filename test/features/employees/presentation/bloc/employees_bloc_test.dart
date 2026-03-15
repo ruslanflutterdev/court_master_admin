@@ -37,7 +37,16 @@ void main() {
       build: () {
         // Учим наш фейковый репозиторий отдавать список из одного тренера
         when(() => mockRepository.getCoaches()).thenAnswer(
-              (_) async => [CoachModel(id: '1', firstName: 'Иван', phone: '+79991234567')],
+          (_) async => [
+            CoachModel(
+              id: '1',
+              firstName: 'Иван',
+              phone: '+79991234567',
+              lastName: '',
+              email: '',
+              role: '',
+            ),
+          ],
         );
         return employeesBloc;
       },
@@ -53,13 +62,17 @@ void main() {
       'Должен выдать [EmployeesLoading, EmployeesError], если сервер упал',
       build: () {
         // Учим фейковый репозиторий выбрасывать исключение
-        when(() => mockRepository.getCoaches()).thenThrow(Exception('Нет интернета'));
+        when(
+          () => mockRepository.getCoaches(),
+        ).thenThrow(Exception('Нет интернета'));
         return employeesBloc;
       },
       act: (bloc) => bloc.add(LoadEmployeesEvent()),
       expect: () => [
         isA<EmployeesLoading>(),
-        isA<EmployeesError>(), // Проверяем, что BLoC поймал ошибку и выдал Error-стейт
+        isA<
+          EmployeesError
+        >(), // Проверяем, что BLoC поймал ошибку и выдал Error-стейт
       ],
     );
   });

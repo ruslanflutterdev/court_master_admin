@@ -31,7 +31,7 @@ void main() {
       'Успешная загрузка списка клиентов: [ClientsLoading, ClientsLoaded]',
       build: () {
         when(() => mockRepo.getClients()).thenAnswer(
-              (_) async => [
+          (_) async => [
             ClientModel(
               id: '1',
               firstName: 'Иван',
@@ -39,16 +39,13 @@ void main() {
               email: 'test@test.com',
               balance: 0,
               activeSubscriptionsCount: 0,
-            )
+            ),
           ],
         );
         return clientsBloc;
       },
       act: (bloc) => bloc.add(LoadClientsEvent()),
-      expect: () => [
-        isA<ClientsLoading>(),
-        isA<ClientsLoaded>(),
-      ],
+      expect: () => [isA<ClientsLoading>(), isA<ClientsLoaded>()],
     );
 
     blocTest<ClientsBloc, ClientsState>(
@@ -56,12 +53,16 @@ void main() {
       build: () {
         final saleData = {'amount': 500};
         when(() => mockRepo.quickSale(saleData)).thenAnswer((_) async {});
-        when(() => mockRepo.getClients()).thenAnswer((_) async => []); // Для перезагрузки
+        when(
+          () => mockRepo.getClients(),
+        ).thenAnswer((_) async => []); // Для перезагрузки
         return clientsBloc;
       },
       act: (bloc) => bloc.add(QuickSaleRequested({'amount': 500})),
       expect: () => [
-        isA<ClientsLoading>(), // Вызывается внутри LoadClientsEvent после успешной продажи
+        isA<
+          ClientsLoading
+        >(), // Вызывается внутри LoadClientsEvent после успешной продажи
         isA<ClientsLoaded>(),
       ],
     );

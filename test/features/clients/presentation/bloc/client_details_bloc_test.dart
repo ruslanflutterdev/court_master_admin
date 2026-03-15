@@ -39,26 +39,31 @@ void main() {
     blocTest<ClientDetailsBloc, ClientDetailsState>(
       'Загрузка деталей клиента: [ClientDetailsLoading, ClientDetailsLoaded]',
       build: () {
-        when(() => mockRepo.getClientDetails('1')).thenAnswer((_) async => testClient);
+        when(
+          () => mockRepo.getClientDetails('1'),
+        ).thenAnswer((_) async => testClient);
         return bloc;
       },
       act: (bloc) => bloc.add(LoadClientDetails('1')),
-      expect: () => [
-        isA<ClientDetailsLoading>(),
-        isA<ClientDetailsLoaded>(),
-      ],
+      expect: () => [isA<ClientDetailsLoading>(), isA<ClientDetailsLoaded>()],
     );
 
     blocTest<ClientDetailsBloc, ClientDetailsState>(
       'Добавление платежа: автоматически перезапрашивает профиль клиента',
       build: () {
-        when(() => mockRepo.addPayment('1', {'amount': 1000})).thenAnswer((_) async {});
-        when(() => mockRepo.getClientDetails('1')).thenAnswer((_) async => testClient);
+        when(
+          () => mockRepo.addPayment('1', {'amount': 1000}),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockRepo.getClientDetails('1'),
+        ).thenAnswer((_) async => testClient);
         return bloc;
       },
       act: (bloc) => bloc.add(AddPaymentEvent('1', {'amount': 1000})),
       expect: () => [
-        isA<ClientDetailsLoading>(), // Вызывается внутри LoadClientDetails, добавленного после платежа
+        isA<
+          ClientDetailsLoading
+        >(), // Вызывается внутри LoadClientDetails, добавленного после платежа
         isA<ClientDetailsLoaded>(),
       ],
     );

@@ -37,7 +37,9 @@ void main() {
       );
     }
 
-    testWidgets('1. Отрисовка всех элементов экрана', (WidgetTester tester) async {
+    testWidgets('1. Отрисовка всех элементов экрана', (
+      WidgetTester tester,
+    ) async {
       when(() => mockAuthBloc.state).thenReturn(AuthInitial());
 
       await tester.pumpWidget(createWidgetUnderTest());
@@ -68,14 +70,17 @@ void main() {
       );
 
       await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pumpAndSettle(); // Ждем, пока анимация всплывающего SnackBar завершится
+      await tester
+          .pumpAndSettle(); // Ждем, пока анимация всплывающего SnackBar завершится
 
       // Проверяем, что робот увидел на экране текст ошибки
       expect(find.byType(SnackBar), findsOneWidget);
       expect(find.text('Неверный пароль'), findsOneWidget);
     });
 
-    testWidgets('4. Нажатие на кнопку отправляет событие', (WidgetTester tester) async {
+    testWidgets('4. Нажатие на кнопку отправляет событие', (
+      WidgetTester tester,
+    ) async {
       when(() => mockAuthBloc.state).thenReturn(AuthInitial());
 
       await tester.pumpWidget(createWidgetUnderTest());
@@ -85,7 +90,9 @@ void main() {
       await tester.pump();
 
       // Проверяем, что в наш (фейковый) BLoC действительно "прилетело" событие LoginRequested
-      verify(() => mockAuthBloc.add(any(that: isA<LoginRequested>()))).called(1);
+      verify(
+        () => mockAuthBloc.add(any(that: isA<LoginRequested>())),
+      ).called(1);
     });
   });
 }

@@ -6,8 +6,6 @@ class GroupModel {
   final String name;
   final String scheduleText;
   final String coachId;
-
-  // Добавляем новые поля (они могут быть null)
   final CoachModel? coach;
   final List<StudentModel>? students;
 

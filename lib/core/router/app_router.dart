@@ -24,7 +24,8 @@ class AppRouter {
 
       if (authState is AuthAuthenticated) {
         if (isLoggingIn || state.matchedLocation == '/') {
-          if (authState.role == 'coach') {
+          if (authState.user.role == 'tennisCoach' ||
+              authState.user.role == 'coach') {
             return '/coach-dashboard';
           }
 

@@ -10,7 +10,9 @@ import 'package:court_master_admin/features/clients/presentation/bloc/clients_st
 import 'package:court_master_admin/features/clients/presentation/widgets/sheets/quick_sale_sheet.dart';
 
 // 1. Подделка для BLoC
-class MockClientsBloc extends MockBloc<ClientsEvent, ClientsState> implements ClientsBloc {}
+class MockClientsBloc extends MockBloc<ClientsEvent, ClientsState>
+    implements ClientsBloc {}
+
 class FakeClientsEvent extends Fake implements ClientsEvent {}
 
 void main() {
@@ -39,7 +41,9 @@ void main() {
       );
     }
 
-    testWidgets('Отрисовка формы Быстрой продажи и элементов управления', (WidgetTester tester) async {
+    testWidgets('Отрисовка формы Быстрой продажи и элементов управления', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       // 1. Проверяем, что форма открылась и есть главный заголовок
@@ -55,7 +59,9 @@ void main() {
       expect(find.text('Провести продажу'), findsOneWidget);
     });
 
-    testWidgets('Показ ошибки, если нажать "Провести продажу" с пустыми полями', (WidgetTester tester) async {
+    testWidgets('Показ ошибки, если нажать "Провести продажу" с пустыми полями', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Находим кнопку

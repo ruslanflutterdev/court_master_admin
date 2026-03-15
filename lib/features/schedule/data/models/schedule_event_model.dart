@@ -6,12 +6,22 @@ class ScheduleEventModel {
   final DateTime date;
   final TimeOfDay startTime;
   final TimeOfDay endTime;
-  final String color;
+  final String colorHex; // Использовали colorHex вместо color
+
+  // --- Новые поля для CRM ---
+  final int? price;
+  final String status;
+  final bool isPaid;
+  // --------------------------
+
   final String courtId;
+  final String? courtName; // Восстановлено!
   final String? groupId;
+  final String? groupName; // Восстановлено!
   final String? clientName;
   final String? clientPhone;
   final String? coachId;
+  final String? coachFullName; // Восстановлено!
 
   ScheduleEventModel({
     required this.id,
@@ -19,12 +29,18 @@ class ScheduleEventModel {
     required this.date,
     required this.startTime,
     required this.endTime,
-    required this.color,
+    required this.colorHex,
+    this.price,
+    this.status = 'active',
+    this.isPaid = false,
     required this.courtId,
+    this.courtName,
     this.groupId,
+    this.groupName,
     this.clientName,
     this.clientPhone,
     this.coachId,
+    this.coachFullName,
   });
 
   factory ScheduleEventModel.fromJson(Map<String, dynamic> json) {
@@ -35,16 +51,24 @@ class ScheduleEventModel {
 
     return ScheduleEventModel(
       id: json['id'],
-      eventType: json['type'],
+      eventType: json['type'] ?? json['eventType'] ?? 'rent',
       date: DateTime.parse(json['date']),
       startTime: parseTime(json['startTime']),
       endTime: parseTime(json['endTime']),
-      color: json['colorHex'],
+      colorHex: json['colorHex'] ?? '#2196F3',
+      price: json['price'],
+      status: json['status'] ?? 'active',
+      isPaid: json['isPaid'] ?? false,
       courtId: json['courtId'],
+      courtName: json['court']?['name'],
       groupId: json['groupId'],
+      groupName: json['group']?['name'],
       clientName: json['clientName'],
       clientPhone: json['clientPhone'],
       coachId: json['coachId'],
+      coachFullName: json['coach'] != null
+          ? '${json['coach']['firstName']} ${json['coach']['lastName']}'
+          : null,
     );
   }
 }

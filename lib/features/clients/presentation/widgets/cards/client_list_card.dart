@@ -36,10 +36,10 @@ class ClientListCard extends StatelessWidget {
           children: [
             const SizedBox(height: 4),
             Text(
-              client.phone ?? client.email,
+              client.phone ?? client.email ?? 'Нет контактов',
               style: const TextStyle(fontSize: 12),
             ),
-            if (client.activeSubscriptionsCount > 0)
+            if ((client.activeSubscriptionsCount ?? 0) > 0)
               Text(
                 'Активных абонементов: ${client.activeSubscriptionsCount}',
                 style: const TextStyle(color: Colors.orange, fontSize: 12),

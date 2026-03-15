@@ -1,82 +1,61 @@
 import 'package:flutter/material.dart';
-import '../../../data/models/payment_model.dart';
-import '../../utils/payment_helper.dart';
+import '../../../../clients/data/models/transaction_model.dart';
 
 class ClientPaymentsList extends StatelessWidget {
-  final List<PaymentModel> payments;
+  final List<TransactionModel> transactions;
 
-  const ClientPaymentsList({super.key, required this.payments});
+  const ClientPaymentsList({super.key, required this.transactions});
 
   @override
   Widget build(BuildContext context) {
-    if (payments.isEmpty) {
-      return const Text(
-        'У клиента пока нет транзакций',
-        style: TextStyle(color: Colors.grey),
+    if (transactions.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text(
+          'История операций пуста',
+          style: TextStyle(color: Colors.grey),
+        ),
       );
     }
 
-    return Column(
-      children: payments.map((payment) {
-        final color = PaymentHelper.getTypeColor(payment.type);
-        final sign = payment.type == 1 ? '+' : (payment.type == 2 ? '-' : '');
-        final date = payment.createdAt;
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: transactions.length,
+      itemBuilder: (context, index) {
+        final tx = transactions[index];
+        // Если это Приход ('income') - цвет зеленый и плюсик, если расход - красный и минус
+        final isIncome = tx.type == 'income';
+        final color = isIncome ? Colors.green : Colors.red;
+        final sign = isIncome ? '+' : '-';
 
-        final dateStr =
-            '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
-        final timeStr =
-            '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          elevation: 0,
-          color: Colors.grey.shade50,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: Colors.grey.shade200),
+        return ListTile(
+          leading: CircleAvatar(
+            backgroundColor: color.withAlpha(20),
+            child: Icon(
+              isIncome ? Icons.arrow_downward : Icons.arrow_upward,
+              color: color,
+            ),
           ),
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: color.withAlpha(20),
-              child: Icon(
-                PaymentHelper.getMethodIcon(payment.method),
-                color: color,
-              ),
-            ),
-            title: Text(
-              PaymentHelper.getTypeName(payment.type),
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${PaymentHelper.getMethodName(payment.method)} • $dateStr $timeStr',
-                  style: const TextStyle(fontSize: 12),
-                ),
-                if (payment.description != null &&
-                    payment.description!.isNotEmpty)
-                  Text(
-                    payment.description!,
-                    style: const TextStyle(
-                      fontStyle: FontStyle.italic,
-                      fontSize: 12,
-                      color: Colors.black87,
-                    ),
-                  ),
-              ],
-            ),
-            trailing: Text(
-              '$sign${payment.amount} ₸',
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+          title: Text(
+            tx.description ?? 'Финансовая операция',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Text(_formatDate(tx.createdAt)),
+          trailing: Text(
+            '$sign ${tx.amount} ₸',
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
             ),
           ),
         );
-      }).toList(),
+      },
     );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 }

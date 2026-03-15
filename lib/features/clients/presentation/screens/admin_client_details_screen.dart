@@ -73,7 +73,9 @@ class AdminClientDetailsScreen extends StatelessWidget {
                           ClientSubscriptionsList(
                             subscriptions: client.subscriptions ?? [],
                           ),
-                          ClientPaymentsList(payments: client.payments ?? []),
+                          ClientPaymentsList(
+                            transactions: client.transactions ?? [],
+                          ),
                           ClientAttendanceList(
                             attendances: client.attendances ?? [],
                           ),

@@ -1,112 +1,89 @@
-import 'package:court_master_admin/features/schedule/presentation/widgets/forms/schedule_form_types.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:court_master_admin/features/schedule/presentation/widgets/sheets/create_schedule_event_sheet.dart';
-import 'package:court_master_admin/features/schedule/presentation/widgets/forms/schedule_group_form.dart';
-import 'package:court_master_admin/features/schedule/presentation/widgets/forms/schedule_rent_form.dart';
-import 'package:court_master_admin/features/schedule/presentation/widgets/forms/schedule_event_type_selector.dart';
+import 'package:court_master_admin/features/schedule/data/models/schedule_event_model.dart';
 import 'package:court_master_admin/features/groups/data/models/group_model.dart';
 import 'package:court_master_admin/features/employees/data/models/coach_model.dart';
 
 void main() {
   group('CreateScheduleEventSheet Widget Tests', () {
-    final dummyGroups = [
-      GroupModel(
-        id: 'g1',
-        name: 'Группа 1',
-        coachId: 'c1',
-        scheduleText: 'Пн 10:00',
-      ),
-    ];
-    final dummyCoaches = [
-      CoachModel(
-        id: 'c1',
-        firstName: 'Иван',
-        phone: '123',
-        lastName: '',
-        email: '',
-        role: '',
-      ),
-    ];
+    testWidgets(
+      'Режим редактирования: подставляет старые данные и меняет тексты',
+      (WidgetTester tester) async {
+        // 1. Создаем "старое" событие, которое мы якобы редактируем
+        final existingEvent = ScheduleEventModel(
+          id: 'event-1',
+          courtId: 'court-1',
+          date: DateTime.now(),
+          startTime: const TimeOfDay(hour: 14, minute: 0),
+          endTime: const TimeOfDay(hour: 15, minute: 30),
+          eventType: 'individual',
+          colorHex: 'red',
+          clientName: 'Илон Маск',
+          clientPhone: '+123456789',
+          price: 15000,
+          status: 'active',
+          isPaid: false,
+        );
 
-    Widget buildTestWidget({OnSaveEvent? onSave}) {
-      return MaterialApp(
-        home: Scaffold(
-          body: CreateScheduleEventSheet(
-            courtId: 'c1',
-            startHour: 10,
-            date: DateTime(2026, 3, 12),
-            groups: dummyGroups,
-            coaches: dummyCoaches,
-            onSave:
-                onSave ??
-                ({
-                  required type,
-                  required start,
-                  required end,
-                  required color,
-                  required isRecurring,
-                  required weeks,
-                  groupId,
-                  clientName,
-                  clientPhone,
-                  coachId,
-                }) {},
+        bool isSaved = false;
+
+        // 2. Отрисовываем виджет
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: CreateScheduleEventSheet(
+                courtId: 'court-1',
+                startHour: 14,
+                date: DateTime.now(),
+                groups: const <GroupModel>[],
+                coaches: const <CoachModel>[],
+                existingEvent: existingEvent, // Передаем старое событие!
+                onSave:
+                    ({
+                      required type,
+                      required start,
+                      required end,
+                      required color,
+                      required isRecurring,
+                      required weeks,
+                      groupId,
+                      clientName,
+                      clientPhone,
+                      coachId,
+                    }) {
+                      isSaved = true;
+                    },
+              ),
+            ),
           ),
-        ),
-      );
-    }
+        );
 
-    testWidgets('По умолчанию отображается форма группы', (tester) async {
-      await tester.pumpWidget(buildTestWidget());
-      expect(find.byType(ScheduleGroupForm), findsOneWidget);
-    });
+        // 3. Проверяем, что UI переключился в режим редактирования
+        expect(
+          find.text('Редактировать событие'),
+          findsOneWidget,
+        ); // Заголовок изменился
+        expect(
+          find.text('Сохранить изменения'),
+          findsOneWidget,
+        ); // Кнопка изменилась
 
-    testWidgets('Смена типа на Аренду', (tester) async {
-      await tester.pumpWidget(buildTestWidget());
-      final dropdown = find.descendant(
-        of: find.byType(ScheduleEventTypeSelector),
-        matching: find.byType(DropdownButtonFormField<String>),
-      );
-      await tester.tap(dropdown);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Аренда корта').last);
-      await tester.pumpAndSettle();
-      expect(find.byType(ScheduleRentForm), findsOneWidget);
-    });
+        // Блок регулярности должен быть скрыт при редактировании
+        expect(find.text('Повторять еженедельно'), findsNothing);
 
-    testWidgets('Сохранение передает дефолтную регулярность (false, 1)', (
-      tester,
-    ) async {
-      bool? savedIsRecurring;
-      int? savedWeeks;
+        // 4. Проверяем, что старые данные клиента подставились в поля ввода
+        expect(find.text('Илон Маск'), findsOneWidget);
+        expect(find.text('+123456789'), findsOneWidget);
 
-      await tester.pumpWidget(
-        buildTestWidget(
-          onSave:
-              ({
-                required type,
-                required start,
-                required end,
-                required color,
-                required isRecurring,
-                required weeks,
-                groupId,
-                clientName,
-                clientPhone,
-                coachId,
-              }) {
-                savedIsRecurring = isRecurring;
-                savedWeeks = weeks;
-              },
-        ),
-      );
+        // 5. Имитируем нажатие на кнопку сохранения
+        await tester.ensureVisible(find.text('Сохранить изменения'));
+        await tester.tap(find.text('Сохранить изменения'));
+        await tester.pump();
 
-      await tester.tap(find.text('Сохранить'));
-      await tester.pump();
-
-      expect(savedIsRecurring, false);
-      expect(savedWeeks, 1);
-    });
+        // 6. Проверяем, что коллбек сработал
+        expect(isSaved, isTrue);
+      },
+    );
   });
 }

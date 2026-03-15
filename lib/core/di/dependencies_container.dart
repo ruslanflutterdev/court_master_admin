@@ -26,7 +26,7 @@ Future<void> initInjection() async {
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
   sl.registerFactory(() => AuthBloc(repository: sl()));
   sl.registerLazySingleton<EmployeesRepository>(
-    () => EmployeesRepository(sl()),
+    () => EmployeesRepository(apiClient: sl()),
   );
   sl.registerFactory(() => EmployeesBloc(repository: sl()));
   sl.registerLazySingleton<GroupsRepository>(() => GroupsRepository(sl()));

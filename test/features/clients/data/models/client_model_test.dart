@@ -84,7 +84,10 @@ void main() {
 
         expect(client.id, '124');
         expect(client.balance, 0); // Должен подставиться fallback 0
-        expect(client.activeSubscriptionsCount, 0);
+
+        // ИСПРАВЛЕНИЕ ЗДЕСЬ: ожидаем isNull, так как в JSON нет '_count'
+        expect(client.activeSubscriptionsCount, isNull);
+
         expect(client.tags, isEmpty); // Должен быть пустой список, а не null
         expect(client.attendances, isNull);
       },

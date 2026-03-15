@@ -5,6 +5,12 @@ import '../../../clients/presentation/bloc/clients_bloc.dart';
 import '../../../clients/presentation/bloc/clients_event.dart';
 import '../../../schedule/presentation/bloc/schedule_bloc.dart';
 import '../../../schedule/presentation/bloc/schedule_event.dart';
+import '../../../employees/presentation/bloc/employees_bloc.dart';
+import '../../../employees/presentation/bloc/employees_event.dart';
+import '../../../groups/presentation/bloc/groups_bloc.dart';
+import '../../../groups/presentation/bloc/groups_event.dart';
+import '../../../analytics/presentation/bloc/analytics_bloc.dart';
+import '../../../analytics/presentation/bloc/analytics_event.dart';
 import '../widgets/dashboard_mobile_view.dart';
 import '../widgets/dashboard_desktop_view.dart';
 import '../../../analytics/presentation/screens/admin_analytics_tab.dart';
@@ -36,11 +42,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => sl<ClientsBloc>()..add(LoadClientsEvent()),
+          create: (context) => sl<AnalyticsBloc>()..add(LoadAnalyticsEvent()),
         ),
         BlocProvider(
           create: (context) =>
               sl<ScheduleBloc>()..add(LoadScheduleData(DateTime.now())),
+        ),
+        BlocProvider(
+          create: (context) => sl<EmployeesBloc>()..add(LoadEmployeesEvent()),
+        ),
+        BlocProvider(
+          create: (context) => sl<GroupsBloc>()..add(LoadGroupsEvent()),
+        ),
+        BlocProvider(
+          create: (context) => sl<ClientsBloc>()..add(LoadClientsEvent()),
         ),
       ],
       child: LayoutBuilder(

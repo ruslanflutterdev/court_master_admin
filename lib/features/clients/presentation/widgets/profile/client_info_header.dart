@@ -22,7 +22,9 @@ class ClientInfoHeader extends StatelessWidget {
                   radius: 30,
                   backgroundColor: Colors.green.shade100,
                   child: Text(
-                    client.firstName[0].toUpperCase(),
+                    client.firstName.isNotEmpty
+                        ? client.firstName[0].toUpperCase()
+                        : '?',
                     style: const TextStyle(fontSize: 24, color: Colors.green),
                   ),
                 ),
@@ -46,7 +48,7 @@ class ClientInfoHeader extends StatelessWidget {
                         ),
                       const SizedBox(height: 4),
                       Text('📞 ${client.phone ?? "Нет телефона"}'),
-                      Text('✉️ ${client.email}'),
+                      Text('✉️ ${client.email ?? "Нет email"}'),
                     ],
                   ),
                 ),
@@ -55,7 +57,7 @@ class ClientInfoHeader extends StatelessWidget {
                   children: [
                     const Text('Баланс', style: TextStyle(color: Colors.grey)),
                     Text(
-                      '${client.balance} ₽',
+                      '${client.balance} ₸',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -66,7 +68,9 @@ class ClientInfoHeader extends StatelessWidget {
                 ),
               ],
             ),
-            if (client.tags.isNotEmpty || client.skillLevel != null) ...[
+            if (client.tags.isNotEmpty ||
+                client.skillLevel != null ||
+                client.acquisitionSource != null) ...[
               const Divider(height: 32),
               Wrap(
                 spacing: 8,

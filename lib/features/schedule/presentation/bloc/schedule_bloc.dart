@@ -42,8 +42,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         ]);
 
         final courts = results[0] as List<CourtModel>;
-        final groups = results[1] as List<GroupModel>;
-        final coaches = results[2] as List<CoachModel>;
+        final groups = (results[1] as List).cast<GroupModel>();
+        final coaches = (results[2] as List).cast<CoachModel>();
         final periodEvents = await scheduleRepo.getEvents(
           startDate: dateRange['start']!.toIso8601String(),
           endDate: dateRange['end']!.toIso8601String(),

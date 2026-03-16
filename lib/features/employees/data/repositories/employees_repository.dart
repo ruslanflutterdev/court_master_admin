@@ -1,23 +1,17 @@
-import '../models/coach_model.dart';
 import '../../../../core/api/api_client.dart';
-import 'package:dio/dio.dart';
+import '../models/coach_model.dart';
 
 class EmployeesRepository {
   final ApiClient apiClient;
 
-  EmployeesRepository(this.apiClient);
+  EmployeesRepository({required this.apiClient});
 
   Future<List<CoachModel>> getCoaches() async {
-    try {
-      final response = await apiClient.dio.get('/employees/coaches');
-      final List data = response.data;
-      return data.map((json) => CoachModel.fromJson(json)).toList();
-    } on DioException catch (e) {
-      throw Exception(
-        e.response?.data['message'] ?? 'Ошибка загрузки тренеров',
-      );
-    } catch (e) {
-      throw Exception('Непредвиденная ошибка: $e');
-    }
+    final response = await apiClient.get('/employees/coaches');
+    return (response.data as List).map((e) => CoachModel.fromJson(e)).toList();
+  }
+
+  Future<void> createCoach(Map<String, dynamic> coachData) async {
+    await apiClient.post('/employees', data: coachData);
   }
 }

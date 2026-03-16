@@ -9,6 +9,12 @@ import '../bloc/event_attendance_bloc.dart';
 import '../widgets/dialogs/create_court_dialog.dart';
 import '../widgets/sheets/create_schedule_event_sheet.dart';
 import '../widgets/sheets/event_attendance_sheet.dart';
+import '../../../groups/presentation/bloc/groups_bloc.dart';
+import '../../../groups/presentation/bloc/groups_state.dart';
+import '../../../employees/presentation/bloc/employees_bloc.dart';
+import '../../../employees/presentation/bloc/employees_state.dart';
+import '../../../groups/data/models/group_model.dart';
+import '../../../employees/data/models/coach_model.dart';
 
 class ScheduleActions {
   static void openEditCourtDialog(
@@ -44,6 +50,14 @@ class ScheduleActions {
     ScheduleEventModel? existingEvent,
   }) {
     final scheduleBloc = context.read<ScheduleBloc>();
+    final groupsState = context.read<GroupsBloc>().state;
+    final latestGroups = groupsState is GroupsLoaded
+        ? groupsState.groups
+        : <GroupModel>[];
+    final employeesState = context.read<EmployeesBloc>().state;
+    final latestCoaches = employeesState is EmployeesLoaded
+        ? employeesState.coaches
+        : <CoachModel>[];
 
     if (existingEvent != null) {
       if (existingEvent.eventType == 'group') {
@@ -61,7 +75,6 @@ class ScheduleActions {
         return;
       }
 
-      // ИСПРАВЛЕНИЕ: Открытие формы для РЕДАКТИРОВАНИЯ
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -69,8 +82,8 @@ class ScheduleActions {
           courtId: existingEvent.courtId,
           startHour: existingEvent.startTime.hour,
           date: state.scheduleDate,
-          groups: state.groups,
-          coaches: state.coaches,
+          groups: latestGroups,
+          coaches: latestCoaches,
           existingEvent: existingEvent,
           onSave:
               ({
@@ -111,7 +124,6 @@ class ScheduleActions {
       return;
     }
 
-    // Открытие формы для СОЗДАНИЯ (остается как было)
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -119,8 +131,8 @@ class ScheduleActions {
         courtId: courtId,
         startHour: hour,
         date: state.scheduleDate,
-        groups: state.groups,
-        coaches: state.coaches,
+        groups: latestGroups,
+        coaches: latestCoaches,
         onSave:
             ({
               required type,

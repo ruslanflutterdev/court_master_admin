@@ -10,35 +10,37 @@ import 'package:court_master_admin/features/analytics/presentation/bloc/analytic
 class MockAnalyticsRepo extends Mock implements AnalyticsRepository {}
 
 void main() {
+  late AnalyticsBloc bloc;
+  late MockAnalyticsRepo mockRepo;
+
+  // Данные для успешного теста вынесены в отдельную переменную (Rule: Clean code)
+  final mockData = AnalyticsModel(
+    clientsCount: 150,
+    totalDebt: 0,
+    monthlyRevenue: 120000,
+    activeSubsCount: 45,
+    revenueByCourt: [], // ИСПРАВЛЕНО: Добавлены требуемые поля
+    revenueByCoach: [], // ИСПРАВЛЕНО: Добавлены требуемые поля
+  );
+
+  setUp(() {
+    mockRepo = MockAnalyticsRepo();
+    bloc = AnalyticsBloc(repository: mockRepo);
+  });
+
+  tearDown(() => bloc.close());
+
   group('AnalyticsBloc Tests', () {
-    late AnalyticsBloc bloc;
-    late MockAnalyticsRepo mockRepo;
-
-    setUp(() {
-      mockRepo = MockAnalyticsRepo();
-      bloc = AnalyticsBloc(repository: mockRepo);
-    });
-
-    tearDown(() {
-      bloc.close();
-    });
-
     test('Начальное состояние — AnalyticsLoading', () {
       expect(bloc.state, isA<AnalyticsLoading>());
     });
 
     blocTest<AnalyticsBloc, AnalyticsState>(
-      'Успешная загрузка данных: [AnalyticsLoading, AnalyticsLoaded]',
+      'Успешная загрузка данных',
       build: () {
-        // ИСПОЛЬЗУЕМ ПРАВИЛЬНОЕ НАЗВАНИЕ МЕТОДА: getDashboardData()
-        when(() => mockRepo.getDashboardData()).thenAnswer(
-          (_) async => AnalyticsModel(
-            clientsCount: 150,
-            totalDebt: 0,
-            monthlyRevenue: 120000,
-            activeSubsCount: 45,
-          ),
-        );
+        when(
+          () => mockRepo.getDashboardData(),
+        ).thenAnswer((_) async => mockData);
         return bloc;
       },
       act: (bloc) => bloc.add(LoadAnalyticsEvent()),
@@ -46,9 +48,8 @@ void main() {
     );
 
     blocTest<AnalyticsBloc, AnalyticsState>(
-      'Ошибка загрузки: [AnalyticsLoading, AnalyticsError]',
+      'Ошибка загрузки',
       build: () {
-        // ИСПОЛЬЗУЕМ ПРАВИЛЬНОЕ НАЗВАНИЕ МЕТОДА: getDashboardData()
         when(
           () => mockRepo.getDashboardData(),
         ).thenThrow(Exception('Server crash'));

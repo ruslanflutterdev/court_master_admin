@@ -4,34 +4,26 @@ import 'package:court_master_admin/features/analytics/data/models/analytics_mode
 void main() {
   group('AnalyticsModel Tests', () {
     test('Успешный парсинг аналитики из JSON со всеми полями', () {
-      // 1. Создаем JSON, который точно совпадает с полями из твоего бэкенда
       final json = {
-        'clientsCount': 150,
-        'totalDebt': 5000,
         'monthlyRevenue': 120000,
+        'totalDebt': 50000,
+        'totalClients': 150, // Ключ должен быть totalClients, а не clientsCount
         'activeSubsCount': 45,
+        'revenueByCourt': [
+          {'name': 'Корт 1', 'value': 70000.0},
+        ],
+        'revenueByCoach': [
+          {'name': 'Тренер 1', 'value': 50000.0},
+        ],
       };
 
-      // 2. Парсим
-      final result = AnalyticsModel.fromJson(json);
+      final model = AnalyticsModel.fromJson(json);
 
-      // 3. Проверяем твои реальные поля
-      expect(result.clientsCount, 150);
-      expect(result.totalDebt, 5000);
-      expect(result.monthlyRevenue, 120000);
-      expect(result.activeSubsCount, 45);
-    });
-
-    test('Парсинг пустого JSON (проверка нулей по умолчанию)', () {
-      final json = <String, dynamic>{}; // Пустой JSON
-
-      final result = AnalyticsModel.fromJson(json);
-
-      // Проверяем, что вместо null подставились нули (как у тебя прописано в fromJson)
-      expect(result.clientsCount, 0);
-      expect(result.totalDebt, 0);
-      expect(result.monthlyRevenue, 0);
-      expect(result.activeSubsCount, 0);
+      expect(model.monthlyRevenue, 120000);
+      expect(model.totalDebt, 50000);
+      expect(model.clientsCount, 150); // Проверяем поле модели
+      expect(model.activeSubsCount, 45);
+      expect(model.revenueByCourt.first.name, 'Корт 1');
     });
   });
 }

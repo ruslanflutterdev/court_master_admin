@@ -16,5 +16,14 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeesState> {
         emit(EmployeesError(e.toString().replaceAll('Exception: ', '')));
       }
     });
+
+    on<AddCoachRequested>((event, emit) async {
+      try {
+        await repository.createCoach(event.coachData);
+        add(LoadEmployeesEvent());
+      } catch (e) {
+        emit(EmployeesError(e.toString()));
+      }
+    });
   }
 }

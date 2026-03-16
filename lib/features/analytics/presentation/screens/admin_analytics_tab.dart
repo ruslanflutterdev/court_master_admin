@@ -6,7 +6,6 @@ import '../bloc/analytics_event.dart';
 import '../bloc/analytics_state.dart';
 import '../widgets/analytics_metrics_grid.dart';
 import '../widgets/dashboard/simple_pie_chart.dart';
-import '../widgets/quick_sale_fab.dart';
 
 class AdminAnalyticsTab extends StatelessWidget {
   const AdminAnalyticsTab({super.key});
@@ -31,7 +30,6 @@ class AdminAnalyticsTab extends StatelessWidget {
             ),
           ],
         ),
-        floatingActionButton: const QuickSaleFab(),
         body: const AnalyticsContent(),
       ),
     );
@@ -45,8 +43,19 @@ class AnalyticsContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AnalyticsBloc, AnalyticsState>(
       builder: (context, state) {
-        if (state is AnalyticsLoading)
+        if (state is AnalyticsLoading) {
           return const Center(child: CircularProgressIndicator());
+        }
+        if (state is AnalyticsError) {
+          return Center(
+            child: Text(
+              'Бекенд обновляется...\nОшибка: ${state.message}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.red, fontSize: 16),
+            ),
+          );
+        }
+
         if (state is AnalyticsLoaded) {
           final d = state.data;
           return RefreshIndicator(

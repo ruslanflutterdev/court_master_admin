@@ -62,14 +62,14 @@ class _ScheduleWeekViewState extends State<ScheduleWeekView> {
           onChanged: (val) => setState(() => _selectedCourtId = val),
         ),
         Expanded(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const TimeColumn(), // Переиспользуемый виджет!
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+          child: SingleChildScrollView(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const TimeColumn(),
+                Expanded(
                   child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
                     child: Row(
                       children: weekDays.asMap().entries.map((entry) {
                         final currentDay = entry.value;
@@ -95,8 +95,8 @@ class _ScheduleWeekViewState extends State<ScheduleWeekView> {
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],

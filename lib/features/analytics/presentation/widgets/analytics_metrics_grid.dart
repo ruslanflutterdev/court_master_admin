@@ -4,15 +4,19 @@ import 'metric_card.dart';
 
 class AnalyticsMetricsGrid extends StatelessWidget {
   final AnalyticsModel d;
+
   const AnalyticsMetricsGrid({super.key, required this.d});
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.of(context).size.width > 600;
+
     return GridView.count(
       shrinkWrap: true,
-      crossAxisCount: 2,
+      crossAxisCount: isDesktop ? 4 : 2,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
+      childAspectRatio: isDesktop ? 1.8 : 1.3,
       physics: const NeverScrollableScrollPhysics(),
       children: [
         MetricCard(

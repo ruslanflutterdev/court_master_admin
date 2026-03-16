@@ -22,25 +22,23 @@ class ScheduleBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: InteractiveViewer(
-        constrained: false,
-        minScale: 0.3,
-        maxScale: 1.5,
-        boundaryMargin: const EdgeInsets.only(bottom: 200, right: 100),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const TimeColumn(),
-            ScheduleGridView(
-              state: state,
-              isPastDate: isPastDate,
-              onEditCourt: onEditCourt,
-              onTimeSlotTapped: onTimeSlotTapped,
-              onEventTapped: onEventTapped,
-            ),
-          ],
-        ),
+    return InteractiveViewer(
+      constrained: false,
+      minScale: 0.3,
+      maxScale: 1.5,
+      boundaryMargin: const EdgeInsets.only(bottom: 200, right: 100),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const TimeColumn(),
+          ScheduleGridView(
+            state: state,
+            isPastDate: isPastDate,
+            onEditCourt: onEditCourt,
+            onTimeSlotTapped: onTimeSlotTapped,
+            onEventTapped: onEventTapped,
+          ),
+        ],
       ),
     );
   }

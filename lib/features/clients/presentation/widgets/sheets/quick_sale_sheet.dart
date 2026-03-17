@@ -85,7 +85,10 @@ class _QuickSaleSheetState extends State<QuickSaleSheet> {
 
               const Text(
                 '1. Клиент',
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
               ),
               const SizedBox(height: 8),
 
@@ -116,7 +119,10 @@ class _QuickSaleSheetState extends State<QuickSaleSheet> {
               const SizedBox(height: 24),
               const Text(
                 '2. Покупка',
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
               ),
               const SizedBox(height: 8),
 
@@ -124,7 +130,8 @@ class _QuickSaleSheetState extends State<QuickSaleSheet> {
                 selectedSaleType: _saleType,
                 paymentMethod: _paymentMethod,
                 onSaleTypeChanged: (val) => setState(() => _saleType = val),
-                onPaymentMethodChanged: (val) => setState(() => _paymentMethod = val),
+                onPaymentMethodChanged: (val) =>
+                    setState(() => _paymentMethod = val),
               ),
 
               const SizedBox(height: 16),
@@ -134,13 +141,16 @@ class _QuickSaleSheetState extends State<QuickSaleSheet> {
                 decoration: InputDecoration(
                   labelText: 'Сумма к оплате (₸)',
                   prefixIcon: const Icon(Icons.attach_money),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   filled: true,
                   fillColor: Colors.white,
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) return 'Введите сумму';
-                  if (int.tryParse(value) == null) return 'Введите корректное число';
+                  if (int.tryParse(value) == null)
+                    return 'Введите корректное число';
                   return null;
                 },
               ),
@@ -150,7 +160,9 @@ class _QuickSaleSheetState extends State<QuickSaleSheet> {
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                   backgroundColor: Colors.orange,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: _submit,
                 child: const Text(

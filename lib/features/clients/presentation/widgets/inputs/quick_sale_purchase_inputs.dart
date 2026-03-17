@@ -27,7 +27,10 @@ class QuickSalePurchaseInputs extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Тип операции', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const Text(
+          'Тип операции',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 12),
         DropdownButtonFormField<String>(
           initialValue: selectedSaleType,
@@ -47,7 +50,10 @@ class QuickSalePurchaseInputs extends StatelessWidget {
 
         const SizedBox(height: 16),
 
-        const Text('Способ оплаты', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const Text(
+          'Способ оплаты',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 12),
         DropdownButtonFormField<int>(
           initialValue: paymentMethod,

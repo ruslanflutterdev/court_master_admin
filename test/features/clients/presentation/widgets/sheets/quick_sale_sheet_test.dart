@@ -42,8 +42,8 @@ void main() {
     }
 
     testWidgets('Отрисовка формы Быстрой продажи и элементов управления', (
-        WidgetTester tester,
-        ) async {
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       // 1. Проверяем, что форма открылась и есть главный заголовок
@@ -60,8 +60,8 @@ void main() {
     });
 
     testWidgets('Показ ошибки, если нажать "Провести продажу" с пустыми полями', (
-        WidgetTester tester,
-        ) async {
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Находим кнопку
@@ -73,7 +73,8 @@ void main() {
 
       // Робот нажимает кнопку
       await tester.tap(buttonFinder);
-      await tester.pumpAndSettle(); // Ждем анимацию появления красного текста ошибки
+      await tester
+          .pumpAndSettle(); // Ждем анимацию появления красного текста ошибки
 
       // 🚀 ИСПРАВЛЕНО: Теперь мы ищем ошибку валидации формы без восклицательного знака!
       expect(find.text('Введите сумму'), findsOneWidget);

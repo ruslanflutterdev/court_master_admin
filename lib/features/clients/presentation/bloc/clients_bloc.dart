@@ -31,16 +31,36 @@ class ClientsBloc extends Bloc<ClientsEvent, ClientsState> {
     on<SearchClientsEvent>((event, emit) {
       if (state is ClientsLoaded) {
         final st = state as ClientsLoaded;
-        final newFiltered = _applyFiltersAndSearch(st.clients, event.query, st.currentSegment);
-        emit(st.copyWith(filteredClients: newFiltered, searchQuery: event.query, currentPage: 1));
+        final newFiltered = _applyFiltersAndSearch(
+          st.clients,
+          event.query,
+          st.currentSegment,
+        );
+        emit(
+          st.copyWith(
+            filteredClients: newFiltered,
+            searchQuery: event.query,
+            currentPage: 1,
+          ),
+        );
       }
     });
 
     on<FilterClientsBySegmentEvent>((event, emit) {
       if (state is ClientsLoaded) {
         final st = state as ClientsLoaded;
-        final newFiltered = _applyFiltersAndSearch(st.clients, st.searchQuery, event.segment);
-        emit(st.copyWith(filteredClients: newFiltered, currentSegment: event.segment, currentPage: 1));
+        final newFiltered = _applyFiltersAndSearch(
+          st.clients,
+          st.searchQuery,
+          event.segment,
+        );
+        emit(
+          st.copyWith(
+            filteredClients: newFiltered,
+            currentSegment: event.segment,
+            currentPage: 1,
+          ),
+        );
       }
     });
 
@@ -52,12 +72,21 @@ class ClientsBloc extends Bloc<ClientsEvent, ClientsState> {
 
     on<ChangeItemsPerPageEvent>((event, emit) {
       if (state is ClientsLoaded) {
-        emit((state as ClientsLoaded).copyWith(itemsPerPage: event.itemsPerPage, currentPage: 1));
+        emit(
+          (state as ClientsLoaded).copyWith(
+            itemsPerPage: event.itemsPerPage,
+            currentPage: 1,
+          ),
+        );
       }
     });
   }
 
-  List<ClientModel> _applyFiltersAndSearch(List<ClientModel> all, String query, ClientSegment segment) {
+  List<ClientModel> _applyFiltersAndSearch(
+    List<ClientModel> all,
+    String query,
+    ClientSegment segment,
+  ) {
     final filtered = all.where((c) {
       bool segmentMatch = true;
       if (segment == ClientSegment.debtors) {
@@ -67,14 +96,16 @@ class ClientsBloc extends Bloc<ClientsEvent, ClientsState> {
       } else if (segment == ClientSegment.sub) {
         segmentMatch = (c.activeSubscriptionsCount ?? 0) > 0;
       } else if (segment == ClientSegment.rent) {
-        segmentMatch = c.tags.any((tag) => tag.toLowerCase() == 'аренда');
+        segmentMatch =
+            c.hasRent || c.tags.any((tag) => tag.toLowerCase() == 'аренда');
       }
 
       bool searchMatch = true;
       if (query.isNotEmpty) {
         final lowerQuery = query.toLowerCase();
         final fullName = '${c.firstName} ${c.lastName}'.toLowerCase();
-        searchMatch = fullName.contains(lowerQuery) ||
+        searchMatch =
+            fullName.contains(lowerQuery) ||
             (c.phone ?? '').toLowerCase().contains(lowerQuery) ||
             (c.email ?? '').toLowerCase().contains(lowerQuery);
       }

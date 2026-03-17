@@ -5,6 +5,10 @@ import '../bloc/clients_bloc.dart';
 import '../bloc/clients_event.dart';
 import '../bloc/clients_state.dart';
 import '../widgets/cards/client_list_card.dart';
+import '../widgets/search/client_filters_row.dart';
+import '../widgets/search/client_search_bar.dart';
+import '../widgets/search/client_segments_bar.dart';
+import '../widgets/search/client_pagination_footer.dart';
 
 class AdminClientsTab extends StatelessWidget {
   const AdminClientsTab({super.key});
@@ -14,14 +18,6 @@ class AdminClientsTab extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Клиенты и Финансы'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // Позже вынесем поиск в отдельный виджет
-            },
-          ),
-        ],
       ),
       body: BlocBuilder<ClientsBloc, ClientsState>(
         builder: (context, state) {
@@ -29,31 +25,52 @@ class AdminClientsTab extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (state is ClientsError) {
-            return Center(
-              child: Text(
-                'Ошибка: ${state.message}',
-                style: const TextStyle(color: Colors.red),
-              ),
-            );
+            return Center(child: Text('Ошибка: ${state.message}', style: const TextStyle(color: Colors.red)));
           }
           if (state is ClientsLoaded) {
-            if (state.clients.isEmpty) {
-              return const Center(child: Text('Клиентов пока нет.'));
-            }
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: state.clients.length,
-              itemBuilder: (context, index) {
-                final client = state.clients[index];
-                return ClientListCard(
-                  client: client,
-                  onTap: () async {
-                    final bloc = context.read<ClientsBloc>();
-                    await context.push('/client-details/${client.id}');
-                    bloc.add(LoadClientsEvent());
-                  },
-                );
-              },
+            final paginatedList = state.paginatedClients;
+
+            return Column(
+              children: [
+                ClientSearchBar(
+                  onChanged: (query) => context.read<ClientsBloc>().add(SearchClientsEvent(query)),
+                ),
+
+                ClientSegmentsBar(
+                  selectedSegment: state.currentSegment,
+                  onSegmentChanged: (segment) => context.read<ClientsBloc>().add(FilterClientsBySegmentEvent(segment)),
+                ),
+
+                const ClientFiltersRow(),
+
+                Expanded(
+                  child: state.filteredClients.isEmpty
+                      ? const Center(child: Text('Клиентов не найдено.'))
+                      : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemCount: paginatedList.length,
+                    itemBuilder: (context, index) {
+                      final client = paginatedList[index];
+                      return ClientListCard(
+                        client: client,
+                        onTap: () async {
+                          final bloc = context.read<ClientsBloc>();
+                          await context.push('/client-details/${client.id}');
+                          bloc.add(LoadClientsEvent());
+                        },
+                      );
+                    },
+                  ),
+                ),
+
+                ClientPaginationFooter(
+                  currentPage: state.currentPage,
+                  totalPages: state.totalPages,
+                  itemsPerPage: state.itemsPerPage,
+                  onPageChanged: (page) => context.read<ClientsBloc>().add(ChangePageEvent(page)),
+                  onItemsPerPageChanged: (items) => context.read<ClientsBloc>().add(ChangeItemsPerPageEvent(items)),
+                ),
+              ],
             );
           }
           return const SizedBox.shrink();

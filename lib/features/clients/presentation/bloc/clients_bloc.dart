@@ -58,7 +58,7 @@ class ClientsBloc extends Bloc<ClientsEvent, ClientsState> {
   }
 
   List<ClientModel> _applyFiltersAndSearch(List<ClientModel> all, String query, ClientSegment segment) {
-    return all.where((c) {
+    final filtered = all.where((c) {
       bool segmentMatch = true;
       if (segment == ClientSegment.debtors) {
         segmentMatch = c.balance < 0;
@@ -81,5 +81,12 @@ class ClientsBloc extends Bloc<ClientsEvent, ClientsState> {
 
       return segmentMatch && searchMatch;
     }).toList();
+    filtered.sort((a, b) {
+      int nameComp = a.firstName.compareTo(b.firstName);
+      if (nameComp != 0) return nameComp;
+      return (a.lastName).compareTo(b.lastName);
+    });
+
+    return filtered;
   }
 }

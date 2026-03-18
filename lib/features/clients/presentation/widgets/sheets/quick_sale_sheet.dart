@@ -149,8 +149,9 @@ class _QuickSaleSheetState extends State<QuickSaleSheet> {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) return 'Введите сумму';
-                  if (int.tryParse(value) == null)
+                  if (int.tryParse(value) == null) {
                     return 'Введите корректное число';
+                  }
                   return null;
                 },
               ),

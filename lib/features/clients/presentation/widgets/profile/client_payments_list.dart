@@ -9,8 +9,7 @@ class ClientPaymentsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (transactions.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(16.0),
+      return const Center(
         child: Text(
           'История операций пуста',
           style: TextStyle(color: Colors.grey),
@@ -18,34 +17,51 @@ class ClientPaymentsList extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+    return ListView.separated(
+      padding: const EdgeInsets.all(16.0),
       itemCount: transactions.length,
+      separatorBuilder: (context, index) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final tx = transactions[index];
-        // Если это Приход ('income') - цвет зеленый и плюсик, если расход - красный и минус
         final isIncome = tx.type == 'income';
-        final color = isIncome ? Colors.green : Colors.red;
+
+        Color catColor = Colors.grey;
+        IconData catIcon = Icons.monetization_on;
+        String catName = tx.description ?? 'Операция';
+
+        if (tx.category == 'rent') {
+          catColor = Colors.orange;
+          catIcon = Icons.sports_tennis;
+        } else if (tx.category == 'group_sub' || tx.category == 'indiv_sub') {
+          catColor = Colors.purple;
+          catIcon = Icons.card_membership;
+        } else if (tx.category == 'deposit') {
+          catColor = Colors.blue;
+          catIcon = Icons.account_balance_wallet;
+        }
+
+
+        final moneyColor = isIncome ? Colors.green : Colors.red;
         final sign = isIncome ? '+' : '-';
 
         return ListTile(
+          contentPadding: EdgeInsets.zero,
           leading: CircleAvatar(
-            backgroundColor: color.withAlpha(20),
-            child: Icon(
-              isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-              color: color,
-            ),
+            backgroundColor: catColor.withAlpha(20),
+            child: Icon(catIcon, color: catColor),
           ),
           title: Text(
-            tx.description ?? 'Финансовая операция',
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            catName,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
-          subtitle: Text(_formatDate(tx.createdAt)),
+          subtitle: Text(
+            _formatDate(tx.createdAt),
+            style: const TextStyle(fontSize: 12),
+          ),
           trailing: Text(
             '$sign ${tx.amount} ₸',
             style: TextStyle(
-              color: color,
+              color: moneyColor,
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),

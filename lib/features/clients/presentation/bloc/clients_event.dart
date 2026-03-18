@@ -28,3 +28,18 @@ class ChangeItemsPerPageEvent extends ClientsEvent {
   final int itemsPerPage;
   ChangeItemsPerPageEvent(this.itemsPerPage);
 }
+
+class FilterByLevelEvent extends ClientsEvent {
+  final String? level;
+  FilterByLevelEvent(this.level);
+}
+
+class FilterByTagEvent extends ClientsEvent {
+  final String? tag;
+  FilterByTagEvent(this.tag);
+}
+
+class SortClientsEvent extends ClientsEvent {
+  final String sortBy;
+  SortClientsEvent(this.sortBy);
+}

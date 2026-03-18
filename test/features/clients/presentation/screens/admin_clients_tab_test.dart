@@ -11,7 +11,8 @@ import 'package:court_master_admin/features/clients/presentation/screens/admin_c
 import 'package:court_master_admin/features/clients/data/models/client_model.dart';
 import 'package:court_master_admin/features/clients/presentation/widgets/cards/client_list_row.dart';
 
-class MockClientsBloc extends MockBloc<ClientsEvent, ClientsState> implements ClientsBloc {}
+class MockClientsBloc extends MockBloc<ClientsEvent, ClientsState>
+    implements ClientsBloc {}
 
 void main() {
   late MockClientsBloc mockBloc;
@@ -30,7 +31,9 @@ void main() {
   }
 
   group('AdminClientsTab Tests', () {
-    testWidgets('Показывает список клиентов в виде таблицы (ClientListRow)', (tester) async {
+    testWidgets('Показывает список клиентов в виде таблицы (ClientListRow)', (
+      tester,
+    ) async {
       // Подготовим фейкового клиента с новыми полями
       final fakeClient = ClientModel(
         id: '1',
@@ -39,12 +42,12 @@ void main() {
         phone: '123',
         balance: 1000,
         totalSpent: 5000, // Наша новая выручка
-        hasRent: true,    // Наш новый флаг аренды
+        hasRent: true, // Наш новый флаг аренды
       );
 
-      when(() => mockBloc.state).thenReturn(
-        ClientsLoaded([fakeClient], filteredClients: [fakeClient]),
-      );
+      when(
+        () => mockBloc.state,
+      ).thenReturn(ClientsLoaded([fakeClient], filteredClients: [fakeClient]));
 
       await tester.pumpWidget(createWidgetUnderTest());
 
@@ -58,17 +61,28 @@ void main() {
       // 3. Проверяем, что наша строка (ClientListRow) отрисовалась с правильными данными
       expect(find.byType(ClientListRow), findsOneWidget);
       expect(find.text('Иван Иванов'), findsOneWidget);
-      expect(find.text('5000 ₸'), findsOneWidget); // Проверяем, что вывелся totalSpent
+      expect(
+        find.text('5000 ₸'),
+        findsOneWidget,
+      ); // Проверяем, что вывелся totalSpent
     });
 
-    testWidgets('Проверка выпадающих списков фильтров (Шторки)', (tester) async {
+    testWidgets('Проверка выпадающих списков фильтров (Шторки)', (
+      tester,
+    ) async {
       when(() => mockBloc.state).thenReturn(ClientsLoaded(const []));
 
       await tester.pumpWidget(createWidgetUnderTest());
 
       // У нас должно быть три выпадающих списка: Уровень, Статус, Сортировка
-      expect(find.text('Все'), findsWidgets); // Значение по умолчанию для Уровня и Статуса
-      expect(find.text('По алфавиту'), findsOneWidget); // Значение по умолчанию для Сортировки
+      expect(
+        find.text('Все'),
+        findsWidgets,
+      ); // Значение по умолчанию для Уровня и Статуса
+      expect(
+        find.text('По алфавиту'),
+        findsOneWidget,
+      ); // Значение по умолчанию для Сортировки
 
       // Нажимаем на сортировку (По алфавиту)
       await tester.tap(find.text('По алфавиту'));
@@ -79,24 +93,27 @@ void main() {
       expect(find.text('По выручке').last, findsOneWidget);
     });
 
-    testWidgets('Пагинация: Проверка изменения количества элементов на странице', (tester) async {
-      when(() => mockBloc.state).thenReturn(ClientsLoaded(const []));
+    testWidgets(
+      'Пагинация: Проверка изменения количества элементов на странице',
+      (tester) async {
+        when(() => mockBloc.state).thenReturn(ClientsLoaded(const []));
 
-      await tester.pumpWidget(createWidgetUnderTest());
+        await tester.pumpWidget(createWidgetUnderTest());
 
-      // Проверяем наличие футера пагинации
-      expect(find.text('Показывать:'), findsOneWidget);
+        // Проверяем наличие футера пагинации
+        expect(find.text('Показывать:'), findsOneWidget);
 
-      // По умолчанию 20 элементов
-      expect(find.text('20'), findsOneWidget);
+        // По умолчанию 20 элементов
+        expect(find.text('20'), findsOneWidget);
 
-      // Открываем список количества элементов
-      await tester.tap(find.text('20'));
-      await tester.pumpAndSettle();
+        // Открываем список количества элементов
+        await tester.tap(find.text('20'));
+        await tester.pumpAndSettle();
 
-      // Проверяем, что можно выбрать 50 или 100
-      expect(find.text('50').last, findsOneWidget);
-      expect(find.text('100').last, findsOneWidget);
-    });
+        // Проверяем, что можно выбрать 50 или 100
+        expect(find.text('50').last, findsOneWidget);
+        expect(find.text('100').last, findsOneWidget);
+      },
+    );
   });
 }

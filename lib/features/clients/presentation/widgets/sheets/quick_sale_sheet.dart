@@ -25,6 +25,7 @@ class _QuickSaleSheetState extends State<QuickSaleSheet> {
   final _phoneController = TextEditingController();
 
   String _saleType = 'rent';
+  int _classesCount = 8;
   final _priceController = TextEditingController();
   int _paymentMethod = 1;
   bool get _isNewClient => _selectedClient == null;
@@ -45,7 +46,7 @@ class _QuickSaleSheetState extends State<QuickSaleSheet> {
       };
 
       if (_saleType == 'group_sub' || _saleType == 'indiv_sub') {
-        data['totalClasses'] = 8;
+        data['totalClasses'] = _classesCount;
       } else {
         data['totalClasses'] = 1;
       }
@@ -133,6 +134,25 @@ class _QuickSaleSheetState extends State<QuickSaleSheet> {
                 onPaymentMethodChanged: (val) =>
                     setState(() => _paymentMethod = val),
               ),
+
+              if (_saleType == 'group_sub') ...[
+                const SizedBox(height: 16),
+                const Text(
+                  'Пакет тренировок (на 4 недели)',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                SegmentedButton<int>(
+                  segments: const [
+                    ButtonSegment(value: 8, label: Text('8 занятий')),
+                    ButtonSegment(value: 12, label: Text('12 занятий')),
+                  ],
+                  selected: {_classesCount},
+                  onSelectionChanged: (newSelection) {
+                    setState(() => _classesCount = newSelection.first);
+                  },
+                ),
+              ],
 
               const SizedBox(height: 16),
               TextFormField(

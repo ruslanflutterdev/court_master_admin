@@ -11,5 +11,7 @@ class EventAttendanceError extends EventAttendanceState {
 
 class EventAttendanceLoaded extends EventAttendanceState {
   final List<AttendanceStudentModel> students;
-  EventAttendanceLoaded(this.students);
+  final String? errorMessage;
+
+  EventAttendanceLoaded(this.students, {this.errorMessage});
 }

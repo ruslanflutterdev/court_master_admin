@@ -18,18 +18,20 @@ class ClientsLoaded extends ClientsState {
   final String sortBy;
 
   ClientsLoaded(
-      this.clients, {
-        List<ClientModel>? filteredClients,
-        this.searchQuery = '',
-        this.currentSegment = ClientSegment.all,
-        this.currentPage = 1,
-        this.itemsPerPage = 20,
-        this.selectedLevel,
-        this.selectedTag,
-        this.sortBy = 'name',
-      }) : filteredClients = filteredClients ?? clients;
+    this.clients, {
+    List<ClientModel>? filteredClients,
+    this.searchQuery = '',
+    this.currentSegment = ClientSegment.all,
+    this.currentPage = 1,
+    this.itemsPerPage = 20,
+    this.selectedLevel,
+    this.selectedTag,
+    this.sortBy = 'name',
+  }) : filteredClients = filteredClients ?? clients;
 
-  int get totalPages => filteredClients.isEmpty ? 1 : (filteredClients.length / itemsPerPage).ceil();
+  int get totalPages => filteredClients.isEmpty
+      ? 1
+      : (filteredClients.length / itemsPerPage).ceil();
 
   List<ClientModel> get paginatedClients {
     final startIndex = (currentPage - 1) * itemsPerPage;

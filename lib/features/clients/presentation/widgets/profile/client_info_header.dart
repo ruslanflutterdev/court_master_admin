@@ -30,7 +30,11 @@ class ClientInfoHeader extends StatelessWidget {
                     client.firstName.isNotEmpty
                         ? client.firstName[0].toUpperCase()
                         : '?',
-                    style: const TextStyle(fontSize: 24, color: Colors.green, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -45,24 +49,37 @@ class ClientInfoHeader extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      if (client.companyName != null && client.companyName!.isNotEmpty)
+                      if (client.companyName != null &&
+                          client.companyName!.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             '🏢 ${client.companyName}',
-                            style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       const SizedBox(height: 6),
-                      Text('📞 ${client.phone ?? "Нет телефона"}', style: TextStyle(color: Colors.grey.shade600)),
-                      Text('✉️ ${client.email ?? "Нет email"}', style: TextStyle(color: Colors.grey.shade600)),
+                      Text(
+                        '📞 ${client.phone ?? "Нет телефона"}',
+                        style: TextStyle(color: Colors.grey.shade600),
+                      ),
+                      Text(
+                        '✉️ ${client.email ?? "Нет email"}',
+                        style: TextStyle(color: Colors.grey.shade600),
+                      ),
                     ],
                   ),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Text('Депозит', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                    const Text(
+                      'Депозит',
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
                     Text(
                       '${client.balance} ₸',
                       style: TextStyle(
@@ -72,7 +89,10 @@ class ClientInfoHeader extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text('Общая выручка', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                    const Text(
+                      'Общая выручка',
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
                     Text(
                       '${client.totalSpent} ₸',
                       style: const TextStyle(
@@ -93,13 +113,15 @@ class ClientInfoHeader extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  if (client.skillLevel != null && client.skillLevel!.isNotEmpty)
+                  if (client.skillLevel != null &&
+                      client.skillLevel!.isNotEmpty)
                     Chip(
                       label: Text('🎾 Уровень: ${client.skillLevel}'),
                       backgroundColor: Colors.blue.shade50,
                       side: BorderSide.none,
                     ),
-                  if (client.acquisitionSource != null && client.acquisitionSource!.isNotEmpty)
+                  if (client.acquisitionSource != null &&
+                      client.acquisitionSource!.isNotEmpty)
                     Chip(
                       label: Text('📢 Источник: ${client.acquisitionSource}'),
                       backgroundColor: Colors.purple.shade50,
@@ -126,7 +148,13 @@ class ClientInfoHeader extends StatelessWidget {
                       children: [
                         Icon(Icons.note_alt, size: 16, color: Colors.orange),
                         SizedBox(width: 8),
-                        Text('Заметка:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.brown)),
+                        Text(
+                          'Заметка:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.brown,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),

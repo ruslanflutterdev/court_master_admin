@@ -40,7 +40,6 @@ class ClientPaymentsList extends StatelessWidget {
           catIcon = Icons.account_balance_wallet;
         }
 
-
         final moneyColor = isIncome ? Colors.green : Colors.red;
         final sign = isIncome ? '+' : '-';
 

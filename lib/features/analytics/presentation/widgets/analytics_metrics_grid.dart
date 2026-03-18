@@ -38,7 +38,7 @@ class AnalyticsMetricsGrid extends StatelessWidget {
           color: Colors.blue,
         ),
         MetricCard(
-          title: 'Абонементы',
+          title: 'Членские взносы',
           value: '${d.activeSubsCount}',
           icon: Icons.star,
           color: Colors.orange,

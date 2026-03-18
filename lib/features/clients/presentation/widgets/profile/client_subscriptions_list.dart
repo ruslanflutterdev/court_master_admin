@@ -10,15 +10,19 @@ class ClientSubscriptionsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (subscriptions.isEmpty) {
-      return const Text(
-        'У клиента пока нет абонементов',
-        style: TextStyle(color: Colors.grey),
+      return const Center(
+        child: Text(
+          'У клиента пока нет абонементов',
+          style: TextStyle(color: Colors.grey),
+        ),
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: subscriptions.map((sub) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: subscriptions.length,
+      itemBuilder: (context, index) {
+        final sub = subscriptions[index];
         final isActive = sub.status == 1;
         final color = SubscriptionHelper.getTypeColor(sub.type);
 
@@ -28,16 +32,20 @@ class ClientSubscriptionsList extends StatelessWidget {
             : '${sub.usedClasses} из ${sub.totalClasses} занятий';
 
         return Card(
-          margin: const EdgeInsets.only(bottom: 8),
+          margin: const EdgeInsets.only(bottom: 12),
           elevation: 0,
           color: isActive ? Colors.white : Colors.grey.shade100,
           shape: RoundedRectangleBorder(
             side: BorderSide(
               color: isActive ? color.withAlpha(150) : Colors.grey.shade300,
             ),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
             leading: CircleAvatar(
               backgroundColor: isActive
                   ? color.withAlpha(70)
@@ -55,29 +63,51 @@ class ClientSubscriptionsList extends StatelessWidget {
                 decoration: isActive ? null : TextDecoration.lineThrough,
               ),
             ),
-            subtitle: Text(progressText),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Text(
+                progressText,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ),
             trailing: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  isActive ? 'Активен' : 'Завершен',
-                  style: TextStyle(
-                    color: isActive ? Colors.green : Colors.grey,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? Colors.green.shade50
+                        : Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    isActive ? 'Активен' : 'Завершен',
+                    style: TextStyle(
+                      color: isActive
+                          ? Colors.green.shade700
+                          : Colors.grey.shade700,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10,
+                    ),
                   ),
                 ),
-                if (sub.validUntil != null)
+                if (sub.validUntil != null) ...[
+                  const SizedBox(height: 4),
                   Text(
-                    'до ${sub.validUntil!.day}.${sub.validUntil!.month.toString().padLeft(2, '0')}',
+                    'до ${sub.validUntil!.day.toString().padLeft(2, '0')}.${sub.validUntil!.month.toString().padLeft(2, '0')}.${sub.validUntil!.year}',
                     style: const TextStyle(fontSize: 10, color: Colors.grey),
                   ),
+                ],
               ],
             ),
           ),
         );
-      }).toList(),
+      },
     );
   }
 }

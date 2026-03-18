@@ -6,7 +6,7 @@ import '../../bloc/event_attendance_state.dart';
 
 class EventAttendanceSheet extends StatefulWidget {
   final String eventId;
-  final String groupName; // Чтобы красиво вывести название группы в шапке
+  final String groupName;
 
   const EventAttendanceSheet({
     super.key,
@@ -22,7 +22,6 @@ class _EventAttendanceSheetState extends State<EventAttendanceSheet> {
   @override
   void initState() {
     super.initState();
-    // При открытии шторки сразу загружаем список учеников
     context.read<EventAttendanceBloc>().add(
       LoadAttendanceEvent(widget.eventId),
     );
@@ -37,7 +36,6 @@ class _EventAttendanceSheetState extends State<EventAttendanceSheet> {
         top: 16,
         bottom: MediaQuery.of(context).viewInsets.bottom + 16,
       ),
-      // Ограничиваем высоту шторки, чтобы она не была на весь экран, но скроллилась
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.8,
       ),
@@ -51,7 +49,39 @@ class _EventAttendanceSheetState extends State<EventAttendanceSheet> {
           const SizedBox(height: 16),
 
           Expanded(
-            child: BlocBuilder<EventAttendanceBloc, EventAttendanceState>(
+            child: BlocConsumer<EventAttendanceBloc, EventAttendanceState>(
+              listener: (context, state) {
+                if (state is EventAttendanceLoaded &&
+                    state.errorMessage != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: Colors.white),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              state.errorMessage!,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      backgroundColor: Colors.red.shade800,
+                      behavior: SnackBarBehavior.floating,
+                      margin: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                        left: 16,
+                        right: 16,
+                      ),
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                }
+              },
               builder: (context, state) {
                 if (state is EventAttendanceLoading) {
                   return const Center(child: CircularProgressIndicator());
@@ -76,7 +106,6 @@ class _EventAttendanceSheetState extends State<EventAttendanceSheet> {
                     separatorBuilder: (_, _) => const Divider(),
                     itemBuilder: (context, index) {
                       final student = students[index];
-                      // Определяем текущий статус: если еще не отмечали, будет null
                       final currentStatus = student.attendanceStatus;
 
                       return Padding(
@@ -88,7 +117,8 @@ class _EventAttendanceSheetState extends State<EventAttendanceSheet> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '${student.firstName} ${student.lastName}',
+                                  '${student.firstName} ${student.lastName ?? ''}'
+                                      .trim(),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
@@ -106,7 +136,6 @@ class _EventAttendanceSheetState extends State<EventAttendanceSheet> {
                               ],
                             ),
                             const SizedBox(height: 8),
-                            // Переключатель статуса
                             SegmentedButton<int>(
                               segments: const [
                                 ButtonSegment(
@@ -131,12 +160,10 @@ class _EventAttendanceSheetState extends State<EventAttendanceSheet> {
                                   ),
                                 ),
                               ],
-                              // Если статус null (еще не отмечали), ничего не выбрано
                               selected: currentStatus != null
                                   ? {currentStatus}
                                   : <int>{},
-                              emptySelectionAllowed:
-                                  true, // Разрешаем, чтобы изначально ничего не было выбрано
+                              emptySelectionAllowed: true,
                               onSelectionChanged: (Set<int> newSelection) {
                                 if (newSelection.isNotEmpty) {
                                   context.read<EventAttendanceBloc>().add(

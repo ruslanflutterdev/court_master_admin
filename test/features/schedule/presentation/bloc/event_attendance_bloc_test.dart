@@ -44,22 +44,38 @@ void main() {
     blocTest<EventAttendanceBloc, EventAttendanceState>(
       'Отметка студента вызывает перезагрузку списка',
       build: () {
-        // Сначала отрабатывает отметка (возвращаем пустоту)
         when(
           () => mockRepo.markAttendance('e1', 's1', 1),
         ).thenAnswer((_) async {});
-        // Затем BLoC сам вызывает перезагрузку списка
         when(
           () => mockRepo.getEventAttendance('e1'),
         ).thenAnswer((_) async => []);
         return bloc;
       },
+      seed: () => EventAttendanceLoaded([]),
       act: (bloc) => bloc.add(MarkStudentEvent('e1', 's1', 1)),
       expect: () => [
-        isA<
-          EventAttendanceLoading
-        >(), // Вызывается внутренним LoadAttendanceEvent
+        isA<EventAttendanceLoading>(),
         isA<EventAttendanceLoaded>(),
+      ],
+    );
+
+    blocTest<EventAttendanceBloc, EventAttendanceState>(
+      'Ошибка при отметке показывает сообщение, но сохраняет список',
+      build: () {
+        when(
+          () => mockRepo.markAttendance('e1', 's1', 1),
+        ).thenThrow(Exception('Нет активного абонемента'));
+        return bloc;
+      },
+      seed: () => EventAttendanceLoaded([]),
+      act: (bloc) => bloc.add(MarkStudentEvent('e1', 's1', 1)),
+      expect: () => [
+        isA<EventAttendanceLoaded>().having(
+          (s) => s.errorMessage,
+          'errorMessage',
+          contains('Нет активного абонемента'),
+        ),
       ],
     );
   });

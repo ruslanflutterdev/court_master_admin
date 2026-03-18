@@ -20,6 +20,8 @@ class ClientModel {
   final List<SubscriptionModel>? subscriptions;
   final List<TransactionModel>? transactions;
   final List<ClientAttendanceModel>? attendances;
+  final int totalSpent;
+  final bool hasRent;
 
   ClientModel({
     required this.id,
@@ -37,6 +39,8 @@ class ClientModel {
     this.subscriptions,
     this.transactions,
     this.attendances,
+    this.totalSpent = 0,
+    this.hasRent = false,
   });
 
   factory ClientModel.fromJson(Map<String, dynamic> json) {
@@ -48,6 +52,8 @@ class ClientModel {
       email: json['email'],
       balance: json['balance'] ?? 0,
       activeSubscriptionsCount: json['_count']?['subscriptions'],
+      totalSpent: json['totalSpent'] ?? 0,
+      hasRent: json['hasRent'] ?? false,
       companyName: json['companyName'],
       skillLevel: json['skillLevel'],
       acquisitionSource: json['acquisitionSource'],

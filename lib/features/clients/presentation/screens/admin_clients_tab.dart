@@ -4,7 +4,11 @@ import 'package:go_router/go_router.dart';
 import '../bloc/clients_bloc.dart';
 import '../bloc/clients_event.dart';
 import '../bloc/clients_state.dart';
-import '../widgets/cards/client_list_card.dart';
+import '../widgets/cards/client_list_row.dart';
+import '../widgets/search/client_filters_row.dart';
+import '../widgets/search/client_search_bar.dart';
+import '../widgets/search/client_segments_bar.dart';
+import '../widgets/search/client_pagination_footer.dart';
 
 class AdminClientsTab extends StatelessWidget {
   const AdminClientsTab({super.key});
@@ -12,17 +16,7 @@ class AdminClientsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Клиенты и Финансы'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // Позже вынесем поиск в отдельный виджет
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Клиенты и Финансы')),
       body: BlocBuilder<ClientsBloc, ClientsState>(
         builder: (context, state) {
           if (state is ClientsLoading) {
@@ -37,23 +31,57 @@ class AdminClientsTab extends StatelessWidget {
             );
           }
           if (state is ClientsLoaded) {
-            if (state.clients.isEmpty) {
-              return const Center(child: Text('Клиентов пока нет.'));
-            }
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: state.clients.length,
-              itemBuilder: (context, index) {
-                final client = state.clients[index];
-                return ClientListCard(
-                  client: client,
-                  onTap: () async {
-                    final bloc = context.read<ClientsBloc>();
-                    await context.push('/client-details/${client.id}');
-                    bloc.add(LoadClientsEvent());
-                  },
-                );
-              },
+            final paginatedList = state.paginatedClients;
+
+            return Column(
+              children: [
+                ClientSearchBar(
+                  onChanged: (query) => context.read<ClientsBloc>().add(
+                    SearchClientsEvent(query),
+                  ),
+                ),
+                ClientSegmentsBar(
+                  selectedSegment: state.currentSegment,
+                  onSegmentChanged: (segment) => context
+                      .read<ClientsBloc>()
+                      .add(FilterClientsBySegmentEvent(segment)),
+                ),
+                const ClientFiltersRow(),
+                ClientTableHeader(currentSegment: state.currentSegment),
+
+                Expanded(
+                  child: state.filteredClients.isEmpty
+                      ? const Center(child: Text('Клиентов не найдено.'))
+                      : ListView.builder(
+                          itemCount: paginatedList.length,
+                          itemBuilder: (context, index) {
+                            final client = paginatedList[index];
+                            return ClientListRow(
+                              client: client,
+                              currentSegment: state.currentSegment,
+                              onTap: () async {
+                                final bloc = context.read<ClientsBloc>();
+                                await context.push(
+                                  '/client-details/${client.id}',
+                                );
+                                bloc.add(LoadClientsEvent());
+                              },
+                            );
+                          },
+                        ),
+                ),
+
+                ClientPaginationFooter(
+                  currentPage: state.currentPage,
+                  totalPages: state.totalPages,
+                  itemsPerPage: state.itemsPerPage,
+                  onPageChanged: (page) =>
+                      context.read<ClientsBloc>().add(ChangePageEvent(page)),
+                  onItemsPerPageChanged: (items) => context
+                      .read<ClientsBloc>()
+                      .add(ChangeItemsPerPageEvent(items)),
+                ),
+              ],
             );
           }
           return const SizedBox.shrink();

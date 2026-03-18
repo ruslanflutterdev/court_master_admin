@@ -20,15 +20,23 @@ class EventAttendanceBloc
     });
 
     on<MarkStudentEvent>((event, emit) async {
-      try {
-        await repository.markAttendance(
-          event.eventId,
-          event.studentId,
-          event.status,
-        );
-        add(LoadAttendanceEvent(event.eventId));
-      } catch (e) {
-        emit(EventAttendanceError(e.toString().replaceAll('Exception: ', '')));
+      if (state is EventAttendanceLoaded) {
+        final currentStudents = (state as EventAttendanceLoaded).students;
+        try {
+          await repository.markAttendance(
+            event.eventId,
+            event.studentId,
+            event.status,
+          );
+          add(LoadAttendanceEvent(event.eventId));
+        } catch (e) {
+          emit(
+            EventAttendanceLoaded(
+              currentStudents,
+              errorMessage: e.toString().replaceAll('Exception: ', ''),
+            ),
+          );
+        }
       }
     });
   }

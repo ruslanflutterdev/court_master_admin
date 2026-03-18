@@ -73,10 +73,11 @@ void main() {
 
       // Робот нажимает кнопку
       await tester.tap(buttonFinder);
-      await tester.pumpAndSettle(); // Ждем анимацию появления SnackBar
+      await tester
+          .pumpAndSettle(); // Ждем анимацию появления красного текста ошибки
 
-      // Так как мы ничего не ввели (цена = 0), должна появиться SnackBar с ошибкой
-      expect(find.text('Введите сумму!'), findsOneWidget);
+      // 🚀 ИСПРАВЛЕНО: Теперь мы ищем ошибку валидации формы без восклицательного знака!
+      expect(find.text('Введите сумму'), findsOneWidget);
     });
   });
 }

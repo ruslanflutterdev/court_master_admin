@@ -22,6 +22,8 @@ class ApiClient {
       ),
     );
 
+
+
     dio.interceptors.add(
       InterceptorsWrapper(
         onError: (DioException error, handler) {

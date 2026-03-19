@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/employees_bloc.dart';
 import '../bloc/employees_state.dart';
+import '../bloc/employees_event.dart'; // 🚀 ДОБАВЛЕН ИМПОРТ СОБЫТИЙ
 import '../widgets/cards/employee_list_card.dart';
 import '../screens/admin_coach_profile_screen.dart';
 import '../widgets/sheets/create_employee_sheet.dart';
@@ -40,6 +41,7 @@ class AdminEmployeesTab extends StatelessWidget {
               return const Center(
                 child: Text(
                   'Нет добавленных тренеров.\nНажмите "+", чтобы добавить.',
+                  textAlign: TextAlign.center,
                 ),
               );
             }
@@ -51,13 +53,17 @@ class AdminEmployeesTab extends StatelessWidget {
                 final coach = coaches[index];
                 return EmployeeListCard(
                   coach: coach,
-                  onTap: () {
-                    Navigator.push(
+                  onTap: () async {
+                    final bloc = context.read<EmployeesBloc>();
+
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => AdminCoachProfileScreen(coach: coach),
                       ),
                     );
+
+                    bloc.add(LoadEmployeesEvent());
                   },
                 );
               },

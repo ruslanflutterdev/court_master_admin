@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 final Map<String, String> saleTypes = {
   'rent': 'Аренда корта',
   'single': 'Разовое занятие',
+  'indiv_training': 'Индивидуальная тренировка',
   'group_sub': 'Членский взнос (Групповая тренировка)',
   'indiv_sub': 'Членский взнос (Индивидуальное занятие)',
   'deposit': 'Пополнение депозита',
@@ -47,9 +48,7 @@ class QuickSalePurchaseInputs extends StatelessWidget {
             if (val != null) onSaleTypeChanged(val);
           },
         ),
-
         const SizedBox(height: 16),
-
         const Text(
           'Способ оплаты',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

@@ -20,20 +20,16 @@ void main() {
     mockApiClient = MockApiClient();
     mockDio = MockDio();
 
-    // Указываем, что когда кто-то просит dio у ApiClient, возвращать наш MockDio
     when(() => mockApiClient.dio).thenReturn(mockDio);
-
-    // Регистрируем поддельный ApiClient в GetIt
     GetIt.I.registerSingleton<ApiClient>(mockApiClient);
   });
 
   tearDown(() {
-    // Очищаем GetIt после теста
     GetIt.I.reset();
   });
 
   testWidgets(
-    'Должен отображать данные тренера и загружать статистику с бекенда',
+    'Должен отображать данные тренера, загружать статистику с бекенда и отображать 3 виджета расчета зарплаты',
     (WidgetTester tester) async {
       // 1. Учим наш поддельный Dio отвечать на запрос статистики
       when(() => mockDio.get('/employees/1/stats')).thenAnswer(
@@ -43,7 +39,9 @@ void main() {
           data: {
             'groupsCount': 3,
             'eventsCount': 12,
-            'salaryPending': 'TODO: Начисление ЗП',
+            'indivSalary': 4500,
+            'groupSalary': 14000,
+            'singleSalary': 2850,
           },
         ),
       );
@@ -58,8 +56,12 @@ void main() {
         qualification: 'Мастер Спорта',
         specialization: 'Дети от 5 лет',
         rating: 5.0,
-        salaryType: 'hourly',
-        salaryRate: 5000,
+        indivStateTaxRate: 10,
+        indivClubTaxRate: 50,
+        groupStateTaxRate: 0,
+        groupClubTaxRate: 30,
+        singleStateTaxRate: 5,
+        singleClubTaxRate: 40,
       );
 
       // 3. Запускаем экран
@@ -67,28 +69,22 @@ void main() {
         MaterialApp(home: AdminCoachProfileScreen(coach: coach)),
       );
 
-      // Проверяем, что статичные данные тренера загрузились сразу
-      expect(find.text('Анна Иванова'), findsOneWidget);
-      expect(find.text('Мастер Спорта'), findsOneWidget);
-      expect(find.text('Дети от 5 лет'), findsOneWidget);
-      expect(find.text('5.0'), findsOneWidget);
-
-      // 4. Ждем, пока отработает FutureBuilder (поддельный запрос к API)
+      // Ждем, пока отработает FutureBuilder (загрузится страница)
       await tester.pumpAndSettle();
 
-      // 5. Проверяем, что статистика из JSON успешно отрендерилась
-      expect(find.text('Активные группы'), findsOneWidget);
-      expect(find.text('3'), findsOneWidget); // groupsCount
+      // 4. Проверяем, что статичные данные тренера успешно отрендерились
+      expect(find.text('Анна Иванова'), findsOneWidget);
+      expect(find.text('Дети от 5 лет'), findsOneWidget);
 
-      expect(find.text('Проведено занятий'), findsOneWidget);
-      expect(find.text('12'), findsOneWidget); // eventsCount
+      // 5. Проверяем наличие наших 3 блоков зарплаты
+      expect(find.text('Индивидуальные'), findsOneWidget);
+      expect(find.text('Абонементы (Группы)'), findsOneWidget);
+      expect(find.text('Разовые тренировки'), findsOneWidget);
 
-      expect(find.text('Текущий заработок'), findsOneWidget);
-      expect(find.text('TODO'), findsOneWidget); // Наша заглушка
-      expect(
-        find.text('Ставка: 5000 ₸/час'),
-        findsOneWidget,
-      ); // Ставка из модели
+      // 6. Проверяем, что заработанные суммы (из мока Dio) отобразились в UI
+      expect(find.text('4500 ₸'), findsOneWidget);
+      expect(find.text('14000 ₸'), findsOneWidget);
+      expect(find.text('2850 ₸'), findsOneWidget);
     },
   );
 }

@@ -8,8 +8,12 @@ class CoachModel {
   final String? qualification;
   final String? specialization;
   final double rating;
-  final String? salaryType;
-  final int? salaryRate;
+  final double indivStateTaxRate;
+  final double indivClubTaxRate;
+  final double groupStateTaxRate;
+  final double groupClubTaxRate;
+  final double singleStateTaxRate;
+  final double singleClubTaxRate;
 
   CoachModel({
     required this.id,
@@ -21,8 +25,12 @@ class CoachModel {
     this.qualification,
     this.specialization,
     this.rating = 5.0,
-    this.salaryType,
-    this.salaryRate,
+    this.indivStateTaxRate = 0.0,
+    this.indivClubTaxRate = 0.0,
+    this.groupStateTaxRate = 0.0,
+    this.groupClubTaxRate = 0.0,
+    this.singleStateTaxRate = 0.0,
+    this.singleClubTaxRate = 0.0,
   });
 
   factory CoachModel.fromJson(Map<String, dynamic> json) {
@@ -35,13 +43,23 @@ class CoachModel {
       phone: json['phone']?.toString(),
       qualification: json['qualification']?.toString(),
       specialization: json['specialization']?.toString(),
-      rating: json['rating'] != null
-          ? double.tryParse(json['rating'].toString()) ?? 5.0
-          : 5.0,
-      salaryType: json['salaryType']?.toString(),
-      salaryRate: json['salaryRate'] != null
-          ? int.tryParse(json['salaryRate'].toString())
-          : null,
+      rating: double.tryParse(json['rating']?.toString() ?? '5.0') ?? 5.0,
+
+      // Читаем новые 6 полей с бекенда
+      indivStateTaxRate:
+          double.tryParse(json['indivStateTaxRate']?.toString() ?? '0') ?? 0.0,
+      indivClubTaxRate:
+          double.tryParse(json['indivClubTaxRate']?.toString() ?? '0') ?? 0.0,
+
+      groupStateTaxRate:
+          double.tryParse(json['groupStateTaxRate']?.toString() ?? '0') ?? 0.0,
+      groupClubTaxRate:
+          double.tryParse(json['groupClubTaxRate']?.toString() ?? '0') ?? 0.0,
+
+      singleStateTaxRate:
+          double.tryParse(json['singleStateTaxRate']?.toString() ?? '0') ?? 0.0,
+      singleClubTaxRate:
+          double.tryParse(json['singleClubTaxRate']?.toString() ?? '0') ?? 0.0,
     );
   }
 
@@ -56,8 +74,12 @@ class CoachModel {
       'qualification': qualification,
       'specialization': specialization,
       'rating': rating,
-      'salaryType': salaryType,
-      'salaryRate': salaryRate,
+      'indivStateTaxRate': indivStateTaxRate,
+      'indivClubTaxRate': indivClubTaxRate,
+      'groupStateTaxRate': groupStateTaxRate,
+      'groupClubTaxRate': groupClubTaxRate,
+      'singleStateTaxRate': singleStateTaxRate,
+      'singleClubTaxRate': singleClubTaxRate,
     };
   }
 }

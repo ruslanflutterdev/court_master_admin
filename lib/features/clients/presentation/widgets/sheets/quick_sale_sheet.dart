@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/api/api_client.dart';
+import '../../../../../core/di/dependencies_container.dart';
 import '../../../data/models/client_model.dart';
 import '../../bloc/clients_bloc.dart';
 import '../../bloc/clients_event.dart';
@@ -19,31 +21,82 @@ class _QuickSaleSheetState extends State<QuickSaleSheet> {
   final _formKey = GlobalKey<FormState>();
 
   ClientModel? _selectedClient;
-
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
-
   String _saleType = 'rent';
   int _classesCount = 8;
-  final _priceController = TextEditingController();
   int _paymentMethod = 1;
+  final _priceController = TextEditingController();
+  final _rentPriceController = TextEditingController();
+  final _coachPriceController = TextEditingController();
+
+  List<dynamic> _coaches = [];
+  bool _isLoadingCoaches = false;
+  String? _selectedCoachId;
+
   bool get _isNewClient => _selectedClient == null;
+
   String? get _selectedClientId => _selectedClient?.id;
+
+  bool get _needsCoach =>
+      _saleType == 'indiv_training' ||
+      _saleType == 'group_sub' ||
+      _saleType == 'indiv_sub' ||
+      _saleType == 'single';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCoaches();
+  }
+
+  Future<void> _fetchCoaches() async {
+    setState(() => _isLoadingCoaches = true);
+    try {
+      final response = await sl<ApiClient>().dio.get('/employees/coaches');
+      setState(() {
+        _coaches = response.data as List<dynamic>;
+        if (_coaches.isNotEmpty) {
+          _selectedCoachId = _coaches.first['id'].toString();
+        }
+      });
+    } catch (e) {
+      debugPrint('Ошибка загрузки тренеров: $e');
+    } finally {
+      if (mounted) setState(() => _isLoadingCoaches = false);
+    }
+  }
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
+      if (_needsCoach && _selectedCoachId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Пожалуйста, выберите тренера!')),
+        );
+        return;
+      }
+
       final data = {
         'isNewClient': _isNewClient,
         'clientId': _selectedClientId,
         'firstName': _firstNameController.text.trim(),
         'lastName': _lastNameController.text.trim(),
         'phone': _phoneController.text.trim(),
-
         'saleCategory': _saleType,
-        'price': int.tryParse(_priceController.text) ?? 0,
         'paymentMethod': _paymentMethod,
       };
+
+      if (_needsCoach) {
+        data['coachId'] = _selectedCoachId;
+      }
+      if (_saleType == 'indiv_training') {
+        data['rentPrice'] = int.tryParse(_rentPriceController.text) ?? 0;
+        data['coachPrice'] = int.tryParse(_coachPriceController.text) ?? 0;
+        data['price'] = 0;
+      } else {
+        data['price'] = int.tryParse(_priceController.text) ?? 0;
+      }
 
       if (_saleType == 'group_sub' || _saleType == 'indiv_sub') {
         data['totalClasses'] = _classesCount;
@@ -148,33 +201,112 @@ class _QuickSaleSheetState extends State<QuickSaleSheet> {
                     ButtonSegment(value: 12, label: Text('12 занятий')),
                   ],
                   selected: {_classesCount},
-                  onSelectionChanged: (newSelection) {
-                    setState(() => _classesCount = newSelection.first);
-                  },
+                  onSelectionChanged: (newSelection) =>
+                      setState(() => _classesCount = newSelection.first),
                 ),
               ],
 
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _priceController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Сумма к оплате (₸)',
-                  prefixIcon: const Icon(Icons.attach_money),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+              if (_needsCoach) ...[
+                const SizedBox(height: 16),
+                const Text(
+                  'Исполнитель (Тренер)',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
                   ),
-                  filled: true,
-                  fillColor: Colors.white,
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Введите сумму';
-                  if (int.tryParse(value) == null) {
-                    return 'Введите корректное число';
-                  }
-                  return null;
-                },
-              ),
+                const SizedBox(height: 8),
+                if (_isLoadingCoaches)
+                  const Center(child: CircularProgressIndicator())
+                else
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedCoachId,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    items: _coaches.map((coach) {
+                      return DropdownMenuItem<String>(
+                        value: coach['id'].toString(),
+                        child: Text(
+                          '${coach['firstName']} ${coach['lastName']}',
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (val) => setState(() => _selectedCoachId = val),
+                    validator: (val) => val == null ? 'Выберите тренера' : null,
+                  ),
+              ],
+
+              if (_saleType == 'indiv_training') ...[
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _rentPriceController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'Аренда корта (₸)',
+                          prefixIcon: const Icon(Icons.sports_tennis),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                        ),
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Введите сумму'
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _coachPriceController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'Оплата тренеру (₸)',
+                          prefixIcon: const Icon(Icons.person),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                        ),
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Введите сумму'
+                            : null,
+                      ),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _priceController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Сумма к оплате (₸)',
+                    prefixIcon: const Icon(Icons.attach_money),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Введите сумму';
+                    if (int.tryParse(value) == null) {
+                      return 'Введите корректное число';
+                    }
+                    return null;
+                  },
+                ),
+              ],
 
               const SizedBox(height: 24),
               ElevatedButton(

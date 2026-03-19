@@ -14,9 +14,13 @@ void main() {
         'qualification': 'МСМК',
         'specialization': 'Теннис',
         'rating': 4.8,
-        'salaryType': 'hourly',
-        // Передаем строку, чтобы проверить нашу новую супер-защиту от type mismatch
-        'salaryRate': '5000',
+        // 🚀 НОВЫЕ ПОЛЯ НАЛОГОВ
+        'indivStateTaxRate': 10.0,
+        'indivClubTaxRate': 40.0,
+        'groupStateTaxRate': 0.0,
+        'groupClubTaxRate': 30.0,
+        'singleStateTaxRate': 5.0,
+        'singleClubTaxRate': 50.0,
       };
 
       final model = CoachModel.fromJson(json);
@@ -30,28 +34,28 @@ void main() {
       expect(model.qualification, 'МСМК');
       expect(model.specialization, 'Теннис');
       expect(model.rating, 4.8);
-      expect(model.salaryType, 'hourly');
-      expect(model.salaryRate, 5000); // Должно корректно стать числом int
+      // Проверяем новые поля
+      expect(model.indivStateTaxRate, 10.0);
+      expect(model.groupClubTaxRate, 30.0);
+      expect(model.singleClubTaxRate, 50.0);
     });
 
-    test(
-      'Успешный парсинг из JSON, если пришло только Имя (без фамилии, email и телефона)',
-      () {
-        final json = {'id': '2', 'firstName': 'Петр'};
+    test('Успешный парсинг из JSON, если пришло только Имя', () {
+      final json = {'id': '2', 'firstName': 'Петр'};
 
-        final model = CoachModel.fromJson(json);
+      final model = CoachModel.fromJson(json);
 
-        expect(model.id, '2');
-        expect(model.firstName, 'Петр');
-        expect(model.lastName, ''); // Ожидаем пустую строку, а не краш
-        expect(model.email, '');
-        expect(model.role, 'tennisCoach'); // Подставит значение по умолчанию
-        expect(model.phone, null);
-        expect(model.specialization, null);
-        expect(model.rating, 5.0); // Значение по умолчанию
-        expect(model.salaryRate, null);
-      },
-    );
+      expect(model.id, '2');
+      expect(model.firstName, 'Петр');
+      expect(model.lastName, '');
+      expect(model.email, '');
+      expect(model.role, 'tennisCoach');
+      expect(model.phone, null);
+      expect(model.specialization, null);
+      expect(model.rating, 5.0);
+      // Поля налогов должны иметь дефолт 0.0
+      expect(model.indivStateTaxRate, 0.0);
+    });
 
     test('Проверка toJson', () {
       final model = CoachModel(
@@ -64,8 +68,13 @@ void main() {
         qualification: 'КМС',
         specialization: 'Дети',
         rating: 5.0,
-        salaryType: 'percentage',
-        salaryRate: 40,
+        // Передаем в конструктор новые поля
+        indivStateTaxRate: 10.0,
+        indivClubTaxRate: 40.0,
+        groupStateTaxRate: 0.0,
+        groupClubTaxRate: 30.0,
+        singleStateTaxRate: 5.0,
+        singleClubTaxRate: 50.0,
       );
 
       final json = model.toJson();
@@ -78,8 +87,10 @@ void main() {
       expect(json['qualification'], 'КМС');
       expect(json['specialization'], 'Дети');
       expect(json['rating'], 5.0);
-      expect(json['salaryType'], 'percentage');
-      expect(json['salaryRate'], 40);
+      // Проверяем конвертацию
+      expect(json['indivStateTaxRate'], 10.0);
+      expect(json['groupStateTaxRate'], 0.0);
+      expect(json['singleClubTaxRate'], 50.0);
     });
   });
 }

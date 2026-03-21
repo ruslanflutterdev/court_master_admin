@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../employees/presentation/bloc/employees_bloc.dart';
-import '../../../../employees/presentation/bloc/employees_event.dart';
-import '../../../../employees/presentation/bloc/employees_state.dart';
+import '../../../../../core/presentation/widgets/primary_button.dart';
 import '../../bloc/groups_bloc.dart';
 import '../../bloc/groups_event.dart';
+import 'group_basic_info_inputs.dart';
+import 'group_coach_selector.dart';
 
 class CreateGroupSheet extends StatefulWidget {
   const CreateGroupSheet({super.key});
@@ -14,137 +14,99 @@ class CreateGroupSheet extends StatefulWidget {
 }
 
 class _CreateGroupSheetState extends State<CreateGroupSheet> {
-  final nameCtrl = TextEditingController();
-  String selectedLevel = 'Начинающие';
-  int maxStudents = 4;
-  String? selectedCoachId;
+  final _formKey = GlobalKey<FormState>();
+
+  final _nameCtrl = TextEditingController();
+  final _maxStudentsCtrl = TextEditingController();
+  final _minAgeCtrl = TextEditingController();
+  final _maxAgeCtrl = TextEditingController();
+
+  String _selectedLevel = 'Новичок';
+  String? _selectedCoachId;
 
   @override
-  void initState() {
-    super.initState();
-    context.read<EmployeesBloc>().add(LoadEmployeesEvent());
+  void dispose() {
+    _nameCtrl.dispose();
+    _maxStudentsCtrl.dispose();
+    _minAgeCtrl.dispose();
+    _maxAgeCtrl.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedCoachId == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Выберите тренера!')));
+      return;
+    }
+
+    final groupData = {
+      'name': _nameCtrl.text.trim(),
+      'maxStudents': int.tryParse(_maxStudentsCtrl.text) ?? 4,
+      'minAge': int.tryParse(_minAgeCtrl.text) ?? 5,
+      'maxAge': int.tryParse(_maxAgeCtrl.text) ?? 99,
+      'skillLevel': _selectedLevel,
+      'scheduleText': 'По расписанию',
+      'coachId': _selectedCoachId,
+    };
+
+    context.read<GroupsBloc>().add(CreateGroupEvent(groupData));
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 16),
       child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Создать новую группу',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-
-            TextField(
-              controller: nameCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Название группы (например: Дети 5-7 лет)',
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            // ВЫПАДАЮЩИЙ СПИСОК С ТРЕНЕРАМИ
-            BlocBuilder<EmployeesBloc, EmployeesState>(
-              builder: (context, state) {
-                if (state is EmployeesLoading) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
-                    child: LinearProgressIndicator(),
-                  );
-                }
-
-                if (state is EmployeesLoaded) {
-                  if (state.coaches.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text(
-                        'Нет тренеров! Сначала добавьте тренера.',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    );
-                  }
-
-                  if (selectedCoachId == null && state.coaches.isNotEmpty) {
-                    selectedCoachId = state.coaches.first.id;
-                  }
-
-                  return DropdownButtonFormField<String>(
-                    initialValue: selectedCoachId,
-                    decoration: const InputDecoration(
-                      labelText: 'Выберите тренера',
-                    ),
-                    items: state.coaches.map((coach) {
-                      return DropdownMenuItem(
-                        value: coach.id,
-                        child: Text('${coach.firstName} ${coach.lastName}'),
-                      );
-                    }).toList(),
-                    onChanged: (val) => setState(() => selectedCoachId = val),
-                  );
-                }
-
-                return const Text(
-                  'Не удалось загрузить тренеров',
-                  style: TextStyle(color: Colors.red),
-                );
-              },
-            ),
-            const SizedBox(height: 8),
-
-            DropdownButtonFormField<String>(
-              initialValue: selectedLevel,
-              decoration: const InputDecoration(
-                labelText: 'Уровень подготовки',
-              ),
-              items: ['Начинающие', 'Средний', 'Продвинутый']
-                  .map((val) => DropdownMenuItem(value: val, child: Text(val)))
-                  .toList(),
-              onChanged: (val) => setState(() => selectedLevel = val!),
-            ),
-            const SizedBox(height: 8),
-
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Макс. количество учеников: $maxStudents',
-              ),
-              keyboardType: TextInputType.number,
-              onChanged: (val) {
-                final num = int.tryParse(val);
-                if (num != null) maxStudents = num;
-              },
-            ),
-
-            const SizedBox(height: 24),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-              ),
-              onPressed: () {
-                if (nameCtrl.text.isEmpty || selectedCoachId == null) return;
-
-                context.read<GroupsBloc>().add(
-                  CreateGroupEvent(
-                    name: nameCtrl.text,
-                    coachId: selectedCoachId!,
-                    scheduleText: 'Расписание не задано',
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.group_add, color: Colors.green),
+                  SizedBox(width: 8),
+                  Text(
+                    'Новая группа',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                );
+                ],
+              ),
+              const Divider(height: 32),
 
-                Navigator.pop(context);
-              },
-              child: const Text('Создать группу'),
-            ),
-          ],
+              GroupBasicInfoInputs(
+                nameCtrl: _nameCtrl,
+                maxStudentsCtrl: _maxStudentsCtrl,
+                minAgeCtrl: _minAgeCtrl,
+                maxAgeCtrl: _maxAgeCtrl,
+                selectedLevel: _selectedLevel,
+                onLevelChanged: (val) =>
+                    setState(() => _selectedLevel = val ?? 'Новичок'),
+              ),
+
+              const SizedBox(height: 24),
+
+              GroupCoachSelector(
+                selectedCoachId: _selectedCoachId,
+                onChanged: (val) => setState(() => _selectedCoachId = val),
+              ),
+
+              const SizedBox(height: 32),
+
+              PrimaryButton(
+                text: 'Создать группу',
+                color: Colors.green,
+                onPressed: _submit,
+              ),
+            ],
+          ),
         ),
       ),
     );

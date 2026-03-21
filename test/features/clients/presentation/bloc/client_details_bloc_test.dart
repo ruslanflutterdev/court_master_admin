@@ -44,7 +44,7 @@ void main() {
         ).thenAnswer((_) async => testClient);
         return bloc;
       },
-      act: (bloc) => bloc.add(LoadClientDetails('1')),
+      act: (bloc) => bloc.add(LoadClientDetails(clientId: '1')),
       expect: () => [isA<ClientDetailsLoading>(), isA<ClientDetailsLoaded>()],
     );
 

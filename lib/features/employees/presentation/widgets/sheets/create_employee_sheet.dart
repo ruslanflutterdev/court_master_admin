@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/presentation/widgets/primary_button.dart';
 import '../../bloc/employees_bloc.dart';
 import '../../bloc/employees_event.dart';
+import 'employee_basic_info_inputs.dart';
+import 'employee_role_inputs.dart';
 
 class CreateEmployeeSheet extends StatefulWidget {
   const CreateEmployeeSheet({super.key});
@@ -12,22 +15,54 @@ class CreateEmployeeSheet extends StatefulWidget {
 
 class _CreateEmployeeSheetState extends State<CreateEmployeeSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _qualificationController = TextEditingController();
-  final _specializationController = TextEditingController();
+
+  final _firstNameCtrl = TextEditingController();
+  final _lastNameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+
+  final _qualCtrl = TextEditingController();
+  final _specCtrl = TextEditingController();
+
+  String _selectedRole = 'tennisCoach';
+
+  @override
+  void dispose() {
+    _firstNameCtrl.dispose();
+    _lastNameCtrl.dispose();
+    _emailCtrl.dispose();
+    _phoneCtrl.dispose();
+    _passwordCtrl.dispose();
+    _qualCtrl.dispose();
+    _specCtrl.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+
+    final data = {
+      'firstName': _firstNameCtrl.text.trim(),
+      'lastName': _lastNameCtrl.text.trim(),
+      'email': _emailCtrl.text.trim(),
+      'phone': _phoneCtrl.text.trim(),
+      'password': _passwordCtrl.text.trim(),
+      'role': _selectedRole,
+      'qualification': _qualCtrl.text.trim(),
+      'specialization': _specCtrl.text.trim(),
+    };
+
+    context.read<EmployeesBloc>().add(AddCoachRequested(data));
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 16),
       child: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -35,94 +70,40 @@ class _CreateEmployeeSheetState extends State<CreateEmployeeSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Новый сотрудник',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              const Row(
+                children: [
+                  Icon(Icons.person_add, color: Colors.blue),
+                  SizedBox(width: 8),
+                  Text(
+                    'Новый сотрудник',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _firstNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Имя',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (val) =>
-                    val == null || val.isEmpty ? 'Введите имя' : null,
+              const Divider(height: 32),
+
+              EmployeeBasicInfoInputs(
+                firstNameCtrl: _firstNameCtrl,
+                lastNameCtrl: _lastNameCtrl,
+                emailCtrl: _emailCtrl,
+                phoneCtrl: _phoneCtrl,
+                passwordCtrl: _passwordCtrl,
               ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _lastNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Фамилия',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (val) =>
-                    val == null || val.isEmpty ? 'Введите фамилию' : null,
+
+              const SizedBox(height: 8),
+              EmployeeRoleInputs(
+                selectedRole: _selectedRole,
+                onRoleChanged: (val) =>
+                    setState(() => _selectedRole = val ?? 'tennisCoach'),
+                qualCtrl: _qualCtrl,
+                specCtrl: _specCtrl,
               ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _phoneController,
-                decoration: const InputDecoration(
-                  labelText: 'Телефон',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email (логин)',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.emailAddress,
-                validator: (val) => val == null || !val.contains('@')
-                    ? 'Некорректный email'
-                    : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _qualificationController,
-                decoration: const InputDecoration(
-                  labelText: 'Квалификация',
-                  border: OutlineInputBorder(),
-                  hintText: 'например, Мастер спорта',
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _specializationController,
-                decoration: const InputDecoration(
-                  labelText: 'Специализация',
-                  border: OutlineInputBorder(),
-                  hintText: 'например, дети 5-10 лет',
-                ),
-              ),
+
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      context.read<EmployeesBloc>().add(
-                        AddCoachRequested({
-                          'firstName': _firstNameController.text,
-                          'lastName': _lastNameController.text,
-                          'phone': _phoneController.text,
-                          'email': _emailController.text,
-                          'password':
-                              'password123', // Временный пароль по умолчанию
-                          'role': 'tennisCoach',
-                          'qualification': _qualificationController.text,
-                          'specialization': _specializationController.text,
-                        }),
-                      );
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: const Text('Создать сотрудника'),
-                ),
+              PrimaryButton(
+                text: 'Создать сотрудника',
+                color: Colors.blue,
+                onPressed: _submit,
               ),
             ],
           ),

@@ -2,7 +2,7 @@ abstract class ClientDetailsEvent {}
 
 class LoadClientDetails extends ClientDetailsEvent {
   final String clientId;
-  LoadClientDetails(this.clientId);
+  LoadClientDetails({required this.clientId});
 }
 
 class AddPaymentEvent extends ClientDetailsEvent {

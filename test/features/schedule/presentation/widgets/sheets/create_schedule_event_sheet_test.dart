@@ -1,88 +1,86 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_bloc.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_event.dart'; // 🚀 ДОБАВЛЕН ИМПОРТ
+import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_state.dart';
 import 'package:court_master_admin/features/schedule/presentation/widgets/sheets/create_schedule_event_sheet.dart';
-import 'package:court_master_admin/features/schedule/data/models/schedule_event_model.dart';
-import 'package:court_master_admin/features/groups/data/models/group_model.dart';
-import 'package:court_master_admin/features/employees/data/models/coach_model.dart';
+
+class MockScheduleBloc extends Mock implements ScheduleBloc {}
+
+class FakeScheduleEvent extends Fake
+    implements ScheduleEvent {} // 🚀 ДОБАВЛЕН ФЕЙК
 
 void main() {
-  group('CreateScheduleEventSheet Widget Tests', () {
-    testWidgets(
-      'Режим редактирования: подставляет старые данные и меняет тексты',
-      (WidgetTester tester) async {
-        // 1. Создаем "старое" событие, которое мы якобы редактируем
-        final existingEvent = ScheduleEventModel(
-          id: 'event-1',
-          courtId: 'court-1',
-          date: DateTime.now(),
-          startTime: const TimeOfDay(hour: 14, minute: 0),
-          endTime: const TimeOfDay(hour: 15, minute: 30),
-          eventType: 'individual',
-          colorHex: 'red',
-          clientName: 'Илон Маск',
-          clientPhone: '+123456789',
-          price: 15000,
-          status: 'active',
-          isPaid: false,
-        );
+  // 🚀 ДОБАВЛЕНА РЕГИСТРАЦИЯ ФЕЙКА
+  setUpAll(() {
+    registerFallbackValue(FakeScheduleEvent());
+  });
 
-        bool isSaved = false;
+  late MockScheduleBloc mockBloc;
 
-        // 2. Отрисовываем виджет
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: CreateScheduleEventSheet(
-                courtId: 'court-1',
-                startHour: 14,
-                date: DateTime.now(),
-                groups: const <GroupModel>[],
-                coaches: const <CoachModel>[],
-                existingEvent: existingEvent, // Передаем старое событие!
-                onSave:
-                    ({
-                      required type,
-                      required start,
-                      required end,
-                      required color,
-                      required isRecurring,
-                      required weeks,
-                      groupId,
-                      clientName,
-                      clientPhone,
-                      coachId,
-                    }) {
-                      isSaved = true;
-                    },
-              ),
-            ),
+  setUp(() {
+    mockBloc = MockScheduleBloc();
+    when(() => mockBloc.state).thenReturn(
+      ScheduleLoaded(
+        scheduleDate: DateTime(2025, 3, 20),
+        courts: const [],
+        scheduleEvents: const [],
+        groups: const [],
+        coaches: const [],
+      ),
+    );
+    when(() => mockBloc.stream).thenAnswer((_) => const Stream.empty());
+  });
+
+  Widget buildTestWidget() {
+    return MaterialApp(
+      home: Scaffold(
+        body: BlocProvider<ScheduleBloc>.value(
+          value: mockBloc,
+          child: CreateScheduleEventSheet(
+            initialDate: DateTime(2025, 3, 20), // 🚀 Новое имя параметра
+            startHour: 14,
+            initialCourtId: 'court-1', // 🚀 Новое имя параметра
+            groups: const [],
           ),
-        );
+        ),
+      ),
+    );
+  }
 
-        // 3. Проверяем, что UI переключился в режим редактирования
-        expect(
-          find.text('Редактировать событие'),
-          findsOneWidget,
-        ); // Заголовок изменился
-        expect(
-          find.text('Сохранить изменения'),
-          findsOneWidget,
-        ); // Кнопка изменилась
+  group('CreateScheduleEventSheet Widget Tests', () {
+    testWidgets('Отображает форму создания нового события', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget());
 
-        // Блок регулярности должен быть скрыт при редактировании
-        expect(find.text('Повторять еженедельно'), findsNothing);
+      // 1. Проверяем наличие заголовка
+      expect(find.text('Новое событие'), findsOneWidget);
 
-        // 4. Проверяем, что старые данные клиента подставились в поля ввода
-        expect(find.text('Илон Маск'), findsOneWidget);
-        expect(find.text('+123456789'), findsOneWidget);
+      // 2. Проверяем наличие выбора типа события (наш вынесенный EventTypeSelector)
+      expect(find.text('Тип события'), findsOneWidget);
 
-        // 5. Имитируем нажатие на кнопку сохранения
-        await tester.ensureVisible(find.text('Сохранить изменения'));
-        await tester.tap(find.text('Сохранить изменения'));
-        await tester.pump();
+      // 3. Проверяем наличие кнопки Создать (наш PrimaryButton)
+      expect(find.text('Создать'), findsOneWidget);
+    });
 
-        // 6. Проверяем, что коллбек сработал
-        expect(isSaved, isTrue);
+    testWidgets(
+      'Отправляет событие CreateScheduleEventRequested при сохранении',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget());
+
+        // Скроллим до кнопки и нажимаем на неё
+        await tester.ensureVisible(find.text('Создать'));
+        await tester.tap(find.text('Создать'));
+        await tester.pumpAndSettle();
+
+        // Так как форма по умолчанию уже содержит валидные данные (текущее время, тип),
+        // мы ожидаем, что событие создания БУДЕТ отправлено 1 раз.
+        verify(
+          () => mockBloc.add(any(that: isA<CreateScheduleEventRequested>())),
+        ).called(1);
       },
     );
   });

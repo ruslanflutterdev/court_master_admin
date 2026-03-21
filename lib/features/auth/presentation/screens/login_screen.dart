@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/presentation/widgets/custom_text_field.dart';
+import '../../../../core/presentation/widgets/primary_button.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -12,80 +14,83 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController(text: 'admin@test.com');
-  final _passwordController = TextEditingController(text: '12345678');
+  final _formKey = GlobalKey<FormState>();
+  final _emailCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onLoginPressed() {
+    if (!_formKey.currentState!.validate()) return;
+    context.read<AuthBloc>().add(
+      LoginRequested(_emailCtrl.text.trim(), _passCtrl.text.trim()),
+    );
+  }
+
+  void _authListener(BuildContext context, AuthState state) {
+    if (state is AuthError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+      );
+    } else if (state is AuthAuthenticated) {
+      Navigator.of(context).pushReplacementNamed('/dashboard');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-          }
-        },
+        listener: _authListener,
         child: Center(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.sports_tennis, size: 80, color: Colors.green),
-                const SizedBox(height: 16),
-                const Text(
-                  'CourtMaster CRM',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 32),
-
-                TextField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.sports_tennis,
+                    size: 80,
+                    color: Colors.orange,
                   ),
-                ),
-                const SizedBox(height: 16),
-
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Пароль',
-                    border: OutlineInputBorder(),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'CourtMaster',
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
-                ),
-                const SizedBox(height: 24),
+                  const SizedBox(height: 32),
+                  CustomTextField(
+                    controller: _emailCtrl,
+                    label: 'Email',
+                    prefixIcon: Icons.email,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  CustomTextField(
+                    controller: _passCtrl,
+                    label: 'Пароль',
+                    prefixIcon: Icons.lock,
+                    isPassword: true,
+                  ),
 
-                BlocBuilder<AuthBloc, AuthState>(
-                  builder: (context, state) {
-                    if (state is AuthLoading) {
-                      return const CircularProgressIndicator();
-                    }
-                    return ElevatedButton(
-                      onPressed: () {
-                        final email = _emailController.text.trim();
-                        final password = _passwordController.text.trim();
-
-                        context.read<AuthBloc>().add(
-                          LoginRequested(email, password),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 50),
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: const Text(
-                        'Войти',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    );
-                  },
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, state) {
+                      return PrimaryButton(
+                        text: 'Войти',
+                        onPressed: _onLoginPressed,
+                        isLoading: state is AuthLoading,
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),

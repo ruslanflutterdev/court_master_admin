@@ -19,19 +19,11 @@ class GroupsRepository {
     }
   }
 
-  // Заготовка для создания группы (используем на следующем шаге)
-  Future<void> createGroup(
-    String name,
-    String scheduleText,
-    String coachId,
-  ) async {
+  Future<void> createGroup(Map<String, dynamic> groupData) async {
     try {
-      await apiClient.dio.post(
-        '/groups',
-        data: {'name': name, 'scheduleText': scheduleText, 'coachId': coachId},
-      );
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Ошибка создания группы');
+      await apiClient.dio.post('/groups', data: groupData);
+    } catch (e) {
+      throw Exception('Ошибка при создании группы: $e');
     }
   }
 

@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/dependencies_container.dart';
+import '../../../clients/presentation/bloc/clients_bloc.dart';
+import '../../../groups/data/models/group_model.dart';
+import '../../../groups/presentation/bloc/groups_bloc.dart';
+import '../../../groups/presentation/bloc/groups_event.dart';
+import '../../../groups/presentation/bloc/groups_state.dart';
 import '../../data/models/schedule_event_model.dart';
+import '../bloc/event_attendance_bloc.dart';
 import '../bloc/schedule_bloc.dart';
 import '../bloc/schedule_event.dart';
 import '../bloc/schedule_state.dart';
-import '../bloc/event_attendance_bloc.dart';
 import '../widgets/dialogs/create_court_dialog.dart';
 import '../widgets/sheets/create_schedule_event_sheet.dart';
 import '../widgets/sheets/event_attendance_sheet.dart';
-import '../../../groups/presentation/bloc/groups_bloc.dart';
-import '../../../groups/presentation/bloc/groups_state.dart';
-import '../../../employees/presentation/bloc/employees_bloc.dart';
-import '../../../employees/presentation/bloc/employees_state.dart';
-import '../../../groups/data/models/group_model.dart';
-import '../../../employees/data/models/coach_model.dart';
 
 class ScheduleActions {
   static void openEditCourtDialog(
@@ -22,15 +21,14 @@ class ScheduleActions {
     String id,
     String name,
   ) {
-    final scheduleBloc = context.read<ScheduleBloc>();
+    final bloc = context.read<ScheduleBloc>();
     showDialog(
       context: context,
       builder: (_) => BlocProvider.value(
-        value: scheduleBloc,
+        value: bloc,
         child: CreateCourtDialog(
           initialName: name,
-          onSave: (newName) =>
-              scheduleBloc.add(UpdateCourtRequested(id, newName)),
+          onSave: (newName) => bloc.add(UpdateCourtRequested(id, newName)),
         ),
       ),
     );
@@ -50,123 +48,52 @@ class ScheduleActions {
     ScheduleEventModel? existingEvent,
   }) {
     final scheduleBloc = context.read<ScheduleBloc>();
-    final groupsState = context.read<GroupsBloc>().state;
-    final latestGroups = groupsState is GroupsLoaded
-        ? groupsState.groups
-        : <GroupModel>[];
-    final employeesState = context.read<EmployeesBloc>().state;
-    final latestCoaches = employeesState is EmployeesLoaded
-        ? employeesState.coaches
-        : <CoachModel>[];
+    final clientsBloc = context.read<ClientsBloc>();
+    final groupsBloc = context.read<GroupsBloc>();
 
-    if (existingEvent != null) {
-      if (existingEvent.eventType == 'group') {
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          builder: (_) => BlocProvider(
-            create: (_) => sl<EventAttendanceBloc>(),
-            child: EventAttendanceSheet(
-              eventId: existingEvent.id,
-              groupName: 'Группа',
-            ),
-          ),
-        );
-        return;
-      }
+    // 1. Проверяем состояние групп. Если не загружены — инициируем загрузку.
+    if (groupsBloc.state is! GroupsLoaded) {
+      groupsBloc.add(
+        LoadGroupsEvent(),
+      ); // Используем правильное имя события из вашего GroupsBloc
+    }
 
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        builder: (ctx) => CreateScheduleEventSheet(
-          courtId: existingEvent.courtId,
-          startHour: existingEvent.startTime.hour,
-          date: state.scheduleDate,
-          groups: latestGroups,
-          coaches: latestCoaches,
-          existingEvent: existingEvent,
-          onSave:
-              ({
-                required type,
-                required start,
-                required end,
-                required color,
-                required isRecurring,
-                required weeks,
-                groupId,
-                clientName,
-                clientPhone,
-                coachId,
-              }) {
-                String fmt(TimeOfDay t) =>
-                    "${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}";
-
-                scheduleBloc.add(
-                  UpdateScheduleEvent(
-                    eventId: existingEvent.id,
-                    currentDate: state.scheduleDate,
-                    eventData: {
-                      'startTime': fmt(start),
-                      'endTime': fmt(end),
-                      'colorHex': color,
-                      'courtId': existingEvent.courtId,
-                      'groupId': groupId,
-                      'clientName': clientName,
-                      'clientPhone': clientPhone,
-                      'coachId': coachId,
-                    },
-                  ),
-                );
-                Navigator.pop(ctx);
-              },
-        ),
-      );
+    if (existingEvent?.eventType == 'group') {
+      _openAttendanceSheet(context, existingEvent!.id);
       return;
     }
+
+    final groupsState = groupsBloc.state;
+    final groups = groupsState is GroupsLoaded
+        ? groupsState.groups
+        : <GroupModel>[];
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => CreateScheduleEventSheet(
-        courtId: courtId,
-        startHour: hour,
-        date: state.scheduleDate,
-        groups: latestGroups,
-        coaches: latestCoaches,
-        onSave:
-            ({
-              required type,
-              required start,
-              required end,
-              required color,
-              required isRecurring,
-              required weeks,
-              groupId,
-              clientName,
-              clientPhone,
-              coachId,
-            }) {
-              String fmt(TimeOfDay t) =>
-                  "${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}";
+      builder: (ctx) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: scheduleBloc),
+          BlocProvider.value(value: clientsBloc),
+          BlocProvider.value(value: groupsBloc),
+        ],
+        child: CreateScheduleEventSheet(
+          initialDate: state.scheduleDate,
+          startHour: hour,
+          groups: groups,
+          initialCourtId: courtId,
+        ),
+      ),
+    );
+  }
 
-              scheduleBloc.add(
-                CreateScheduleEventRequested({
-                  'type': type,
-                  'date': state.scheduleDate.toIso8601String(),
-                  'startTime': fmt(start),
-                  'endTime': fmt(end),
-                  'colorHex': color,
-                  'courtId': courtId,
-                  'groupId': groupId,
-                  'clientName': clientName,
-                  'clientPhone': clientPhone,
-                  'coachId': coachId,
-                  'isRecurring': isRecurring,
-                  'recurrenceWeeks': weeks,
-                }),
-              );
-              Navigator.pop(ctx);
-            },
+  static void _openAttendanceSheet(BuildContext context, String eventId) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => BlocProvider(
+        create: (_) => sl<EventAttendanceBloc>(),
+        child: EventAttendanceSheet(eventId: eventId, groupName: 'Группа'),
       ),
     );
   }

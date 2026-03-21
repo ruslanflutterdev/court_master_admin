@@ -1,46 +1,34 @@
 import 'package:flutter/material.dart';
-import '../../../../employees/data/models/coach_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/presentation/widgets/primary_button.dart';
+import '../../../../clients/data/models/client_model.dart';
+import '../../../../clients/presentation/bloc/clients_bloc.dart';
+import '../../../../clients/presentation/bloc/clients_state.dart';
 import '../../../../groups/data/models/group_model.dart';
-import '../../../data/models/schedule_event_model.dart';
-import '../forms/schedule_event_type_selector.dart';
+import '../../../../groups/presentation/bloc/groups_bloc.dart';
+import '../../../../groups/presentation/bloc/groups_state.dart';
+import '../../../data/models/court_model.dart'; // Добавлен импорт модели
+import '../../bloc/schedule_bloc.dart';
+import '../../bloc/schedule_event.dart';
+import '../../bloc/schedule_state.dart';
+import '../../utils/time_picker_utils.dart';
 import '../forms/schedule_dynamic_form_section.dart';
-import '../forms/schedule_time_picker_row.dart';
-import '../forms/schedule_color_picker_row.dart';
-import '../forms/schedule_recurrence_form.dart';
-import '../forms/schedule_price_display.dart';
-import '../forms/schedule_save_button.dart';
+import 'create_event_time_row.dart';
+import 'event_court_selector.dart';
+import 'event_type_selector.dart';
 
 class CreateScheduleEventSheet extends StatefulWidget {
-  final String courtId;
+  final DateTime initialDate;
   final int startHour;
-  final DateTime date;
   final List<GroupModel> groups;
-  final List<CoachModel> coaches;
-  final ScheduleEventModel? existingEvent;
-
-  final Function({
-    required String type,
-    required TimeOfDay start,
-    required TimeOfDay end,
-    required String color,
-    required bool isRecurring,
-    required int weeks,
-    String? groupId,
-    String? clientName,
-    String? clientPhone,
-    String? coachId,
-  })
-  onSave;
+  final String? initialCourtId;
 
   const CreateScheduleEventSheet({
     super.key,
-    required this.courtId,
+    required this.initialDate,
     required this.startHour,
-    required this.date,
     required this.groups,
-    required this.coaches,
-    this.existingEvent,
-    required this.onSave,
+    this.initialCourtId,
   });
 
   @override
@@ -49,53 +37,73 @@ class CreateScheduleEventSheet extends StatefulWidget {
 }
 
 class _CreateScheduleEventSheetState extends State<CreateScheduleEventSheet> {
-  late String selectedType;
-  late TimeOfDay startTime;
-  late TimeOfDay endTime;
-  late String colorHex;
-
-  String? selectedGroupId;
-  String? selectedCoachId;
-
-  final _clientNameController = TextEditingController();
-  final _clientPhoneController = TextEditingController();
-
-  bool isRecurring = false;
-  int recurrenceWeeks = 1;
-
-  bool get isEditMode => widget.existingEvent != null;
+  final _formKey = GlobalKey<FormState>();
+  final _firstCtrl = TextEditingController();
+  final _lastCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  late TimeOfDay _start, _end;
+  String _type = 'rent';
+  String? _courtId, _groupId;
 
   @override
   void initState() {
     super.initState();
-
-    if (isEditMode) {
-      final e = widget.existingEvent!;
-      selectedType = e.eventType;
-      startTime = e.startTime;
-      endTime = e.endTime;
-      colorHex = e.colorHex;
-      selectedGroupId = e.groupId;
-      selectedCoachId = e.coachId;
-      _clientNameController.text = e.clientName ?? '';
-      _clientPhoneController.text = e.clientPhone ?? '';
-    } else {
-      selectedType = 'rent';
-      startTime = TimeOfDay(hour: widget.startHour, minute: 0);
-      endTime = TimeOfDay(hour: widget.startHour + 1, minute: 0);
-      colorHex = 'blue';
-    }
+    _start = TimeOfDay(hour: widget.startHour, minute: 0);
+    _end = TimeOfDay(hour: widget.startHour + 1, minute: 0);
+    _courtId = widget.initialCourtId;
   }
 
-  @override
-  void dispose() {
-    _clientNameController.dispose();
-    _clientPhoneController.dispose();
-    super.dispose();
+  void _onTypeChanged(String? v) => setState(() => _type = v ?? 'rent');
+
+  Future<void> _pickStart() async {
+    final t = await TimePickerUtils.pick24hTime(
+      context: context,
+      initialTime: _start,
+    );
+    if (t != null) setState(() => _start = t);
+  }
+
+  Future<void> _pickEnd() async {
+    final t = await TimePickerUtils.pick24hTime(
+      context: context,
+      initialTime: _end,
+    );
+    if (t != null) setState(() => _end = t);
+  }
+
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+
+    final data = {
+      'type': _type,
+      'date': widget.initialDate.toIso8601String(),
+      'startTime':
+          '${_start.hour.toString().padLeft(2, '0')}:${_start.minute.toString().padLeft(2, '0')}',
+      'endTime':
+          '${_end.hour.toString().padLeft(2, '0')}:${_end.minute.toString().padLeft(2, '0')}',
+      'courtId': _courtId,
+      'groupId': _groupId,
+      'clientName': '${_firstCtrl.text} ${_lastCtrl.text}'.trim(),
+      'clientPhone': _phoneCtrl.text,
+    };
+
+    context.read<ScheduleBloc>().add(CreateScheduleEventRequested(data));
+    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<ScheduleBloc>().state;
+    final clientsState = context.watch<ClientsBloc>().state;
+    final groupsState = context.watch<GroupsBloc>().state;
+    final List<CourtModel> courts = state is ScheduleLoaded ? state.courts : [];
+    final allClients = clientsState is ClientsLoaded
+        ? clientsState.clients
+        : <ClientModel>[];
+    final currentGroups = groupsState is GroupsLoaded
+        ? groupsState.groups
+        : <GroupModel>[];
+
     return Padding(
       padding: EdgeInsets.fromLTRB(
         16,
@@ -103,93 +111,44 @@ class _CreateScheduleEventSheetState extends State<CreateScheduleEventSheet> {
         16,
         MediaQuery.of(context).viewInsets.bottom + 16,
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              isEditMode ? 'Редактировать событие' : 'Новая запись',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-
-            IgnorePointer(
-              ignoring: isEditMode,
-              child: Opacity(
-                opacity: isEditMode ? 0.6 : 1.0,
-                child: ScheduleEventTypeSelector(
-                  selectedType: selectedType,
-                  onChanged: (val) => setState(
-                    () => selectedType = val,
-                  ), // ИСПРАВЛЕНИЕ параметра
-                ),
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Новое событие',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(height: 16),
-
-            ScheduleTimePickerRow(
-              startTime: startTime,
-              endTime: endTime,
-              onStartTimeChanged: (val) => setState(() => startTime = val),
-              onEndTimeChanged: (val) => setState(() => endTime = val),
-            ),
-            const SizedBox(height: 16),
-
-            ScheduleDynamicFormSection(
-              type: selectedType,
-              groups: widget.groups,
-              coaches: widget.coaches,
-              selectedGroupId: selectedGroupId,
-              clientNameController: _clientNameController,
-              clientPhoneController: _clientPhoneController,
-              selectedCoachId: selectedCoachId,
-              onGroupSelected: (val) => setState(() => selectedGroupId = val),
-              onCoachSelected: (val) => setState(() => selectedCoachId = val),
-            ),
-            const SizedBox(height: 16),
-
-            ScheduleColorPickerRow(
-              selectedColor: colorHex,
-              onColorSelected: (val) => setState(() => colorHex = val),
-            ),
-            const SizedBox(height: 16),
-
-            if (!isEditMode) ...[
-              ScheduleRecurrenceForm(
-                isRecurring: isRecurring,
-                recurrenceWeeks: recurrenceWeeks,
-                onRecurringChanged: (val) => setState(() => isRecurring = val),
-                onWeeksChanged: (val) => setState(() => recurrenceWeeks = val),
+              const Divider(height: 24),
+              EventTypeSelector(selectedType: _type, onChanged: _onTypeChanged),
+              CreateEventTimeRow(
+                start: _start,
+                end: _end,
+                onSelectStart: _pickStart,
+                onSelectEnd: _pickEnd,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+              EventCourtSelector(
+                selectedCourtId: _courtId,
+                courts: courts,
+                onChanged: (v) => setState(() => _courtId = v),
+              ),
+              ScheduleDynamicFormSection(
+                type: _type,
+                groups: currentGroups,
+                selectedGroupId: _groupId,
+                onGroupSelected: (v) => setState(() => _groupId = v),
+                firstNameController: _firstCtrl,
+                lastNameController: _lastCtrl,
+                phoneController: _phoneCtrl,
+                allClients: allClients,
+              ),
+              const SizedBox(height: 24),
+              PrimaryButton(text: 'Создать', onPressed: _submit),
             ],
-
-            const SchedulePriceDisplay(),
-            const SizedBox(height: 16),
-
-            ScheduleSaveButton(
-              text: isEditMode ? 'Сохранить изменения' : 'Создать запись',
-              onPressed: () {
-                widget.onSave(
-                  type: selectedType,
-                  start: startTime,
-                  end: endTime,
-                  color: colorHex,
-                  isRecurring: isRecurring,
-                  weeks: recurrenceWeeks,
-                  groupId: selectedGroupId,
-                  clientName: _clientNameController.text.isNotEmpty
-                      ? _clientNameController.text
-                      : null,
-                  clientPhone: _clientPhoneController.text.isNotEmpty
-                      ? _clientPhoneController.text
-                      : null,
-                  coachId: selectedCoachId,
-                );
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );

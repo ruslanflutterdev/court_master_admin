@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/presentation/widgets/custom_text_field.dart';
+import '../../../../../core/presentation/widgets/primary_button.dart';
 import '../../bloc/client_details_bloc.dart';
 import '../../bloc/client_details_event.dart';
 import '../../utils/payment_helper.dart';
+import 'payment_selectors.dart';
 
 class AddPaymentSheet extends StatefulWidget {
   final String clientId;
-
   const AddPaymentSheet({super.key, required this.clientId});
 
   @override
@@ -14,100 +16,64 @@ class AddPaymentSheet extends StatefulWidget {
 }
 
 class _AddPaymentSheetState extends State<AddPaymentSheet> {
-  final amountCtrl = TextEditingController();
-  final descCtrl = TextEditingController();
-  int selectedType = 1;
-  int selectedMethod = 2;
+  final _amountCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+  int _selectedType = 1;
+  int _selectedMethod = 2;
+
+  void _submit() {
+    final amount = int.tryParse(_amountCtrl.text) ?? 0;
+    if (amount <= 0) return;
+
+    context.read<ClientDetailsBloc>().add(
+      AddPaymentEvent(widget.clientId, {
+        'amount': amount,
+        'type': _selectedType,
+        'method': _selectedMethod,
+        'description': _descCtrl.text.trim().isEmpty
+            ? null
+            : _descCtrl.text.trim(),
+      }),
+    );
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 16),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Добавить платеж',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
-
-            TextField(
-              controller: amountCtrl,
-              decoration: const InputDecoration(labelText: 'Сумма (₸)'),
+            const Divider(height: 32),
+            CustomTextField(
+              controller: _amountCtrl,
+              label: 'Сумма (₸)',
               keyboardType: TextInputType.number,
-              autofocus: true,
+              prefixIcon: Icons.account_balance_wallet,
             ),
-            const SizedBox(height: 8),
-
-            DropdownButtonFormField<int>(
-              initialValue: selectedType,
-              decoration: const InputDecoration(labelText: 'Тип операции'),
-              items: [1, 2, 3]
-                  .map(
-                    (val) => DropdownMenuItem(
-                      value: val,
-                      child: Text(PaymentHelper.getTypeName(val)),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (val) => setState(() => selectedType = val!),
+            PaymentSelectors(
+              selectedType: _selectedType,
+              selectedMethod: _selectedMethod,
+              onTypeChanged: (v) => setState(() => _selectedType = v ?? 1),
+              onMethodChanged: (v) => setState(() => _selectedMethod = v ?? 2),
             ),
-            const SizedBox(height: 8),
-
-            DropdownButtonFormField<int>(
-              initialValue: selectedMethod,
-              decoration: const InputDecoration(labelText: 'Способ оплаты'),
-              items: [1, 2, 3]
-                  .map(
-                    (val) => DropdownMenuItem(
-                      value: val,
-                      child: Text(PaymentHelper.getMethodName(val)),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (val) => setState(() => selectedMethod = val!),
+            CustomTextField(
+              controller: _descCtrl,
+              label: 'Комментарий',
+              prefixIcon: Icons.description,
             ),
-            const SizedBox(height: 8),
-
-            TextField(
-              controller: descCtrl,
-              decoration: const InputDecoration(
-                labelText:
-                    'Комментарий (например: "Оплата за Пакет 8 занятий")',
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-              ),
-            ),
-
             const SizedBox(height: 24),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-                backgroundColor: PaymentHelper.getTypeColor(selectedType),
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () {
-                final amount = int.tryParse(amountCtrl.text) ?? 0;
-                if (amount <= 0) return;
-
-                context.read<ClientDetailsBloc>().add(
-                  AddPaymentEvent(widget.clientId, {
-                    'amount': amount,
-                    'type': selectedType,
-                    'method': selectedMethod,
-                    'description': descCtrl.text.isEmpty ? null : descCtrl.text,
-                  }),
-                );
-                Navigator.pop(context);
-              },
-              child: const Text('Провести платеж'),
+            PrimaryButton(
+              text: 'Провести платеж',
+              color: PaymentHelper.getTypeColor(_selectedType),
+              onPressed: _submit,
             ),
           ],
         ),

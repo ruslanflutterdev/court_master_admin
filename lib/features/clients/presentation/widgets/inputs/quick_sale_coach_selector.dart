@@ -44,7 +44,7 @@ class _QuickSaleCoachSelectorState extends State<QuickSaleCoachSelector> {
           builder: (context, state) {
             if (state is EmployeesLoaded) {
               final coachesList = state.coaches
-                  .where((e) => e.role == 'tennisCoach')
+                  .where((e) => e.role == 'COACH')
                   .toList();
 
               return DropdownButtonFormField<String>(

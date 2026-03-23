@@ -18,11 +18,10 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       final token = response.data['token'] as String;
-      // Используем фабрику для создания объекта пользователя
       final user = UserModel.fromJson(response.data['user']);
 
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('jwt_token', token);
+      await prefs.setString('auth_token', token);
       await prefs.setString('user_role', user.role);
       await prefs.setString('user_id', user.id);
 
@@ -35,7 +34,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('jwt_token');
+    await prefs.remove('auth_token');
     await prefs.remove('user_role');
     await prefs.remove('user_id');
   }
@@ -43,20 +42,17 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserModel?> checkAuth() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('jwt_token');
+    final token = prefs.getString('auth_token');
 
-    // Если токена нет, проверять нечего
     if (token == null || token.isEmpty) return null;
 
     try {
-      // Можно сделать запрос /auth/me, чтобы получить свежие данные пользователя
-      // Или пока просто вернуть модель на основе сохраненных данных, если API еще нет
-      final role = prefs.getString('user_role') ?? 'child';
+      final role = prefs.getString('user_role') ?? 'CLIENT';
       final id = prefs.getString('user_id') ?? '';
 
       return UserModel(
         id: id,
-        firstName: '', // Можно дополнить полями, если сохранять их в prefs
+        firstName: '',
         lastName: '',
         email: '',
         role: role,

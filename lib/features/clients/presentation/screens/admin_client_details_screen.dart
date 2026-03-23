@@ -40,10 +40,12 @@ class _AdminClientDetailsScreenState extends State<AdminClientDetailsScreen> {
         value: _bloc,
         child: BlocBuilder<ClientDetailsBloc, ClientDetailsState>(
           builder: (context, state) {
-            if (state is ClientDetailsLoading)
+            if (state is ClientDetailsLoading) {
               return const Center(child: CircularProgressIndicator());
-            if (state is ClientDetailsError)
+            }
+            if (state is ClientDetailsError) {
               return Center(child: Text(state.message));
+            }
             if (state is! ClientDetailsLoaded) return const SizedBox();
 
             final client = state.client;

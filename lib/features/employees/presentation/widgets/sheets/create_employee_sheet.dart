@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/presentation/widgets/primary_button.dart';
+import '../../../../auth/data/models/user_model.dart';
 import '../../bloc/employees_bloc.dart';
 import '../../bloc/employees_event.dart';
 import 'employee_basic_info_inputs.dart';
 import 'employee_role_inputs.dart';
+import 'create_employee_sheet_header.dart';
 
 class CreateEmployeeSheet extends StatefulWidget {
   const CreateEmployeeSheet({super.key});
@@ -21,11 +23,10 @@ class _CreateEmployeeSheetState extends State<CreateEmployeeSheet> {
   final _emailCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
-
   final _qualCtrl = TextEditingController();
   final _specCtrl = TextEditingController();
 
-  String _selectedRole = 'tennisCoach';
+  String _selectedRole = AppRoles.coach;
 
   @override
   void dispose() {
@@ -49,8 +50,12 @@ class _CreateEmployeeSheetState extends State<CreateEmployeeSheet> {
       'phone': _phoneCtrl.text.trim(),
       'password': _passwordCtrl.text.trim(),
       'role': _selectedRole,
-      'qualification': _qualCtrl.text.trim(),
-      'specialization': _specCtrl.text.trim(),
+      'qualification': _selectedRole == AppRoles.coach
+          ? _qualCtrl.text.trim()
+          : '',
+      'specialization': _selectedRole == AppRoles.coach
+          ? _specCtrl.text.trim()
+          : '',
     };
 
     context.read<EmployeesBloc>().add(AddCoachRequested(data));
@@ -70,18 +75,7 @@ class _CreateEmployeeSheetState extends State<CreateEmployeeSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
-                children: [
-                  Icon(Icons.person_add, color: Colors.blue),
-                  SizedBox(width: 8),
-                  Text(
-                    'Новый сотрудник',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const Divider(height: 32),
-
+              const CreateEmployeeSheetHeader(),
               EmployeeBasicInfoInputs(
                 firstNameCtrl: _firstNameCtrl,
                 lastNameCtrl: _lastNameCtrl,
@@ -89,16 +83,14 @@ class _CreateEmployeeSheetState extends State<CreateEmployeeSheet> {
                 phoneCtrl: _phoneCtrl,
                 passwordCtrl: _passwordCtrl,
               ),
-
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               EmployeeRoleInputs(
                 selectedRole: _selectedRole,
                 onRoleChanged: (val) =>
-                    setState(() => _selectedRole = val ?? 'tennisCoach'),
+                    setState(() => _selectedRole = val ?? AppRoles.coach),
                 qualCtrl: _qualCtrl,
                 specCtrl: _specCtrl,
               ),
-
               const SizedBox(height: 24),
               PrimaryButton(
                 text: 'Создать сотрудника',

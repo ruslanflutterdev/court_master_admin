@@ -9,7 +9,7 @@ void main() {
         'firstName': 'Иван',
         'lastName': 'Иванов',
         'email': 'ivan@test.com',
-        'role': 'tennisCoach',
+        'role': 'COACH',
         'phone': '+79991234567',
         'qualification': 'МСМК',
         'specialization': 'Теннис',
@@ -29,7 +29,7 @@ void main() {
       expect(model.firstName, 'Иван');
       expect(model.lastName, 'Иванов');
       expect(model.email, 'ivan@test.com');
-      expect(model.role, 'tennisCoach');
+      expect(model.role, 'COACH');
       expect(model.phone, '+79991234567');
       expect(model.qualification, 'МСМК');
       expect(model.specialization, 'Теннис');
@@ -49,7 +49,7 @@ void main() {
       expect(model.firstName, 'Петр');
       expect(model.lastName, '');
       expect(model.email, '');
-      expect(model.role, 'tennisCoach');
+      expect(model.role, 'COACH');
       expect(model.phone, null);
       expect(model.specialization, null);
       expect(model.rating, 5.0);
@@ -63,7 +63,7 @@ void main() {
         firstName: 'Анна',
         lastName: 'Сидорова',
         email: 'anna@test.com',
-        role: 'tennisCoach',
+        role: 'COACH',
         phone: '+70001112233',
         qualification: 'КМС',
         specialization: 'Дети',

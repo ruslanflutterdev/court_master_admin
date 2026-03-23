@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../../auth/presentation/bloc/auth_state.dart';
+import '../../../../auth/data/models/user_model.dart';
 import '../../../../schedule/data/models/schedule_event_model.dart';
 import '../../utils/schedule_color_helper.dart';
+import 'schedule_event_title_text.dart';
 
 class ScheduleEventCard extends StatelessWidget {
   final ScheduleEventModel event;
@@ -14,8 +19,15 @@ class ScheduleEventCard extends StatelessWidget {
     required this.onTap,
   });
 
+  String _fmt(TimeOfDay t) =>
+      "${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}";
+
   @override
   Widget build(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    final isCoach =
+        authState is AuthAuthenticated && authState.user.role == AppRoles.coach;
+
     final startHour = event.startTime.hour;
     final startMinute = event.startTime.minute;
     final endHour = event.endTime.hour;
@@ -30,9 +42,6 @@ class ScheduleEventCard extends StatelessWidget {
       event.eventType,
       dbColorHex: event.colorHex,
     );
-
-    String fmt(TimeOfDay t) =>
-        "${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}";
 
     final cardWidget = Container(
       margin: const EdgeInsets.only(top: 2, bottom: 3),
@@ -52,22 +61,22 @@ class ScheduleEventCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            _getEventTitle(),
+          ScheduleEventTitleText(
+            event: event,
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 11,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
           Text(
-            '${fmt(event.startTime)} - ${fmt(event.endTime)}',
+            '${_fmt(event.startTime)} - ${_fmt(event.endTime)}',
             style: const TextStyle(color: Colors.white, fontSize: 10),
           ),
-          if (event.clientName != null && event.clientName!.isNotEmpty)
+          if (!isCoach &&
+              event.clientName != null &&
+              event.clientName!.isNotEmpty)
             Text(
               event.clientName!,
               style: const TextStyle(color: Colors.white, fontSize: 10),
@@ -77,6 +86,16 @@ class ScheduleEventCard extends StatelessWidget {
         ],
       ),
     );
+
+    if (isCoach) {
+      return Positioned(
+        top: topOffset,
+        height: height,
+        left: 4,
+        right: 4,
+        child: cardWidget,
+      );
+    }
 
     return Positioned(
       top: topOffset,
@@ -103,22 +122,5 @@ class ScheduleEventCard extends StatelessWidget {
               child: GestureDetector(onTap: onTap, child: cardWidget),
             ),
     );
-  }
-
-  String _getEventTitle() {
-    switch (event.eventType) {
-      case 'rent':
-        return 'Аренда';
-      case 'group':
-        return 'Группа';
-      case 'individual':
-        return 'Инд. тренировка';
-      case 'tournament':
-        return '🏆 Турнир';
-      case 'maintenance':
-        return '🔧 Тех. работы';
-      default:
-        return 'Событие';
-    }
   }
 }

@@ -22,8 +22,9 @@ class ScheduleRentForm extends StatelessWidget {
         Autocomplete<ClientModel>(
           displayStringForOption: (client) => client.firstName,
           optionsBuilder: (TextEditingValue textEditingValue) {
-            if (textEditingValue.text.isEmpty)
+            if (textEditingValue.text.isEmpty) {
               return const Iterable<ClientModel>.empty();
+            }
             return allClients.where(
               (client) =>
                   client.firstName.toLowerCase().contains(

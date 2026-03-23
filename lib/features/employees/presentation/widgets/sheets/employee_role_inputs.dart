@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/presentation/widgets/custom_text_field.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../../auth/presentation/bloc/auth_state.dart';
+import '../../../../auth/data/models/user_model.dart';
+import '../../../../../core/presentation/widgets/custom_dropdown.dart';
 
 class EmployeeRoleInputs extends StatelessWidget {
   final String selectedRole;
@@ -15,48 +19,81 @@ class EmployeeRoleInputs extends StatelessWidget {
     required this.specCtrl,
   });
 
+  List<String> _getAvailableRoles(String currentUserRole) {
+    final roles = <String>[];
+    if (currentUserRole == AppRoles.superAdmin) roles.add(AppRoles.headAdmin);
+    if ([AppRoles.superAdmin, AppRoles.headAdmin].contains(currentUserRole)) {
+      roles.addAll([AppRoles.admin, AppRoles.coach]);
+    }
+    return roles;
+  }
+
+  String _getRoleLabel(String role) {
+    switch (role) {
+      case AppRoles.headAdmin:
+        return 'Главный администратор (HEAD_ADMIN)';
+      case AppRoles.admin:
+        return 'Администратор (ADMIN)';
+      case AppRoles.coach:
+        return 'Тренер (COACH)';
+      default:
+        return role;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    final currentUserRole = authState is AuthAuthenticated
+        ? authState.user.role
+        : AppRoles.admin;
+
+    final availableRoles = _getAvailableRoles(currentUserRole);
+
+    if (availableRoles.isEmpty) {
+      return const Text(
+        'Нет прав для добавления сотрудников',
+        style: TextStyle(color: Colors.red),
+      );
+    }
+
+    final isRoleValid = availableRoles.contains(selectedRole);
+    if (!isRoleValid && availableRoles.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => onRoleChanged(availableRoles.first),
+      );
+    }
+
+    final safeRole = isRoleValid ? selectedRole : availableRoles.first;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          'Должность и квалификация',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
-        ),
-        const SizedBox(height: 12),
-        DropdownButtonFormField<String>(
-          initialValue: selectedRole,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            filled: true,
-            fillColor: Colors.white,
-            prefixIcon: const Icon(Icons.work),
-          ),
-          items: const [
-            DropdownMenuItem(
-              value: 'tennisCoach',
-              child: Text('Тренер по теннису'),
-            ),
-            DropdownMenuItem(
-              value: 'physicalCoach',
-              child: Text('Тренер по ОФП'),
-            ),
-            DropdownMenuItem(value: 'admin', child: Text('Администратор')),
-          ],
+        CustomDropdown<String>(
+          value: safeRole,
+          items: availableRoles,
           onChanged: onRoleChanged,
+          itemLabelBuilder: _getRoleLabel,
+          label: 'Роль',
         ),
-        const SizedBox(height: 16),
-        if (selectedRole != 'admin') ...[
-          CustomTextField(
+
+        if (safeRole == AppRoles.coach) ...[
+          const SizedBox(height: 16),
+          TextFormField(
             controller: qualCtrl,
-            label: 'Квалификация (например: МСМК)',
-            prefixIcon: Icons.star,
+            decoration: const InputDecoration(
+              labelText: 'Квалификация',
+              border: OutlineInputBorder(),
+            ),
           ),
-          CustomTextField(
+          const SizedBox(height: 16),
+          TextFormField(
             controller: specCtrl,
-            label: 'Специализация (например: Дети)',
-            prefixIcon: Icons.sports_tennis,
+            decoration: const InputDecoration(
+              labelText: 'Специализация',
+              border: OutlineInputBorder(),
+            ),
           ),
         ],
       ],

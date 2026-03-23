@@ -43,7 +43,7 @@ class _GroupCoachSelectorState extends State<GroupCoachSelector> {
           builder: (context, state) {
             if (state is EmployeesLoaded) {
               final coachesList = state.coaches
-                  .where((e) => e.role == 'tennisCoach')
+                  .where((e) => e.role == 'COACH')
                   .toList();
 
               return DropdownButtonFormField<String>(

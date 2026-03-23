@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/dependencies_container.dart';
+import '../../../auth/data/models/user_model.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../clients/presentation/bloc/clients_bloc.dart';
 import '../../../groups/data/models/group_model.dart';
 import '../../../groups/presentation/bloc/groups_bloc.dart';
@@ -47,15 +50,17 @@ class ScheduleActions {
     int hour, {
     ScheduleEventModel? existingEvent,
   }) {
+    final authState = context.read<AuthBloc>().state;
+    final user = authState is AuthAuthenticated ? authState.user : null;
+    if (user?.role == AppRoles.coach) {
+      return;
+    }
     final scheduleBloc = context.read<ScheduleBloc>();
     final clientsBloc = context.read<ClientsBloc>();
     final groupsBloc = context.read<GroupsBloc>();
 
-    // 1. Проверяем состояние групп. Если не загружены — инициируем загрузку.
     if (groupsBloc.state is! GroupsLoaded) {
-      groupsBloc.add(
-        LoadGroupsEvent(),
-      ); // Используем правильное имя события из вашего GroupsBloc
+      groupsBloc.add(LoadGroupsEvent());
     }
 
     if (existingEvent?.eventType == 'group') {

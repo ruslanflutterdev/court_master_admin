@@ -37,8 +37,6 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(state.message), backgroundColor: Colors.red),
       );
-    } else if (state is AuthAuthenticated) {
-      Navigator.of(context).pushReplacementNamed('/dashboard');
     }
   }
 
@@ -78,7 +76,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     prefixIcon: Icons.lock,
                     isPassword: true,
                   ),
-
                   const SizedBox(height: 16),
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {

@@ -14,7 +14,7 @@ void main() {
         firstName: 'Роджер',
         lastName: 'Федерер',
         email: 'roger@test.com',
-        role: 'tennisCoach',
+        role: 'COACH',
         specialization: 'Профессионалы и взрослые',
         rating: 4.9,
         phone: '+79991234567',

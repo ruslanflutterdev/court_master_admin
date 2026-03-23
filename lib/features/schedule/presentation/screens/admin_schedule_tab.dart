@@ -84,10 +84,12 @@ class _AdminScheduleTabState extends State<AdminScheduleTab> {
       child: Builder(
         builder: (context) => BlocBuilder<ScheduleBloc, ScheduleState>(
           builder: (context, state) {
-            if (state is ScheduleLoading)
+            if (state is ScheduleLoading) {
               return const Center(child: CircularProgressIndicator());
-            if (state is ScheduleError)
+            }
+            if (state is ScheduleError) {
               return Center(child: Text(state.message));
+            }
             if (state is! ScheduleLoaded) return const SizedBox();
 
             final isPast = state.scheduleDate.isBefore(

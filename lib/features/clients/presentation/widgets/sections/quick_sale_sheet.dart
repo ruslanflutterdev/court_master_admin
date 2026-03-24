@@ -20,6 +20,12 @@ class _QuickSaleSheetState extends State<QuickSaleSheet> {
   final _fNameCtrl = TextEditingController();
   final _lNameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
+  final _companyCtrl = TextEditingController();
+  final _innCtrl = TextEditingController();
+  final _kppCtrl = TextEditingController();
+  bool _isCorporate = false;
+  String? _skillLevel;
+  String? _source;
   final _priceCtrl = TextEditingController();
   final _rentPriceCtrl = TextEditingController();
   final _coachPriceCtrl = TextEditingController();
@@ -28,6 +34,20 @@ class _QuickSaleSheetState extends State<QuickSaleSheet> {
   int _classesCount = 8;
   int _payMethod = 1;
   String? _coachId;
+
+  @override
+  void dispose() {
+    _fNameCtrl.dispose();
+    _lNameCtrl.dispose();
+    _phoneCtrl.dispose();
+    _companyCtrl.dispose();
+    _innCtrl.dispose();
+    _kppCtrl.dispose();
+    _priceCtrl.dispose();
+    _rentPriceCtrl.dispose();
+    _coachPriceCtrl.dispose();
+    super.dispose();
+  }
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
@@ -51,6 +71,12 @@ class _QuickSaleSheetState extends State<QuickSaleSheet> {
       'firstName': _fNameCtrl.text.trim(),
       'lastName': _lNameCtrl.text.trim(),
       'phone': _phoneCtrl.text.trim(),
+      'isCorporate': _isCorporate,
+      'companyName': _isCorporate ? _companyCtrl.text.trim() : null,
+      'inn': _isCorporate ? _innCtrl.text.trim() : null,
+      'kpp': _isCorporate ? _kppCtrl.text.trim() : null,
+      'skillLevel': _skillLevel,
+      'acquisitionSource': _source,
       'saleCategory': _saleType,
       'paymentMethod': _payMethod,
       'coachId': _coachId,
@@ -96,6 +122,12 @@ class _QuickSaleSheetState extends State<QuickSaleSheet> {
                 firstNameCtrl: _fNameCtrl,
                 lastNameCtrl: _lNameCtrl,
                 phoneCtrl: _phoneCtrl,
+                companyCtrl: _companyCtrl,
+                innCtrl: _innCtrl,
+                kppCtrl: _kppCtrl,
+                onCorporateChanged: (v) => setState(() => _isCorporate = v),
+                onSkillChanged: (v) => setState(() => _skillLevel = v),
+                onSourceChanged: (v) => setState(() => _source = v),
               ),
               const SizedBox(height: 24),
               QuickSaleOrderSection(

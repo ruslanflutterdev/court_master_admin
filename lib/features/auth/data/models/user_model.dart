@@ -25,8 +25,9 @@ class UserModel {
     String parsedRole = json['role'] ?? AppRoles.client;
     if (parsedRole == 'ADMIN') parsedRole = AppRoles.admin;
     if (parsedRole == 'COACH') parsedRole = AppRoles.coach;
-    if (parsedRole == 'CLIENT' || parsedRole == 'CLIENT')
+    if (parsedRole == 'CLIENT' || parsedRole == 'CLIENT') {
       parsedRole = AppRoles.client;
+    }
 
     return UserModel(
       id: json['id'] ?? '',

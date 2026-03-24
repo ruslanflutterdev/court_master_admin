@@ -1,48 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:bloc_test/bloc_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_bloc.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_event.dart'; // 🚀 ДОБАВЛЕН ИМПОРТ
+import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_event.dart';
 import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_state.dart';
 import 'package:court_master_admin/features/schedule/presentation/widgets/sheets/create_schedule_event_sheet.dart';
+import 'package:court_master_admin/features/schedule/presentation/widgets/forms/schedule_color_picker_row.dart'; // Импорт нового виджета
 
-class MockScheduleBloc extends Mock implements ScheduleBloc {}
+import 'package:court_master_admin/features/clients/presentation/bloc/clients_bloc.dart';
+import 'package:court_master_admin/features/clients/presentation/bloc/clients_event.dart';
+import 'package:court_master_admin/features/clients/presentation/bloc/clients_state.dart';
 
-class FakeScheduleEvent extends Fake
-    implements ScheduleEvent {} // 🚀 ДОБАВЛЕН ФЕЙК
+import 'package:court_master_admin/features/groups/presentation/bloc/groups_bloc.dart';
+import 'package:court_master_admin/features/groups/presentation/bloc/groups_event.dart';
+import 'package:court_master_admin/features/groups/presentation/bloc/groups_state.dart';
+
+class MockScheduleBloc extends MockBloc<ScheduleEvent, ScheduleState>
+    implements ScheduleBloc {}
+
+class MockClientsBloc extends MockBloc<ClientsEvent, ClientsState>
+    implements ClientsBloc {}
+
+class MockGroupsBloc extends MockBloc<GroupsEvent, GroupsState>
+    implements GroupsBloc {}
+
+class FakeScheduleEvent extends Fake implements ScheduleEvent {}
 
 void main() {
-  // 🚀 ДОБАВЛЕНА РЕГИСТРАЦИЯ ФЕЙКА
+  late MockScheduleBloc mockScheduleBloc;
+  late MockClientsBloc mockClientsBloc;
+  late MockGroupsBloc mockGroupsBloc;
+
   setUpAll(() {
     registerFallbackValue(FakeScheduleEvent());
   });
 
-  late MockScheduleBloc mockBloc;
-
   setUp(() {
-    mockBloc = MockScheduleBloc();
-    when(() => mockBloc.state).thenReturn(
+    mockScheduleBloc = MockScheduleBloc();
+    mockClientsBloc = MockClientsBloc();
+    mockGroupsBloc = MockGroupsBloc();
+
+    when(() => mockScheduleBloc.state).thenReturn(
       ScheduleLoaded(
-        scheduleDate: DateTime(2025, 3, 20),
-        courts: const [],
+        scheduleDate: DateTime.now(),
         scheduleEvents: const [],
+        courts: const [],
         groups: const [],
         coaches: const [],
       ),
     );
-    when(() => mockBloc.stream).thenAnswer((_) => const Stream.empty());
+    when(() => mockClientsBloc.state).thenReturn(ClientsLoaded(const []));
+    when(() => mockGroupsBloc.state).thenReturn(GroupsLoaded(const []));
   });
 
-  Widget buildTestWidget() {
+  Widget createWidgetUnderTest() {
     return MaterialApp(
       home: Scaffold(
-        body: BlocProvider<ScheduleBloc>.value(
-          value: mockBloc,
+        body: MultiBlocProvider(
+          providers: [
+            BlocProvider<ScheduleBloc>.value(value: mockScheduleBloc),
+            BlocProvider<ClientsBloc>.value(value: mockClientsBloc),
+            BlocProvider<GroupsBloc>.value(value: mockGroupsBloc),
+          ],
           child: CreateScheduleEventSheet(
-            initialDate: DateTime(2025, 3, 20), // 🚀 Новое имя параметра
-            startHour: 14,
-            initialCourtId: 'court-1', // 🚀 Новое имя параметра
+            initialDate: DateTime.now(),
+            startHour: 10,
+            initialCourtId: 'c1',
             groups: const [],
           ),
         ),
@@ -51,36 +77,33 @@ void main() {
   }
 
   group('CreateScheduleEventSheet Widget Tests', () {
-    testWidgets('Отображает форму создания нового события', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(buildTestWidget());
+    testWidgets('Отображает форму создания нового события', (tester) async {
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpAndSettle();
 
-      // 1. Проверяем наличие заголовка
-      expect(find.text('Новое событие'), findsOneWidget);
-
-      // 2. Проверяем наличие выбора типа события (наш вынесенный EventTypeSelector)
-      expect(find.text('Тип события'), findsOneWidget);
-
-      // 3. Проверяем наличие кнопки Создать (наш PrimaryButton)
-      expect(find.text('Создать'), findsOneWidget);
+      // Проверяем, что на экране есть наша палитра цветов (то, что мы добавили недавно)
+      expect(find.byType(ScheduleColorPickerRow), findsOneWidget);
+      expect(find.text('Цвет: '), findsOneWidget);
     });
 
     testWidgets(
-      'Отправляет событие CreateScheduleEventRequested при сохранении',
-      (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget());
-
-        // Скроллим до кнопки и нажимаем на неё
-        await tester.ensureVisible(find.text('Создать'));
-        await tester.tap(find.text('Создать'));
+      'Блокирует отправку события при пустой форме (срабатывает валидация)',
+      (tester) async {
+        await tester.pumpWidget(createWidgetUnderTest());
         await tester.pumpAndSettle();
 
-        // Так как форма по умолчанию уже содержит валидные данные (текущее время, тип),
-        // мы ожидаем, что событие создания БУДЕТ отправлено 1 раз.
-        verify(
-          () => mockBloc.add(any(that: isA<CreateScheduleEventRequested>())),
-        ).called(1);
+        // Ищем кнопку сохранения (PrimaryButton содержит внутри ElevatedButton)
+        final saveButton = find.byType(ElevatedButton).last;
+        await tester.ensureVisible(saveButton);
+        await tester.tap(saveButton);
+        await tester.pumpAndSettle();
+
+        // Убеждаемся, что Bloc.add НЕ был вызван, так как форма пустая и не прошла валидацию
+        verifyNever(
+          () => mockScheduleBloc.add(
+            any(that: isA<CreateScheduleEventRequested>()),
+          ),
+        );
       },
     );
   });

@@ -12,6 +12,7 @@ import '../../bloc/schedule_bloc.dart';
 import '../../bloc/schedule_event.dart';
 import '../../bloc/schedule_state.dart';
 import '../../utils/time_picker_utils.dart';
+import '../forms/schedule_color_picker_row.dart';
 import '../forms/schedule_dynamic_form_section.dart';
 import 'create_event_time_row.dart';
 import 'event_court_selector.dart';
@@ -44,6 +45,7 @@ class _CreateScheduleEventSheetState extends State<CreateScheduleEventSheet> {
   late TimeOfDay _start, _end;
   String _type = 'rent';
   String? _courtId, _groupId;
+  String _colorHex = '#2196F3';
 
   @override
   void initState() {
@@ -83,6 +85,7 @@ class _CreateScheduleEventSheetState extends State<CreateScheduleEventSheet> {
           '${_end.hour.toString().padLeft(2, '0')}:${_end.minute.toString().padLeft(2, '0')}',
       'courtId': _courtId,
       'groupId': _groupId,
+      'colorHex': _colorHex,
       'clientName': '${_firstCtrl.text} ${_lastCtrl.text}'.trim(),
       'clientPhone': _phoneCtrl.text,
     };
@@ -135,6 +138,16 @@ class _CreateScheduleEventSheetState extends State<CreateScheduleEventSheet> {
                 courts: courts,
                 onChanged: (v) => setState(() => _courtId = v),
               ),
+              const SizedBox(height: 16),
+              ScheduleColorPickerRow(
+                selectedColor: _colorHex,
+                onColorSelected: (color) {
+                  setState(() {
+                    _colorHex = color;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
               ScheduleDynamicFormSection(
                 type: _type,
                 groups: currentGroups,

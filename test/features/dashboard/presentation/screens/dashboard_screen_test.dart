@@ -3,37 +3,40 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:court_master_admin/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:court_master_admin/features/dashboard/presentation/widgets/dashboard_desktop_view.dart';
 import 'package:court_master_admin/features/dashboard/presentation/widgets/dashboard_mobile_view.dart';
 
-// Импорты ВСЕХ BLoC-ов из всех вкладок
+// Добавляем импорты AuthBloc
+import 'package:court_master_admin/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:court_master_admin/features/auth/presentation/bloc/auth_event.dart';
+import 'package:court_master_admin/features/auth/presentation/bloc/auth_state.dart';
+import 'package:court_master_admin/features/auth/data/models/user_model.dart';
+
 import 'package:court_master_admin/features/clients/presentation/bloc/clients_bloc.dart';
 import 'package:court_master_admin/features/clients/presentation/bloc/clients_event.dart';
 import 'package:court_master_admin/features/clients/presentation/bloc/clients_state.dart';
-
 import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_bloc.dart';
 import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_event.dart';
 import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_state.dart';
-
 import 'package:court_master_admin/features/analytics/presentation/bloc/analytics_bloc.dart';
 import 'package:court_master_admin/features/analytics/presentation/bloc/analytics_event.dart';
 import 'package:court_master_admin/features/analytics/presentation/bloc/analytics_state.dart';
-
 import 'package:court_master_admin/features/employees/presentation/bloc/employees_bloc.dart';
 import 'package:court_master_admin/features/employees/presentation/bloc/employees_event.dart';
 import 'package:court_master_admin/features/employees/presentation/bloc/employees_state.dart';
-
 import 'package:court_master_admin/features/groups/presentation/bloc/groups_bloc.dart';
 import 'package:court_master_admin/features/groups/presentation/bloc/groups_event.dart';
 import 'package:court_master_admin/features/groups/presentation/bloc/groups_state.dart';
-
 import 'package:court_master_admin/features/schedule/presentation/bloc/event_attendance_bloc.dart';
 import 'package:court_master_admin/features/schedule/presentation/bloc/event_attendance_event.dart';
 import 'package:court_master_admin/features/schedule/presentation/bloc/event_attendance_state.dart';
 
-// 1. Создаем подделки
+// Подделки
+class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
+
 class MockClientsBloc extends MockBloc<ClientsEvent, ClientsState>
     implements ClientsBloc {}
 
@@ -53,7 +56,8 @@ class MockEventAttendanceBloc
     extends MockBloc<EventAttendanceEvent, EventAttendanceState>
     implements EventAttendanceBloc {}
 
-// 2. Фейковые события
+class FakeAuthEvent extends Fake implements AuthEvent {}
+
 class FakeClientsEvent extends Fake implements ClientsEvent {}
 
 class FakeScheduleEvent extends Fake implements ScheduleEvent {}
@@ -67,6 +71,7 @@ class FakeGroupsEvent extends Fake implements GroupsEvent {}
 class FakeEventAttendanceEvent extends Fake implements EventAttendanceEvent {}
 
 void main() {
+  late MockAuthBloc mockAuthBloc;
   late MockClientsBloc mockClientsBloc;
   late MockScheduleBloc mockScheduleBloc;
   late MockAnalyticsBloc mockAnalyticsBloc;
@@ -75,6 +80,7 @@ void main() {
   late MockEventAttendanceBloc mockEventAttendanceBloc;
 
   setUpAll(() {
+    registerFallbackValue(FakeAuthEvent());
     registerFallbackValue(FakeClientsEvent());
     registerFallbackValue(FakeScheduleEvent());
     registerFallbackValue(FakeAnalyticsEvent());
@@ -84,6 +90,7 @@ void main() {
   });
 
   setUp(() {
+    mockAuthBloc = MockAuthBloc();
     mockClientsBloc = MockClientsBloc();
     mockScheduleBloc = MockScheduleBloc();
     mockAnalyticsBloc = MockAnalyticsBloc();
@@ -91,7 +98,18 @@ void main() {
     mockGroupsBloc = MockGroupsBloc();
     mockEventAttendanceBloc = MockEventAttendanceBloc();
 
-    // Задаем начальные состояния, чтобы виджеты не падали при отрисовке
+    // Создаем фейкового супер-админа
+    final dummyUser = UserModel(
+      id: '1',
+      email: 'admin@test.com',
+      firstName: 'Admin',
+      lastName: '',
+      role: 'SUPER_ADMIN',
+    );
+
+    when(
+      () => mockAuthBloc.state,
+    ).thenReturn(AuthAuthenticated(user: dummyUser));
     when(() => mockClientsBloc.state).thenReturn(ClientsLoading());
     when(() => mockScheduleBloc.state).thenReturn(ScheduleLoading());
     when(() => mockAnalyticsBloc.state).thenReturn(AnalyticsLoading());
@@ -101,9 +119,9 @@ void main() {
       () => mockEventAttendanceBloc.state,
     ).thenReturn(EventAttendanceLoading());
 
-    // НАСТРОЙКА GetIt: Регистрируем ВСЕ моки
     final sl = GetIt.instance;
     sl.reset();
+    sl.registerFactory<AuthBloc>(() => mockAuthBloc);
     sl.registerFactory<ClientsBloc>(() => mockClientsBloc);
     sl.registerFactory<ScheduleBloc>(() => mockScheduleBloc);
     sl.registerFactory<AnalyticsBloc>(() => mockAnalyticsBloc);
@@ -113,7 +131,12 @@ void main() {
   });
 
   Widget createWidgetUnderTest() {
-    return const MaterialApp(home: DashboardScreen());
+    return MaterialApp(
+      home: BlocProvider<AuthBloc>.value(
+        value: mockAuthBloc,
+        child: const DashboardScreen(),
+      ),
+    );
   }
 
   group('DashboardScreen Widget Tests', () {
@@ -122,12 +145,10 @@ void main() {
       (WidgetTester tester) async {
         tester.view.physicalSize = const Size(1200, 800);
         tester.view.devicePixelRatio = 1.0;
-
         await tester.pumpWidget(createWidgetUnderTest());
 
         expect(find.byType(DashboardDesktopView), findsOneWidget);
         expect(find.byType(DashboardMobileView), findsNothing);
-
         addTearDown(tester.view.resetPhysicalSize);
       },
     );
@@ -137,12 +158,10 @@ void main() {
     ) async {
       tester.view.physicalSize = const Size(400, 800);
       tester.view.devicePixelRatio = 1.0;
-
       await tester.pumpWidget(createWidgetUnderTest());
 
       expect(find.byType(DashboardMobileView), findsOneWidget);
       expect(find.byType(DashboardDesktopView), findsNothing);
-
       addTearDown(tester.view.resetPhysicalSize);
     });
   });

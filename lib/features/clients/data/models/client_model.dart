@@ -9,14 +9,17 @@ class ClientModel {
   final String? phone;
   final String? email;
   final int balance;
-  final int? activeSubscriptionsCount;
 
+  final bool isCorporate;
   final String? companyName;
+  final String? inn;
+  final String? kpp;
   final String? skillLevel;
   final String? acquisitionSource;
   final String? notes;
   final List<String> tags;
 
+  final int? activeSubscriptionsCount;
   final List<SubscriptionModel>? subscriptions;
   final List<TransactionModel>? transactions;
   final List<ClientAttendanceModel>? attendances;
@@ -30,12 +33,15 @@ class ClientModel {
     this.phone,
     this.email,
     required this.balance,
-    this.activeSubscriptionsCount,
+    this.isCorporate = false,
     this.companyName,
+    this.inn,
+    this.kpp,
     this.skillLevel,
     this.acquisitionSource,
     this.notes,
     this.tags = const [],
+    this.activeSubscriptionsCount,
     this.subscriptions,
     this.transactions,
     this.attendances,
@@ -51,6 +57,9 @@ class ClientModel {
       phone: json['phone'],
       email: json['email'],
       balance: json['balance'] ?? 0,
+      isCorporate: json['isCorporate'] ?? false,
+      inn: json['inn'],
+      kpp: json['kpp'],
       activeSubscriptionsCount: json['_count']?['subscriptions'],
       totalSpent: json['totalSpent'] ?? 0,
       hasRent: json['hasRent'] ?? false,
@@ -78,5 +87,22 @@ class ClientModel {
                 .toList()
           : null,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'firstName': firstName,
+      'lastName': lastName,
+      'phone': phone,
+      'email': email,
+      'isCorporate': isCorporate,
+      'companyName': companyName,
+      'inn': inn,
+      'kpp': kpp,
+      'skillLevel': skillLevel,
+      'acquisitionSource': acquisitionSource,
+      'notes': notes,
+      'tags': tags,
+    };
   }
 }

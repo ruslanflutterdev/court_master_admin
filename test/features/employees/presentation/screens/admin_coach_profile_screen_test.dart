@@ -52,7 +52,7 @@ void main() {
         firstName: 'Анна',
         lastName: 'Иванова',
         email: 'anna@test.com',
-        role: 'tennisCoach',
+        role: 'COACH',
         qualification: 'Мастер Спорта',
         specialization: 'Дети от 5 лет',
         rating: 5.0,

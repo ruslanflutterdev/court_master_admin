@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../auth/data/models/user_model.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
 import '../bloc/employees_bloc.dart';
 import '../bloc/employees_state.dart';
 import '../bloc/employees_event.dart'; // 🚀 ДОБАВЛЕН ИМПОРТ СОБЫТИЙ
@@ -23,13 +26,23 @@ class AdminEmployeesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authState = context.watch<AuthBloc>().state;
+    final currentUserRole = authState is AuthAuthenticated
+        ? authState.user.role
+        : AppRoles.admin;
+    final canCreateEmployee = [
+      AppRoles.superAdmin,
+      AppRoles.headAdmin,
+    ].contains(currentUserRole);
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: null,
-        onPressed: () => _showCreateEmployeeSheet(context),
-        label: const Text('Добавить тренера'),
-        icon: const Icon(Icons.add),
-      ),
+      floatingActionButton: canCreateEmployee
+          ? FloatingActionButton.extended(
+              heroTag: null,
+              onPressed: () => _showCreateEmployeeSheet(context),
+              label: const Text('Добавить тренера'),
+              icon: const Icon(Icons.add),
+            )
+          : null,
       body: BlocBuilder<EmployeesBloc, EmployeesState>(
         builder: (context, state) {
           if (state is EmployeesLoading) {

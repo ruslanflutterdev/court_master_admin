@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/auth/data/models/user_model.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/auth/presentation/bloc/auth_state.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -24,12 +25,19 @@ class AppRouter {
 
       if (authState is AuthAuthenticated) {
         if (isLoggingIn || state.matchedLocation == '/') {
-          if (authState.user.role == 'tennisCoach' ||
-              authState.user.role == 'coach') {
-            return '/coach-dashboard';
-          }
+          final role = authState.user.role;
 
-          return '/dashboard';
+          if (role == AppRoles.coach) {
+            return '/coach-dashboard';
+          } else if ([
+            AppRoles.superAdmin,
+            AppRoles.headAdmin,
+            AppRoles.admin,
+          ].contains(role)) {
+            return '/dashboard';
+          } else {
+            return '/login';
+          }
         }
       } else if (authState is AuthUnauthenticated) {
         if (!isLoggingIn) {
@@ -43,26 +51,22 @@ class AppRouter {
     routes: [
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
-        path: '/dashboard', // Главная панель Админа
+        path: '/dashboard',
         builder: (context, state) => const DashboardScreen(),
       ),
       GoRoute(
-        path: '/coach-dashboard', // Главная панель Тренера
+        path: '/coach-dashboard',
         builder: (context, state) => const CoachDashboardScreen(),
       ),
       GoRoute(
         path: '/client-details/:id',
-        builder: (context, state) {
-          final clientId = state.pathParameters['id']!;
-          return AdminClientDetailsScreen(clientId: clientId);
-        },
+        builder: (context, state) =>
+            AdminClientDetailsScreen(clientId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/group-details/:id',
-        builder: (context, state) {
-          final groupId = state.pathParameters['id']!;
-          return GroupDetailsScreen(groupId: groupId);
-        },
+        builder: (context, state) =>
+            GroupDetailsScreen(groupId: state.pathParameters['id']!),
       ),
     ],
   );

@@ -39,7 +39,7 @@ class CoachModel {
       firstName: json['firstName']?.toString() ?? 'Без имени',
       lastName: json['lastName']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
-      role: json['role']?.toString() ?? 'tennisCoach',
+      role: json['role']?.toString() ?? 'COACH',
       phone: json['phone']?.toString(),
       qualification: json['qualification']?.toString(),
       specialization: json['specialization']?.toString(),

@@ -16,10 +16,10 @@ void main() {
 
     final fakeUser = UserModel(
       id: '123',
-      firstName: 'Admin',
+      firstName: 'ADMIN',
       lastName: 'Test',
       email: 'admin@test.com',
-      role: 'admin',
+      role: 'ADMIN',
     );
 
     setUp(() {

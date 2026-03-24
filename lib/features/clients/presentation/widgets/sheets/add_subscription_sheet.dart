@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/presentation/widgets/custom_text_field.dart';
+import '../../../../../core/presentation/widgets/primary_button.dart';
 import '../../bloc/client_details_bloc.dart';
-import '../../bloc/client_details_event.dart'; // Импорт событий
+import '../../bloc/client_details_event.dart';
 import '../../utils/subscription_helper.dart';
+import 'subscription_type_selector.dart';
 
 class AddSubscriptionSheet extends StatefulWidget {
   final String clientId;
@@ -14,15 +17,39 @@ class AddSubscriptionSheet extends StatefulWidget {
 }
 
 class _AddSubscriptionSheetState extends State<AddSubscriptionSheet> {
-  int selectedType = 2;
-  final classesCtrl = TextEditingController(text: '8');
-  final priceCtrl = TextEditingController();
-  DateTime? validUntil;
+  int _selectedType = 2;
+  final _classesCtrl = TextEditingController(text: '8');
+  final _priceCtrl = TextEditingController();
+  DateTime? _validUntil;
+
+  void _submit() {
+    int totalClasses = int.tryParse(_classesCtrl.text) ?? 1;
+    if (_selectedType == 1) totalClasses = 1;
+    if (_selectedType == 3) totalClasses = 9999;
+
+    context.read<ClientDetailsBloc>().add(
+      AddSubscriptionEvent(widget.clientId, {
+        'type': _selectedType,
+        'totalClasses': totalClasses,
+        'price': int.tryParse(_priceCtrl.text) ?? 0,
+        if (_validUntil != null) 'validUntil': _validUntil!.toIso8601String(),
+      }),
+    );
+    Navigator.pop(context);
+  }
+
+  Future<void> _selectDate() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().add(const Duration(days: 30)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 730)),
+    );
+    if (date != null) setState(() => _validUntil = date);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final types = List.generate(7, (index) => index + 1);
-
     return Padding(
       padding: EdgeInsets.fromLTRB(
         16,
@@ -33,101 +60,43 @@ class _AddSubscriptionSheetState extends State<AddSubscriptionSheet> {
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Оформить абонемент',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
-
-            DropdownButtonFormField<int>(
-              initialValue: selectedType, // ИСПРАВЛЕНИЕ: Вернули initialValue
-              decoration: const InputDecoration(labelText: 'Тип абонемента'),
-              items: types.map((type) {
-                return DropdownMenuItem(
-                  value: type,
-                  child: Text(SubscriptionHelper.getTypeName(type)),
-                );
-              }).toList(),
-              onChanged: (val) {
-                if (val != null) {
-                  setState(() => selectedType = val);
-                }
-              },
+            const Divider(height: 32),
+            SubscriptionTypeSelector(
+              selectedType: _selectedType,
+              onChanged: (val) => setState(() => _selectedType = val ?? 2),
             ),
-
-            Padding(
-              padding: const EdgeInsets.only(top: 4, bottom: 12),
-              child: Text(
-                SubscriptionHelper.getTypeDescription(selectedType),
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 12,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ),
-
-            if (SubscriptionHelper.requiresManualClassCount(selectedType))
-              TextField(
-                controller: classesCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Количество занятий',
-                ),
+            if (SubscriptionHelper.requiresManualClassCount(_selectedType))
+              CustomTextField(
+                controller: _classesCtrl,
+                label: 'Количество занятий',
                 keyboardType: TextInputType.number,
+                prefixIcon: Icons.repeat,
               ),
-
-            TextField(
-              controller: priceCtrl,
-              decoration: const InputDecoration(labelText: 'Стоимость (₸)'),
+            CustomTextField(
+              controller: _priceCtrl,
+              label: 'Стоимость (₸)',
               keyboardType: TextInputType.number,
+              prefixIcon: Icons.payments,
             ),
-            const SizedBox(height: 16),
-
             ListTile(
-              contentPadding: EdgeInsets.zero,
               title: Text(
-                validUntil == null
-                    ? 'Срок действия: Не ограничен'
-                    : 'Действует до: ${validUntil!.day}.${validUntil!.month}.${validUntil!.year}',
+                _validUntil == null
+                    ? 'Срок: Не ограничен'
+                    : 'До: ${_validUntil!.day}.${_validUntil!.month}.${_validUntil!.year}',
               ),
-              trailing: const Icon(Icons.calendar_today),
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now().add(const Duration(days: 30)),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
-                );
-                if (date != null) setState(() => validUntil = date);
-              },
+              trailing: const Icon(Icons.calendar_today, color: Colors.blue),
+              onTap: _selectDate,
             ),
-
-            const SizedBox(height: 16),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-              ),
-              onPressed: () {
-                int totalClasses = int.tryParse(classesCtrl.text) ?? 1;
-                if (selectedType == 1) totalClasses = 1;
-                if (selectedType == 3) totalClasses = 9999;
-
-                // ИСПРАВЛЕНИЕ: Используем правильное имя класса (AddSubscriptionEvent)
-                // и передаем параметры как позиционные (сначала clientId, потом Map)
-                context.read<ClientDetailsBloc>().add(
-                  AddSubscriptionEvent(widget.clientId, {
-                    'type': selectedType,
-                    'totalClasses': totalClasses,
-                    'price': int.tryParse(priceCtrl.text) ?? 0,
-                    if (validUntil != null)
-                      'validUntil': validUntil!.toIso8601String(),
-                  }),
-                );
-                Navigator.pop(context);
-              },
-              child: const Text('Сохранить'),
+            const SizedBox(height: 24),
+            PrimaryButton(
+              text: 'Сохранить абонемент',
+              color: Colors.blue,
+              onPressed: _submit,
             ),
           ],
         ),

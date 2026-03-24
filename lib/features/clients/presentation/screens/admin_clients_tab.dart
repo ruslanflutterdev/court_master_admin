@@ -4,88 +4,73 @@ import 'package:go_router/go_router.dart';
 import '../bloc/clients_bloc.dart';
 import '../bloc/clients_event.dart';
 import '../bloc/clients_state.dart';
-import '../widgets/cards/client_list_row.dart';
-import '../widgets/search/client_filters_row.dart';
-import '../widgets/search/client_search_bar.dart';
-import '../widgets/search/client_segments_bar.dart';
-import '../widgets/search/client_pagination_footer.dart';
+import '../widgets/search/client_list_view.dart';
+import '../widgets/search/client_search_header.dart';
 
-class AdminClientsTab extends StatelessWidget {
+class AdminClientsTab extends StatefulWidget {
   const AdminClientsTab({super.key});
+
+  @override
+  State<AdminClientsTab> createState() => _AdminClientsTabState();
+}
+
+class _AdminClientsTabState extends State<AdminClientsTab> {
+  ClientSegment _selectedSegment = ClientSegment.all;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadClients();
+  }
+
+  void _loadClients() {
+    context.read<ClientsBloc>().add(LoadClientsEvent());
+  }
+
+  void _onSearch(String query) {
+    context.read<ClientsBloc>().add(SearchClientsEvent(query));
+  }
+
+  void _onSegmentChanged(ClientSegment segment) {
+    setState(() => _selectedSegment = segment);
+    context.read<ClientsBloc>().add(FilterClientsBySegmentEvent(segment));
+  }
+
+  void _onClientTap(String id) {
+    context.push('/clients/$id');
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Клиенты и Финансы')),
-      body: BlocBuilder<ClientsBloc, ClientsState>(
-        builder: (context, state) {
-          if (state is ClientsLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is ClientsError) {
-            return Center(
-              child: Text(
-                'Ошибка: ${state.message}',
-                style: const TextStyle(color: Colors.red),
-              ),
-            );
-          }
-          if (state is ClientsLoaded) {
-            final paginatedList = state.paginatedClients;
-
-            return Column(
-              children: [
-                ClientSearchBar(
-                  onChanged: (query) => context.read<ClientsBloc>().add(
-                    SearchClientsEvent(query),
-                  ),
-                ),
-                ClientSegmentsBar(
-                  selectedSegment: state.currentSegment,
-                  onSegmentChanged: (segment) => context
-                      .read<ClientsBloc>()
-                      .add(FilterClientsBySegmentEvent(segment)),
-                ),
-                const ClientFiltersRow(),
-                ClientTableHeader(currentSegment: state.currentSegment),
-
-                Expanded(
-                  child: state.filteredClients.isEmpty
-                      ? const Center(child: Text('Клиентов не найдено.'))
-                      : ListView.builder(
-                          itemCount: paginatedList.length,
-                          itemBuilder: (context, index) {
-                            final client = paginatedList[index];
-                            return ClientListRow(
-                              client: client,
-                              currentSegment: state.currentSegment,
-                              onTap: () async {
-                                final bloc = context.read<ClientsBloc>();
-                                await context.push(
-                                  '/client-details/${client.id}',
-                                );
-                                bloc.add(LoadClientsEvent());
-                              },
-                            );
-                          },
-                        ),
-                ),
-
-                ClientPaginationFooter(
-                  currentPage: state.currentPage,
-                  totalPages: state.totalPages,
-                  itemsPerPage: state.itemsPerPage,
-                  onPageChanged: (page) =>
-                      context.read<ClientsBloc>().add(ChangePageEvent(page)),
-                  onItemsPerPageChanged: (items) => context
-                      .read<ClientsBloc>()
-                      .add(ChangeItemsPerPageEvent(items)),
-                ),
-              ],
-            );
-          }
-          return const SizedBox.shrink();
-        },
+      body: Column(
+        children: [
+          ClientSearchHeader(
+            onSearchChanged: _onSearch,
+            selectedSegment: _selectedSegment,
+            onSegmentChanged: _onSegmentChanged,
+          ),
+          Expanded(
+            child: BlocBuilder<ClientsBloc, ClientsState>(
+              builder: (context, state) {
+                if (state is ClientsLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state is ClientsLoaded) {
+                  return ClientListView(
+                    clients: state.paginatedClients,
+                    currentSegment: state.currentSegment,
+                    onClientTap: _onClientTap,
+                  );
+                }
+                if (state is ClientsError) {
+                  return Center(child: Text(state.message));
+                }
+                return const SizedBox();
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

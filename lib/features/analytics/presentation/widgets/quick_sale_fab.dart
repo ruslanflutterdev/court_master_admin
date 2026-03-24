@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../clients/presentation/bloc/clients_bloc.dart';
-import '../../../clients/presentation/widgets/sheets/quick_sale_sheet.dart';
+import '../../../clients/presentation/widgets/sections/quick_sale_sheet.dart';
 import '../bloc/analytics_bloc.dart';
 import '../bloc/analytics_event.dart';
 

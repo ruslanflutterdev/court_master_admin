@@ -59,7 +59,7 @@ void main() {
             id: '1',
             firstName: 'Иван',
             lastName: 'Иванов',
-            role: 'tennisCoach',
+            role: 'COACH',
             rating: 5.0,
             email: '',
           ),

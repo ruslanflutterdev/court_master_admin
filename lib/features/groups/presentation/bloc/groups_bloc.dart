@@ -7,6 +7,7 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
   final GroupsRepository repository;
 
   GroupsBloc({required this.repository}) : super(GroupsInitial()) {
+    // 1. Загрузка групп
     on<LoadGroupsEvent>((event, emit) async {
       emit(GroupsLoading());
       try {
@@ -19,14 +20,12 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
 
     on<CreateGroupEvent>((event, emit) async {
       try {
-        await repository.createGroup(
-          event.name,
-          event.scheduleText,
-          event.coachId,
-        );
-        add(LoadGroupsEvent());
+        emit(GroupsLoading());
+        await repository.createGroup(event.groupData);
+        final groups = await repository.getGroups();
+        emit(GroupsLoaded(groups));
       } catch (e) {
-        emit(GroupsError(e.toString().replaceAll('Exception: ', '')));
+        emit(GroupsError('Ошибка создания группы: $e'));
       }
     });
   }

@@ -1,3 +1,4 @@
+import 'package:court_master_admin/features/clients/presentation/widgets/sections/quick_sale_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -10,7 +11,6 @@ import 'package:court_master_admin/core/api/api_client.dart';
 import 'package:court_master_admin/features/clients/presentation/bloc/clients_bloc.dart';
 import 'package:court_master_admin/features/clients/presentation/bloc/clients_event.dart';
 import 'package:court_master_admin/features/clients/presentation/bloc/clients_state.dart';
-import 'package:court_master_admin/features/clients/presentation/widgets/sheets/quick_sale_sheet.dart';
 
 // 1. Подделка для BLoC
 class MockClientsBloc extends MockBloc<ClientsEvent, ClientsState>

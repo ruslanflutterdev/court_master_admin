@@ -21,7 +21,7 @@ class ClientDetailsBloc extends Bloc<ClientDetailsEvent, ClientDetailsState> {
     on<AddPaymentEvent>((event, emit) async {
       try {
         await repository.addPayment(event.clientId, event.paymentData);
-        add(LoadClientDetails(event.clientId));
+        add(LoadClientDetails(clientId: event.clientId));
       } catch (e) {
         emit(ClientDetailsError(e.toString().replaceAll('Exception: ', '')));
       }
@@ -30,7 +30,7 @@ class ClientDetailsBloc extends Bloc<ClientDetailsEvent, ClientDetailsState> {
     on<AddSubscriptionEvent>((event, emit) async {
       try {
         await repository.addSubscription(event.clientId, event.subData);
-        add(LoadClientDetails(event.clientId));
+        add(LoadClientDetails(clientId: event.clientId));
       } catch (e) {
         emit(ClientDetailsError(e.toString().replaceAll('Exception: ', '')));
       }

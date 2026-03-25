@@ -1,11 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiClient {
   late final Dio dio;
+  final FlutterSecureStorage _storage;
 
-  ApiClient() {
+  ApiClient(this._storage) {
     String baseUrl = 'https://courtmaster-backend.onrender.com/api';
     if (kDebugMode) {
       if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
@@ -26,10 +27,7 @@ class ApiClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final prefs = await SharedPreferences.getInstance();
-          final token = prefs.getString(
-            'auth_token',
-          ); // Убедитесь, что при логине вы сохраняете его под этим же ключом!
+          final token = await _storage.read(key: 'auth_token');
 
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';

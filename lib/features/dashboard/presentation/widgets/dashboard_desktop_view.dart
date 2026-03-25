@@ -68,6 +68,17 @@ class DashboardDesktopView extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
+              NavigationRailDestination(
+                icon: Icon(Icons.account_balance_wallet_outlined),
+                selectedIcon: Icon(
+                  Icons.account_balance_wallet,
+                  color: Colors.green,
+                ),
+                label: Text(
+                  'Касса',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
             ],
           ),
           const VerticalDivider(thickness: 1, width: 1, color: Colors.black12),

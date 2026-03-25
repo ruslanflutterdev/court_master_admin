@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
-import '../../../../clients/data/models/transaction_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../data/models/transaction_model.dart';
+import '../../bloc/client_details_bloc.dart';
+import '../../bloc/client_details_event.dart';
+import '../../utils/payment_helper.dart';
 
 class ClientPaymentsList extends StatelessWidget {
+  final String clientId;
   final List<TransactionModel> transactions;
 
-  const ClientPaymentsList({super.key, required this.transactions});
+  const ClientPaymentsList({
+    super.key,
+    required this.clientId,
+    required this.transactions,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,50 +32,87 @@ class ClientPaymentsList extends StatelessWidget {
       separatorBuilder: (context, index) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final tx = transactions[index];
-        final isIncome = tx.type == 'income';
+        final isIncome = tx.type == PaymentHelper.typeIncome;
+        final isRefund = tx.type == PaymentHelper.typeRefund;
 
-        Color catColor = Colors.grey;
-        IconData catIcon = Icons.monetization_on;
-        String catName = tx.description ?? 'Операция';
-
-        if (tx.category == 'rent') {
-          catColor = Colors.orange;
-          catIcon = Icons.sports_tennis;
-        } else if (tx.category == 'group_sub' || tx.category == 'indiv_sub') {
-          catColor = Colors.purple;
-          catIcon = Icons.card_membership;
-        } else if (tx.category == 'deposit') {
-          catColor = Colors.blue;
-          catIcon = Icons.account_balance_wallet;
-        }
-
-        final moneyColor = isIncome ? Colors.green : Colors.red;
-        final sign = isIncome ? '+' : '-';
+        final moneyColor = PaymentHelper.getTypeColor(tx.type);
+        final sign = isIncome ? '+' : (isRefund ? '↺' : '-');
 
         return ListTile(
           contentPadding: EdgeInsets.zero,
           leading: CircleAvatar(
-            backgroundColor: catColor.withAlpha(20),
-            child: Icon(catIcon, color: catColor),
+            backgroundColor: moneyColor.withAlpha(20),
+            child: Icon(
+              PaymentHelper.getMethodIcon(tx.paymentMethod),
+              color: moneyColor,
+            ),
           ),
           title: Text(
-            catName,
+            tx.description ?? PaymentHelper.getTypeName(tx.type),
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
           subtitle: Text(
-            _formatDate(tx.createdAt),
+            '${_formatDate(tx.createdAt)} • ${PaymentHelper.getMethodName(tx.paymentMethod)}',
             style: const TextStyle(fontSize: 12),
           ),
-          trailing: Text(
-            '$sign ${tx.amount} ₸',
-            style: TextStyle(
-              color: moneyColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '$sign ${tx.amount} ₸',
+                style: TextStyle(
+                  color: moneyColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              if (isIncome && tx.status != 'REFUNDED')
+                IconButton(
+                  icon: const Icon(
+                    Icons.keyboard_return,
+                    color: Colors.orange,
+                    size: 20,
+                  ),
+                  onPressed: () => _showRefundDialog(context, tx),
+                  tooltip: 'Сделать возврат',
+                ),
+            ],
           ),
         );
       },
+    );
+  }
+
+  void _showRefundDialog(BuildContext context, TransactionModel tx) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Подтверждение возврата'),
+        content: Text(
+          'Вы уверены, что хотите сделать возврат по операции на сумму ${tx.amount} ₸?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Отмена'),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<ClientDetailsBloc>().add(
+                RefundTransactionEvent(
+                  clientId: clientId,
+                  transactionId: tx.id,
+                ),
+              );
+              Navigator.pop(dialogContext);
+            },
+            child: const Text(
+              'Да, вернуть',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

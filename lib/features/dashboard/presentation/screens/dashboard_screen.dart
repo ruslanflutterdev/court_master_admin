@@ -18,6 +18,9 @@ import '../../../schedule/presentation/screens/admin_schedule_tab.dart';
 import '../../../employees/presentation/screens/admin_employees_tab.dart';
 import '../../../groups/presentation/screens/admin_groups_tab.dart';
 import '../../../clients/presentation/screens/admin_clients_tab.dart';
+import '../../../cashbox/presentation/screens/cashbox_screen.dart';
+import '../../../cashbox/presentation/bloc/cashbox_bloc.dart';
+import '../../../cashbox/presentation/bloc/cashbox_event.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -28,14 +31,6 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 1;
-
-  final List<Widget> _tabs = const [
-    AdminAnalyticsTab(),
-    AdminScheduleTab(),
-    AdminEmployeesTab(),
-    AdminGroupsTab(),
-    AdminClientsTab(),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -57,20 +52,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
         BlocProvider(
           create: (context) => sl<ClientsBloc>()..add(LoadClientsEvent()),
         ),
+        BlocProvider(
+          create: (context) => sl<CashboxBloc>()..add(LoadCashboxStatus()),
+        ),
       ],
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth < 800) {
-            return DashboardMobileView(
-              currentIndex: _currentIndex,
-              onTabSelected: (i) => setState(() => _currentIndex = i),
-              tabs: _tabs,
-            );
-          }
-          return DashboardDesktopView(
-            currentIndex: _currentIndex,
-            onTabSelected: (i) => setState(() => _currentIndex = i),
-            tabs: _tabs,
+      child: Builder(
+        builder: (context) {
+          final List<Widget> tabs = [
+            const AdminAnalyticsTab(),
+            const AdminScheduleTab(),
+            const AdminEmployeesTab(),
+            const AdminGroupsTab(),
+            const AdminClientsTab(),
+            const CashboxScreen(),
+          ];
+
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth < 800) {
+                return DashboardMobileView(
+                  currentIndex: _currentIndex,
+                  onTabSelected: (i) {
+                    setState(() => _currentIndex = i);
+                    if (i == 5) {
+                      context.read<CashboxBloc>().add(LoadCashboxStatus());
+                    }
+                  },
+                  tabs: tabs,
+                );
+              }
+              return DashboardDesktopView(
+                currentIndex: _currentIndex,
+                onTabSelected: (i) {
+                  setState(() => _currentIndex = i);
+                  if (i == 5) {
+                    context.read<CashboxBloc>().add(LoadCashboxStatus());
+                  }
+                },
+                tabs: tabs,
+              );
+            },
           );
         },
       ),

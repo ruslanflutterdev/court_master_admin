@@ -18,8 +18,8 @@ class AddPaymentSheet extends StatefulWidget {
 class _AddPaymentSheetState extends State<AddPaymentSheet> {
   final _amountCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
-  int _selectedType = 1;
-  int _selectedMethod = 2;
+  String _selectedType = PaymentHelper.typeIncome;
+  String _selectedMethod = PaymentHelper.methodCash;
 
   void _submit() {
     final amount = int.tryParse(_amountCtrl.text) ?? 0;
@@ -61,8 +61,11 @@ class _AddPaymentSheetState extends State<AddPaymentSheet> {
             PaymentSelectors(
               selectedType: _selectedType,
               selectedMethod: _selectedMethod,
-              onTypeChanged: (v) => setState(() => _selectedType = v ?? 1),
-              onMethodChanged: (v) => setState(() => _selectedMethod = v ?? 2),
+              onTypeChanged: (v) =>
+                  setState(() => _selectedType = v ?? PaymentHelper.typeIncome),
+              onMethodChanged: (v) => setState(
+                () => _selectedMethod = v ?? PaymentHelper.methodCash,
+              ),
             ),
             CustomTextField(
               controller: _descCtrl,

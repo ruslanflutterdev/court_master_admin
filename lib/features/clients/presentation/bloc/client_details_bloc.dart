@@ -35,5 +35,14 @@ class ClientDetailsBloc extends Bloc<ClientDetailsEvent, ClientDetailsState> {
         emit(ClientDetailsError(e.toString().replaceAll('Exception: ', '')));
       }
     });
+
+    on<RefundTransactionEvent>((event, emit) async {
+      try {
+        await repository.refundTransaction(event.transactionId);
+        add(LoadClientDetails(clientId: event.clientId));
+      } catch (e) {
+        emit(ClientDetailsError(e.toString().replaceAll('Exception: ', '')));
+      }
+    });
   }
 }

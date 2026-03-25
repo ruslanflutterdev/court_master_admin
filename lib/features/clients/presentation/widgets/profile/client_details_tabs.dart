@@ -27,7 +27,10 @@ class ClientDetailsTabs extends StatelessWidget {
             child: TabBarView(
               children: [
                 ClientAttendanceList(attendances: client.attendances ?? []),
-                ClientPaymentsList(transactions: client.transactions ?? []),
+                ClientPaymentsList(
+                  clientId: client.id,
+                  transactions: client.transactions ?? [],
+                ),
               ],
             ),
           ),

@@ -16,3 +16,9 @@ class AddSubscriptionEvent extends ClientDetailsEvent {
   final Map<String, dynamic> subData;
   AddSubscriptionEvent(this.clientId, this.subData);
 }
+
+class RefundTransactionEvent extends ClientDetailsEvent {
+  final String clientId;
+  final String transactionId;
+  RefundTransactionEvent({required this.clientId, required this.transactionId});
+}

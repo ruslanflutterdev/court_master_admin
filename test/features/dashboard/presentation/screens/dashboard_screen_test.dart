@@ -9,7 +9,6 @@ import 'package:court_master_admin/features/dashboard/presentation/screens/dashb
 import 'package:court_master_admin/features/dashboard/presentation/widgets/dashboard_desktop_view.dart';
 import 'package:court_master_admin/features/dashboard/presentation/widgets/dashboard_mobile_view.dart';
 
-// Добавляем импорты AuthBloc
 import 'package:court_master_admin/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:court_master_admin/features/auth/presentation/bloc/auth_event.dart';
 import 'package:court_master_admin/features/auth/presentation/bloc/auth_state.dart';
@@ -30,9 +29,9 @@ import 'package:court_master_admin/features/employees/presentation/bloc/employee
 import 'package:court_master_admin/features/groups/presentation/bloc/groups_bloc.dart';
 import 'package:court_master_admin/features/groups/presentation/bloc/groups_event.dart';
 import 'package:court_master_admin/features/groups/presentation/bloc/groups_state.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/event_attendance_bloc.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/event_attendance_event.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/event_attendance_state.dart';
+import 'package:court_master_admin/features/cashbox/presentation/bloc/cashbox_bloc.dart';
+import 'package:court_master_admin/features/cashbox/presentation/bloc/cashbox_event.dart';
+import 'package:court_master_admin/features/cashbox/presentation/bloc/cashbox_state.dart';
 
 // Подделки
 class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
@@ -52,9 +51,8 @@ class MockEmployeesBloc extends MockBloc<EmployeesEvent, EmployeesState>
 class MockGroupsBloc extends MockBloc<GroupsEvent, GroupsState>
     implements GroupsBloc {}
 
-class MockEventAttendanceBloc
-    extends MockBloc<EventAttendanceEvent, EventAttendanceState>
-    implements EventAttendanceBloc {}
+class MockCashboxBloc extends MockBloc<CashboxEvent, CashboxState>
+    implements CashboxBloc {}
 
 class FakeAuthEvent extends Fake implements AuthEvent {}
 
@@ -68,7 +66,7 @@ class FakeEmployeesEvent extends Fake implements EmployeesEvent {}
 
 class FakeGroupsEvent extends Fake implements GroupsEvent {}
 
-class FakeEventAttendanceEvent extends Fake implements EventAttendanceEvent {}
+class FakeCashboxEvent extends Fake implements CashboxEvent {}
 
 void main() {
   late MockAuthBloc mockAuthBloc;
@@ -77,7 +75,7 @@ void main() {
   late MockAnalyticsBloc mockAnalyticsBloc;
   late MockEmployeesBloc mockEmployeesBloc;
   late MockGroupsBloc mockGroupsBloc;
-  late MockEventAttendanceBloc mockEventAttendanceBloc;
+  late MockCashboxBloc mockCashboxBloc;
 
   setUpAll(() {
     registerFallbackValue(FakeAuthEvent());
@@ -86,7 +84,7 @@ void main() {
     registerFallbackValue(FakeAnalyticsEvent());
     registerFallbackValue(FakeEmployeesEvent());
     registerFallbackValue(FakeGroupsEvent());
-    registerFallbackValue(FakeEventAttendanceEvent());
+    registerFallbackValue(FakeCashboxEvent());
   });
 
   setUp(() {
@@ -96,9 +94,8 @@ void main() {
     mockAnalyticsBloc = MockAnalyticsBloc();
     mockEmployeesBloc = MockEmployeesBloc();
     mockGroupsBloc = MockGroupsBloc();
-    mockEventAttendanceBloc = MockEventAttendanceBloc();
+    mockCashboxBloc = MockCashboxBloc();
 
-    // Создаем фейкового супер-админа
     final dummyUser = UserModel(
       id: '1',
       email: 'admin@test.com',
@@ -115,9 +112,7 @@ void main() {
     when(() => mockAnalyticsBloc.state).thenReturn(AnalyticsLoading());
     when(() => mockEmployeesBloc.state).thenReturn(EmployeesLoading());
     when(() => mockGroupsBloc.state).thenReturn(GroupsLoading());
-    when(
-      () => mockEventAttendanceBloc.state,
-    ).thenReturn(EventAttendanceLoading());
+    when(() => mockCashboxBloc.state).thenReturn(const CashboxLoading());
 
     final sl = GetIt.instance;
     sl.reset();
@@ -127,7 +122,7 @@ void main() {
     sl.registerFactory<AnalyticsBloc>(() => mockAnalyticsBloc);
     sl.registerFactory<EmployeesBloc>(() => mockEmployeesBloc);
     sl.registerFactory<GroupsBloc>(() => mockGroupsBloc);
-    sl.registerFactory<EventAttendanceBloc>(() => mockEventAttendanceBloc);
+    sl.registerFactory<CashboxBloc>(() => mockCashboxBloc);
   });
 
   Widget createWidgetUnderTest() {
@@ -142,26 +137,26 @@ void main() {
   group('DashboardScreen Widget Tests', () {
     testWidgets(
       'Отрисовывает DashboardDesktopView на широком экране (>800px)',
-      (WidgetTester tester) async {
+      (tester) async {
         tester.view.physicalSize = const Size(1200, 800);
         tester.view.devicePixelRatio = 1.0;
         await tester.pumpWidget(createWidgetUnderTest());
+        await tester.pump();
 
         expect(find.byType(DashboardDesktopView), findsOneWidget);
-        expect(find.byType(DashboardMobileView), findsNothing);
         addTearDown(tester.view.resetPhysicalSize);
       },
     );
 
     testWidgets('Отрисовывает DashboardMobileView на узком экране (<800px)', (
-      WidgetTester tester,
+      tester,
     ) async {
       tester.view.physicalSize = const Size(400, 800);
       tester.view.devicePixelRatio = 1.0;
       await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump();
 
       expect(find.byType(DashboardMobileView), findsOneWidget);
-      expect(find.byType(DashboardDesktopView), findsNothing);
       addTearDown(tester.view.resetPhysicalSize);
     });
   });

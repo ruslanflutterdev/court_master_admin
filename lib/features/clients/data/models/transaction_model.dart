@@ -1,10 +1,10 @@
 class TransactionModel {
   final String id;
   final int amount;
+  final String type; // 'INCOME', 'EXPENSE', 'REFUND'
+  final String category; // 'SUBSCRIPTION', 'DEPOSIT', 'RENT', etc.
   final String
-  type; // 'income' (Приход), 'expense' (Расход), 'refund' (Возврат)
-  final String category; // 'subscription', 'deposit', 'rent' и т.д.
-  final String paymentMethod; // 'cash', 'card', 'transfer', 'deposit'
+  paymentMethod; // 'CASH', 'CARD', 'TRANSFER', 'QR', 'SBP', 'DEPOSIT'
   final String status;
   final String? description;
   final DateTime createdAt;
@@ -23,13 +23,17 @@ class TransactionModel {
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
     return TransactionModel(
       id: json['id'],
-      amount: json['amount'],
-      type: json['type'] ?? 'income',
-      category: json['category'] ?? 'other',
-      paymentMethod: json['paymentMethod'] ?? 'cash',
-      status: json['status'] ?? 'completed',
+      amount: json['amount'] is int
+          ? json['amount']
+          : (json['amount'] as num).toInt(),
+      type: json['type']?.toString().toUpperCase() ?? 'INCOME',
+      category: json['category']?.toString().toUpperCase() ?? 'OTHER',
+      paymentMethod: json['paymentMethod']?.toString().toUpperCase() ?? 'CASH',
+      status: json['status']?.toString().toUpperCase() ?? 'COMPLETED',
       description: json['description'],
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.now(),
     );
   }
 }

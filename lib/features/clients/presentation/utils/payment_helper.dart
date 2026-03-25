@@ -1,52 +1,75 @@
 import 'package:flutter/material.dart';
 
 class PaymentHelper {
-  static String getTypeName(int type) {
-    switch (type) {
-      case 1:
-        return 'Пополнение (Оплата)';
-      case 2:
-        return 'Списание';
-      case 3:
+  static const String typeIncome = 'INCOME';
+  static const String typeExpense = 'EXPENSE';
+  static const String typeRefund = 'REFUND';
+
+  static const String methodCash = 'CASH';
+  static const String methodCard = 'CARD';
+  static const String methodTransfer = 'TRANSFER';
+  static const String methodQr = 'QR';
+  static const String methodSbp = 'SBP';
+  static const String methodDeposit = 'DEPOSIT';
+
+  static String getTypeName(String type) {
+    switch (type.toUpperCase()) {
+      case typeIncome:
+        return 'Приход (Оплата)';
+      case typeExpense:
+        return 'Расход (Списание)';
+      case typeRefund:
         return 'Возврат';
       default:
         return 'Неизвестно';
     }
   }
 
-  static String getMethodName(int method) {
-    switch (method) {
-      case 1:
+  static String getMethodName(String method) {
+    switch (method.toUpperCase()) {
+      case methodCash:
         return 'Наличные';
-      case 2:
-        return 'Карта / Терминал';
-      case 3:
-        return 'Перевод / СБП';
+      case methodCard:
+        return 'Терминал / Карта';
+      case methodTransfer:
+        return 'Перевод';
+      case methodQr:
+        return 'QR-код';
+      case methodSbp:
+        return 'СБП';
+      case methodDeposit:
+        return 'Депозит (Баланс)';
       default:
         return 'Неизвестно';
     }
   }
 
-  static IconData getMethodIcon(int method) {
-    switch (method) {
-      case 1:
+  static IconData getMethodIcon(String method) {
+    switch (method.toUpperCase()) {
+      case methodCash:
         return Icons.money;
-      case 2:
+      case methodCard:
         return Icons.credit_card;
-      case 3:
-        return Icons.phone_android;
+      case methodTransfer:
+        return Icons.account_balance;
+      case methodQr:
+        return Icons.qr_code_scanner;
+      case methodSbp:
+        return Icons.account_balance_wallet;
+      case methodDeposit:
+        return Icons.wallet;
       default:
         return Icons.payment;
     }
   }
 
-  static Color getTypeColor(int type) {
-    switch (type) {
-      case 1:
+  static Color getTypeColor(String type) {
+    switch (type.toUpperCase()) {
+      case typeIncome:
         return Colors.green;
-      case 2:
+      case typeExpense:
         return Colors.red;
-      case 3:
+      case typeRefund:
         return Colors.orange;
       default:
         return Colors.grey;

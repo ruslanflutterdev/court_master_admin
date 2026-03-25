@@ -1,13 +1,14 @@
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../../core/api/api_client.dart';
 import '../models/user_model.dart';
 import 'auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final ApiClient apiClient;
+  final FlutterSecureStorage _storage;
 
-  AuthRepositoryImpl(this.apiClient);
+  AuthRepositoryImpl(this.apiClient, this._storage);
 
   @override
   Future<AuthResponse> login(String email, String password) async {
@@ -20,10 +21,9 @@ class AuthRepositoryImpl implements AuthRepository {
       final token = response.data['token'] as String;
       final user = UserModel.fromJson(response.data['user']);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('auth_token', token);
-      await prefs.setString('user_role', user.role);
-      await prefs.setString('user_id', user.id);
+      await _storage.write(key: 'auth_token', value: token);
+      await _storage.write(key: 'user_role', value: user.role);
+      await _storage.write(key: 'user_id', value: user.id);
 
       return AuthResponse(token: token, user: user);
     } on DioException catch (e) {
@@ -33,22 +33,20 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
-    await prefs.remove('user_role');
-    await prefs.remove('user_id');
+    await _storage.delete(key: 'auth_token');
+    await _storage.delete(key: 'user_role');
+    await _storage.delete(key: 'user_id');
   }
 
   @override
   Future<UserModel?> checkAuth() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    final token = await _storage.read(key: 'auth_token');
 
     if (token == null || token.isEmpty) return null;
 
     try {
-      final role = prefs.getString('user_role') ?? 'CLIENT';
-      final id = prefs.getString('user_id') ?? '';
+      final role = await _storage.read(key: 'user_role') ?? 'CLIENT';
+      final id = await _storage.read(key: 'user_id') ?? '';
 
       return UserModel(
         id: id,

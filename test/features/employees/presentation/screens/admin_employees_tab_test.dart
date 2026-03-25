@@ -10,21 +10,46 @@ import 'package:court_master_admin/features/employees/presentation/screens/admin
 import 'package:court_master_admin/features/employees/data/models/coach_model.dart';
 import 'package:court_master_admin/features/employees/presentation/widgets/cards/employee_list_card.dart';
 
+// Добавляем импорты AuthBloc
+import 'package:court_master_admin/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:court_master_admin/features/auth/presentation/bloc/auth_event.dart';
+import 'package:court_master_admin/features/auth/presentation/bloc/auth_state.dart';
+import 'package:court_master_admin/features/auth/data/models/user_model.dart';
+
 class MockEmployeesBloc extends MockBloc<EmployeesEvent, EmployeesState>
     implements EmployeesBloc {}
 
+class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
+
 void main() {
   late MockEmployeesBloc mockEmployeesBloc;
+  late MockAuthBloc mockAuthBloc;
 
   setUp(() {
     mockEmployeesBloc = MockEmployeesBloc();
+    mockAuthBloc = MockAuthBloc();
+
+    // Задаем пользователя SUPER_ADMIN, чтобы кнопка создания тренера отображалась
+    final dummyUser = UserModel(
+      id: '1',
+      email: 'admin@test.com',
+      firstName: 'Admin',
+      lastName: '',
+      role: 'SUPER_ADMIN',
+    );
+    when(
+      () => mockAuthBloc.state,
+    ).thenReturn(AuthAuthenticated(user: dummyUser));
   });
 
   Widget createWidgetUnderTest() {
-    return MaterialApp(
-      home: BlocProvider<EmployeesBloc>.value(
-        value: mockEmployeesBloc,
-        child: const AdminEmployeesTab(),
+    return BlocProvider<AuthBloc>.value(
+      value: mockAuthBloc,
+      child: MaterialApp(
+        home: BlocProvider<EmployeesBloc>.value(
+          value: mockEmployeesBloc,
+          child: const AdminEmployeesTab(),
+        ),
       ),
     );
   }
@@ -34,9 +59,7 @@ void main() {
       'Показывает индикатор загрузки, когда состояние EmployeesLoading',
       (tester) async {
         when(() => mockEmployeesBloc.state).thenReturn(EmployeesLoading());
-
         await tester.pumpWidget(createWidgetUnderTest());
-
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       },
     );
@@ -45,9 +68,7 @@ void main() {
       tester,
     ) async {
       when(() => mockEmployeesBloc.state).thenReturn(EmployeesLoaded([]));
-
       await tester.pumpWidget(createWidgetUnderTest());
-
       expect(find.textContaining('Нет добавленных тренеров'), findsOneWidget);
     });
 
@@ -67,7 +88,6 @@ void main() {
         when(
           () => mockEmployeesBloc.state,
         ).thenReturn(EmployeesLoaded(coaches));
-
         await tester.pumpWidget(createWidgetUnderTest());
 
         expect(find.byType(EmployeeListCard), findsOneWidget);
@@ -79,18 +99,14 @@ void main() {
       tester,
     ) async {
       when(() => mockEmployeesBloc.state).thenReturn(EmployeesLoaded([]));
-
       await tester.pumpWidget(createWidgetUnderTest());
 
-      // Ищем кнопку FAB
       final fab = find.byType(FloatingActionButton);
       expect(fab, findsOneWidget);
 
-      // Нажимаем на неё
       await tester.tap(fab);
       await tester.pumpAndSettle();
 
-      // Проверяем, что шторка открылась (ищем текст заголовка шторки)
       expect(find.text('Новый сотрудник'), findsOneWidget);
       expect(find.text('Создать сотрудника'), findsOneWidget);
     });

@@ -70,4 +70,28 @@ class ClientsRepository {
       );
     }
   }
+
+  Future<void> refundTransaction(String transactionId) async {
+    try {
+      await apiClient.dio.post(
+        '/transactions/refund',
+        data: {'transactionId': transactionId},
+      );
+    } on DioException catch (e) {
+      throw Exception(
+        e.response?.data['message'] ?? 'Ошибка при выполнении возврата',
+      );
+    }
+  }
+
+  Future<Map<String, dynamic>> getDebtors() async {
+    try {
+      final response = await apiClient.dio.get('/analytics/debts');
+      return response.data;
+    } on DioException catch (e) {
+      throw Exception(
+        e.response?.data['message'] ?? 'Ошибка загрузки списка должников',
+      );
+    }
+  }
 }

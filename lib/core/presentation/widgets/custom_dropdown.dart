@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CustomDropdown<T> extends StatelessWidget {
-  final T value;
+  final T? value;
   final String label;
   final List<T> items;
   final String Function(T) itemLabelBuilder;
@@ -10,7 +10,7 @@ class CustomDropdown<T> extends StatelessWidget {
 
   const CustomDropdown({
     super.key,
-    required this.value,
+    this.value,
     required this.label,
     required this.items,
     required this.itemLabelBuilder,

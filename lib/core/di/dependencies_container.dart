@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../api/api_client.dart';
 import '../../features/auth/data/repositories/auth_repository.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
@@ -18,11 +19,16 @@ import '../../features/clients/presentation/bloc/client_details_bloc.dart';
 import '../../features/clients/presentation/bloc/clients_bloc.dart';
 import '../../features/analytics/data/repositories/analytics_repository.dart';
 import '../../features/analytics/presentation/bloc/analytics_bloc.dart';
+import '../../features/cashbox/data/repositories/cashbox_repository.dart';
+import '../../features/cashbox/presentation/bloc/cashbox_bloc.dart';
 
 final sl = GetIt.instance;
 
 Future<void> initInjection() async {
-  sl.registerLazySingleton<ApiClient>(() => ApiClient());
+  sl.registerLazySingleton<FlutterSecureStorage>(
+    () => const FlutterSecureStorage(),
+  );
+  sl.registerLazySingleton<ApiClient>(() => ApiClient(sl()));
 
   _initAuth();
   _initEmployees();
@@ -30,10 +36,18 @@ Future<void> initInjection() async {
   _initSchedule();
   _initClients();
   _initAnalytics();
+  _initCashbox();
+}
+
+void _initCashbox() {
+  sl.registerLazySingleton<CashboxRepository>(() => CashboxRepository(sl()));
+  sl.registerFactory(() => CashboxBloc(repository: sl()));
 }
 
 void _initAuth() {
-  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(sl(), sl()),
+  );
   sl.registerFactory(() => AuthBloc(repository: sl()));
 }
 

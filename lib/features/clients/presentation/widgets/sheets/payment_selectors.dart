@@ -3,10 +3,10 @@ import '../../../../../core/presentation/widgets/custom_dropdown.dart';
 import '../../utils/payment_helper.dart';
 
 class PaymentSelectors extends StatelessWidget {
-  final int selectedType;
-  final int selectedMethod;
-  final ValueChanged<int?> onTypeChanged;
-  final ValueChanged<int?> onMethodChanged;
+  final String selectedType;
+  final String selectedMethod;
+  final ValueChanged<String?> onTypeChanged;
+  final ValueChanged<String?> onMethodChanged;
 
   const PaymentSelectors({
     super.key,
@@ -20,18 +20,25 @@ class PaymentSelectors extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        CustomDropdown<int>(
+        CustomDropdown<String>(
           label: 'Тип операции',
           value: selectedType,
-          items: const [1, 2, 3],
+          items: const [PaymentHelper.typeIncome, PaymentHelper.typeExpense],
           itemLabelBuilder: PaymentHelper.getTypeName,
           onChanged: onTypeChanged,
           prefixIcon: Icons.swap_horiz,
         ),
-        CustomDropdown<int>(
+        CustomDropdown<String>(
           label: 'Способ оплаты',
           value: selectedMethod,
-          items: const [1, 2, 3],
+          items: const [
+            PaymentHelper.methodCash,
+            PaymentHelper.methodCard,
+            PaymentHelper.methodTransfer,
+            PaymentHelper.methodQr,
+            PaymentHelper.methodSbp,
+            PaymentHelper.methodDeposit,
+          ],
           itemLabelBuilder: PaymentHelper.getMethodName,
           onChanged: onMethodChanged,
           prefixIcon: Icons.account_balance,

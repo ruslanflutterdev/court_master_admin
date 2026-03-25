@@ -19,7 +19,12 @@ class ClientListRow extends StatelessWidget {
     String rightColumnText;
     Color rightColumnColor;
 
-    if (currentSegment == ClientSegment.debtors) {
+    final bool isDebtor = client.balance < 0;
+    final bool hasUnpaid = client.tags.contains(
+      'UNPAID_ATTENDANCE',
+    ); // Предполагаем, что бэк может передавать это в тегах или отдельном поле
+
+    if (currentSegment == ClientSegment.debtors || isDebtor) {
       rightColumnText = '${client.balance} ₸';
       rightColumnColor = Colors.red;
     } else if (currentSegment == ClientSegment.deposit) {
@@ -42,9 +47,22 @@ class ClientListRow extends StatelessWidget {
           children: [
             Expanded(
               flex: 2,
-              child: Text(
-                '${client.firstName} ${client.lastName}',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+              child: Row(
+                children: [
+                  Text(
+                    '${client.firstName} ${client.lastName}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  if (isDebtor || hasUnpaid)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.red.shade700,
+                        size: 16,
+                      ),
+                    ),
+                ],
               ),
             ),
             Expanded(

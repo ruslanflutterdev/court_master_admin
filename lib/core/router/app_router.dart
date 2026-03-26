@@ -19,15 +19,10 @@ class AppRouter {
     initialLocation: '/login',
     refreshListenable: GoRouterRefreshStream(authBloc.stream),
 
+
     redirect: (context, state) {
       final authState = authBloc.state;
       final isLoggingIn = state.matchedLocation == '/login';
-
-      if (authState is AuthInitial ||
-          authState is AuthLoading ||
-          authState is AuthUnauthenticated) {
-        return isLoggingIn ? null : '/login';
-      }
 
       if (authState is AuthAuthenticated) {
         if (isLoggingIn || state.matchedLocation == '/') {
@@ -35,20 +30,14 @@ class AppRouter {
 
           if (role == AppRoles.coach) {
             return '/coach-dashboard';
-          } else if ([
-            AppRoles.superAdmin,
-            AppRoles.headAdmin,
-            AppRoles.admin,
-          ].contains(role)) {
-            return '/dashboard';
           } else {
-            return '/login';
+            return '/dashboard';
           }
         }
-      } else if (authState is AuthUnauthenticated) {
-        if (!isLoggingIn) {
-          return '/login';
-        }
+      }
+
+      if (authState is AuthUnauthenticated && !isLoggingIn) {
+        return '/login';
       }
 
       return null;

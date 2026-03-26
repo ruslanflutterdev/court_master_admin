@@ -23,6 +23,12 @@ class AppRouter {
       final authState = authBloc.state;
       final isLoggingIn = state.matchedLocation == '/login';
 
+      if (authState is AuthInitial ||
+          authState is AuthLoading ||
+          authState is AuthUnauthenticated) {
+        return isLoggingIn ? null : '/login';
+      }
+
       if (authState is AuthAuthenticated) {
         if (isLoggingIn || state.matchedLocation == '/') {
           final role = authState.user.role;

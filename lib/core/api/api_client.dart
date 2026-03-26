@@ -37,6 +37,15 @@ class ApiClient {
         },
 
         onError: (DioException error, handler) {
+          if (error.response?.statusCode == 401) {
+            final data = error.response?.data;
+            if (data is Map &&
+                (data['message'] == 'Токен авторизации не предоставлен' ||
+                    data['message'] == 'Unauthorized')) {
+              return handler.next(error);
+            }
+          }
+
           String customMessage = 'Неизвестная ошибка сервера';
 
           if (error.response?.data != null) {

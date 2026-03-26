@@ -18,7 +18,6 @@ class AppRouter {
     initialLocation: '/login',
     refreshListenable: GoRouterRefreshStream(authBloc.stream),
 
-
     redirect: (context, state) {
       final authState = authBloc.state;
       final isLoggingIn = state.matchedLocation == '/login';
@@ -30,7 +29,9 @@ class AppRouter {
           if (role == 'COACH') {
             return '/coach-dashboard';
           } else if (role == 'SUPER_ADMIN' || role == 'HEAD_ADMIN' || role == 'ADMIN') {
-            return '/dashboard';
+            return '/dashboard'; // Админы идут в админку
+          } else if (role == 'CLIENT') {
+            return '/client-stub'; // <--- Клиенты идут в свою зону
           } else {
             return '/login';
           }
@@ -64,6 +65,23 @@ class AppRouter {
         builder: (context, state) =>
             GroupDetailsScreen(groupId: state.pathParameters['id']!),
       ),
+
+      // ВРЕМЕННАЯ ЗАГЛУШКА ДЛЯ КЛИЕНТА (чтобы не пускать его в админку)
+      GoRoute(
+        path: '/client-stub',
+        builder: (context, state) => Scaffold(
+          appBar: AppBar(
+            title: const Text('Кабинет клиента'),
+          ),
+          body: const Center(
+            child: Text(
+              'Приложение для клиентов\nнаходится в разработке',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ),
     ],
   );
 }
@@ -74,7 +92,7 @@ class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();
     _subscription = stream.asBroadcastStream().listen(
-      (dynamic _) => notifyListeners(),
+          (dynamic _) => notifyListeners(),
     );
   }
 

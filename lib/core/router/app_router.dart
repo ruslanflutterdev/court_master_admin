@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../features/auth/data/models/user_model.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/auth/presentation/bloc/auth_state.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -28,10 +27,12 @@ class AppRouter {
         if (isLoggingIn || state.matchedLocation == '/') {
           final role = authState.user.role;
 
-          if (role == AppRoles.coach) {
+          if (role == 'COACH') {
             return '/coach-dashboard';
-          } else {
+          } else if (role == 'SUPER_ADMIN' || role == 'HEAD_ADMIN' || role == 'ADMIN') {
             return '/dashboard';
+          } else {
+            return '/login';
           }
         }
       }

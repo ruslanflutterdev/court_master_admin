@@ -22,19 +22,27 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    String parsedRole = json['role'] ?? AppRoles.client;
-    if (parsedRole == 'ADMIN') parsedRole = AppRoles.admin;
-    if (parsedRole == 'COACH') parsedRole = AppRoles.coach;
-    if (parsedRole == 'CLIENT' || parsedRole == 'CLIENT') {
-      parsedRole = AppRoles.client;
+    String rawRole = json['role']?.toString() ?? AppRoles.client;
+
+    // Жестко проверяем все 5 ролей
+    if (rawRole == 'SUPER_ADMIN') {
+      rawRole = AppRoles.superAdmin;
+    } else if (rawRole == 'HEAD_ADMIN') {
+      rawRole = AppRoles.headAdmin;
+    } else if (rawRole == 'ADMIN') {
+      rawRole = AppRoles.admin;
+    } else if (rawRole == 'COACH') {
+      rawRole = AppRoles.coach;
+    } else {
+      rawRole = AppRoles.client;
     }
 
     return UserModel(
-      id: json['id'] ?? '',
-      email: json['email'] ?? '',
-      firstName: json['firstName'] ?? '',
-      lastName: json['lastName'] ?? '',
-      role: parsedRole,
+      id: json['id']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      firstName: json['firstName']?.toString() ?? '',
+      lastName: json['lastName']?.toString() ?? '',
+      role: rawRole,
     );
   }
 }

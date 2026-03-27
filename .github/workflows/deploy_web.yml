@@ -1,0 +1,44 @@
+name: Deploy Flutter Web to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master # Убедись, что твоя ветка называется main (или master)
+
+# Даем права Гитхабу на загрузку файлов
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build_and_deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Скачиваем код
+        uses: actions/checkout@v4
+
+      - name: Устанавливаем Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Скачиваем зависимости
+        run: flutter pub get
+
+      - name: Собираем Web-версию
+        # ВАЖНО: замени ИМЯ_ТВОЕГО_РЕПОЗИТОРИЯ на реальное название!
+        run: flutter build web --release --base-href "/court_master_admin/"
+
+      - name: Подготавливаем файлы для хостинга
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+      - name: Публикуем на GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

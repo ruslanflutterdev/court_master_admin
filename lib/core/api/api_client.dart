@@ -6,7 +6,7 @@ class ApiClient {
   final FlutterSecureStorage _storage;
 
   ApiClient(this._storage) {
-    String baseUrl = 'http://109.248.198.74:5000/api';
+    String baseUrl = 'https://courtmaster-api.duckdns.org/api';
 
     // Временно отключаем подмену на localhost, чтобы тестировать реальный сервер
     /*

@@ -10,8 +10,18 @@ class WaitlistBloc extends Bloc<WaitlistEvent, WaitlistState> {
     on<LoadWaitlist>((event, emit) async {
       emit(WaitlistLoading());
       try {
-        final data = await repository.getWaitlist(event.date);
-        emit(WaitlistLoaded(waitlist: data, date: event.date));
+        final results = await Future.wait([
+          repository.getWaitlists(type: 'RENTAL', date: event.date),
+          repository.getWaitlists(type: 'GROUP'),
+        ]);
+
+        emit(
+          WaitlistLoaded(
+            rentalWaitlist: results[0],
+            groupWaitlist: results[1],
+            date: event.date,
+          ),
+        );
       } catch (e) {
         emit(WaitlistError(e.toString()));
       }

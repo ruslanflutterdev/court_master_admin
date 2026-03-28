@@ -1,4 +1,3 @@
-// lib/features/schedule/presentation/widgets/cards/schedule_event_title_text.dart
 import 'package:flutter/material.dart';
 import '../../../../schedule/data/models/schedule_event_model.dart';
 

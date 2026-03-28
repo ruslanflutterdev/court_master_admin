@@ -7,10 +7,15 @@ class WaitlistInitial extends WaitlistState {}
 class WaitlistLoading extends WaitlistState {}
 
 class WaitlistLoaded extends WaitlistState {
-  final List<WaitlistModel> waitlist;
+  final List<WaitlistModel> rentalWaitlist;
+  final List<WaitlistModel> groupWaitlist;
   final DateTime date;
 
-  WaitlistLoaded({required this.waitlist, required this.date});
+  WaitlistLoaded({
+    required this.rentalWaitlist,
+    required this.groupWaitlist,
+    required this.date,
+  });
 }
 
 class WaitlistError extends WaitlistState {

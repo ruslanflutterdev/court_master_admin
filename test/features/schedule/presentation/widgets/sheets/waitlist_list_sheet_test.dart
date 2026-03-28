@@ -52,48 +52,109 @@ void main() {
       },
     );
 
-    testWidgets('Показывает сообщение "Пока никого нет", если список пуст', (
+    testWidgets('Показывает сообщение "Пока никого нет", если списки пусты', (
       tester,
     ) async {
-      when(
-        () => mockBloc.state,
-      ).thenReturn(WaitlistLoaded(waitlist: [], date: testDate));
+      // Обновлено: теперь передаем rentalWaitlist и groupWaitlist
+      when(() => mockBloc.state).thenReturn(
+        WaitlistLoaded(rentalWaitlist: [], groupWaitlist: [], date: testDate),
+      );
 
       await tester.pumpWidget(buildWidget());
 
+      // TabBarView по умолчанию отрисовывает активную вкладку
       expect(find.text('Пока никого нет'), findsOneWidget);
     });
 
-    testWidgets('Отображает список клиентов и кнопку удаления', (tester) async {
-      final mockWaitlist = [
-        WaitlistModel(
-          id: 'w1',
-          date: testDate,
-          startTime: '18:00',
-          endTime: '19:00',
-          clientName: 'Иван Иванов',
-          clientPhone: '+79990001122',
-          status: 'pending',
-        ),
-      ];
-      when(
-        () => mockBloc.state,
-      ).thenReturn(WaitlistLoaded(waitlist: mockWaitlist, date: testDate));
+    testWidgets(
+      'Отображает список аренды и кнопку удаления (Вкладка "Аренда")',
+      (tester) async {
+        final mockRentalWaitlist = [
+          WaitlistModel(
+            id: 'w1',
+            type: 'RENTAL', // Добавили тип
+            date: testDate,
+            startTime: '18:00',
+            endTime: '19:00',
+            clientName: 'Иван',
+            lastName: 'Иванов', // Имя и фамилия теперь разделены
+            clientPhone: '+79990001122',
+            status: 'pending',
+          ),
+        ];
 
-      await tester.pumpWidget(buildWidget());
+        when(() => mockBloc.state).thenReturn(
+          WaitlistLoaded(
+            rentalWaitlist: mockRentalWaitlist,
+            groupWaitlist: [],
+            date: testDate,
+          ),
+        );
 
-      // Проверяем, что данные отрисовались
-      expect(find.text('Иван Иванов'), findsOneWidget);
-      expect(find.text('18:00 - 19:00 | +79990001122'), findsOneWidget);
+        await tester.pumpWidget(buildWidget());
 
-      // Нажимаем на кнопку корзины (удаление)
-      await tester.tap(find.byIcon(Icons.delete));
-      await tester.pump();
+        // Проверяем, что данные отрисовались на первой вкладке
+        expect(find.text('Иван Иванов'), findsOneWidget);
+        expect(find.text('18:00 - 19:00 | +79990001122'), findsOneWidget);
 
-      // Проверяем, что в BLoC улетело событие RemoveFromWaitlist
-      verify(
-        () => mockBloc.add(any(that: isA<RemoveFromWaitlist>())),
-      ).called(1);
-    });
+        // Нажимаем на кнопку корзины (удаление)
+        await tester.tap(find.byIcon(Icons.delete));
+        await tester.pump();
+
+        // Проверяем, что в BLoC улетело событие RemoveFromWaitlist
+        verify(
+          () => mockBloc.add(any(that: isA<RemoveFromWaitlist>())),
+        ).called(1);
+      },
+    );
+
+    testWidgets(
+      'Отображает список групп при переключении на вкладку "В группу"',
+      (tester) async {
+        final mockGroupWaitlist = [
+          WaitlistModel(
+            id: 'g1',
+            type: 'GROUP',
+            clientName: 'Анна',
+            lastName: 'Смирнова',
+            clientPhone: '+79998887766',
+            gameLevel: 'Продвинутый',
+            ageGroup: '18+',
+            comment: 'Хочет в вечернюю группу',
+            status: 'pending',
+          ),
+        ];
+
+        when(() => mockBloc.state).thenReturn(
+          WaitlistLoaded(
+            rentalWaitlist: [],
+            groupWaitlist: mockGroupWaitlist,
+            date: testDate,
+          ),
+        );
+
+        await tester.pumpWidget(buildWidget());
+
+        // Изначально мы на вкладке "Аренда", и она пуста
+        expect(find.text('Пока никого нет'), findsOneWidget);
+
+        // Переключаемся на вкладку "В группу"
+        await tester.tap(find.text('В группу'));
+        await tester
+            .pumpAndSettle(); // Ждем завершения анимации переключения вкладок
+
+        // Проверяем, что отобразились специфичные для группы данные
+        expect(find.text('Анна Смирнова'), findsOneWidget);
+        expect(find.textContaining('+79998887766'), findsOneWidget);
+        expect(
+          find.textContaining('Возраст: 18+, Уровень: Продвинутый'),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('Коммент: Хочет в вечернюю группу'),
+          findsOneWidget,
+        );
+      },
+    );
   });
 }

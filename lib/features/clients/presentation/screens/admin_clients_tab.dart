@@ -37,7 +37,7 @@ class _AdminClientsTabState extends State<AdminClientsTab> {
   }
 
   void _onClientTap(String id) {
-    context.push('/clients/$id');
+    context.push('/client-details/$id');
   }
 
   @override

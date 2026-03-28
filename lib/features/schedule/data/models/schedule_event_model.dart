@@ -6,22 +6,20 @@ class ScheduleEventModel {
   final DateTime date;
   final TimeOfDay startTime;
   final TimeOfDay endTime;
-  final String colorHex; // Использовали colorHex вместо color
+  final String colorHex;
 
-  // --- Новые поля для CRM ---
   final int? price;
   final String status;
   final bool isPaid;
-  // --------------------------
 
   final String courtId;
-  final String? courtName; // Восстановлено!
+  final String? courtName;
   final String? groupId;
-  final String? groupName; // Восстановлено!
+  final String? groupName;
   final String? clientName;
   final String? clientPhone;
   final String? coachId;
-  final String? coachFullName; // Восстановлено!
+  final String? coachFullName;
 
   ScheduleEventModel({
     required this.id,

@@ -5,8 +5,83 @@ import '../bloc/cashbox_bloc.dart';
 import '../bloc/cashbox_event.dart';
 import '../bloc/cashbox_state.dart';
 
-class CashboxScreen extends StatelessWidget {
+class CashboxScreen extends StatefulWidget {
   const CashboxScreen({super.key});
+
+  @override
+  State<CashboxScreen> createState() => _CashboxScreenState();
+}
+
+class _CashboxScreenState extends State<CashboxScreen> {
+  int _calculateTotal(Map<String, dynamic> data, String method) {
+    if (data['transactions'] == null) return 0;
+    final transactions = data['transactions'] as List;
+    double total = 0;
+    for (var tx in transactions) {
+      final m = tx['type'] == 'income' ? 1 : -1;
+      if (method == 'CASH' && tx['paymentMethod'] == 'CASH') {
+        total += (tx['amount'] as num) * m;
+      } else if (method == 'CARD' &&
+          (tx['paymentMethod'] == 'CARD' ||
+              tx['paymentMethod'] == 'QR' ||
+              tx['paymentMethod'] == 'SBP')) {
+        total += (tx['amount'] as num) * m;
+      }
+    }
+    return total.toInt();
+  }
+
+  Widget _buildTotalRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 16)),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showShiftReport(
+    BuildContext context,
+    Map<String, dynamic> result,
+    CashboxBloc bloc,
+  ) {
+    final cash = result['totalCash'] ?? 0;
+    final card = result['totalCard'] ?? 0;
+    final total = (cash as num) + (card as num);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Смена закрыта'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildTotalRow('Итого наличные:', '$cash ₸'),
+            _buildTotalRow('Итого безнал:', '$card ₸'),
+            const Divider(),
+            _buildTotalRow('ВСЕГО:', '${total.toInt()} ₸'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              bloc.add(LoadCashboxStatus());
+            },
+            child: const Text('ОК'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,76 +177,6 @@ class CashboxScreen extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-
-  int _calculateTotal(Map<String, dynamic> data, String method) {
-    if (data['transactions'] == null) return 0;
-    final transactions = data['transactions'] as List;
-    double total = 0;
-    for (var tx in transactions) {
-      final m = tx['type'] == 'income' ? 1 : -1;
-      if (method == 'CASH' && tx['paymentMethod'] == 'CASH') {
-        total += (tx['amount'] as num) * m;
-      } else if (method == 'CARD' &&
-          (tx['paymentMethod'] == 'CARD' ||
-              tx['paymentMethod'] == 'QR' ||
-              tx['paymentMethod'] == 'SBP')) {
-        total += (tx['amount'] as num) * m;
-      }
-    }
-    return total.toInt();
-  }
-
-  Widget _buildTotalRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 16)),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showShiftReport(
-    BuildContext context,
-    Map<String, dynamic> result,
-    CashboxBloc bloc,
-  ) {
-    final cash = result['totalCash'] ?? 0;
-    final card = result['totalCard'] ?? 0;
-    final total = (cash as num) + (card as num);
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Смена закрыта'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildTotalRow('Итого наличные:', '$cash ₸'),
-            _buildTotalRow('Итого безнал:', '$card ₸'),
-            const Divider(),
-            _buildTotalRow('ВСЕГО:', '${total.toInt()} ₸'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              bloc.add(LoadCashboxStatus());
-            },
-            child: const Text('ОК'),
-          ),
-        ],
       ),
     );
   }

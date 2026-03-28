@@ -27,7 +27,6 @@ class GroupsRepository {
     }
   }
 
-  // Получить детали одной группы
   Future<GroupModel> getGroupDetails(String groupId) async {
     try {
       final response = await apiClient.dio.get('/groups/$groupId');
@@ -37,7 +36,6 @@ class GroupsRepository {
     }
   }
 
-  // Добавить ученика в группу
   Future<void> addStudentToGroup(String groupId, String studentId) async {
     try {
       await apiClient.dio.post(

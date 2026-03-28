@@ -7,7 +7,6 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
   final GroupsRepository repository;
 
   GroupsBloc({required this.repository}) : super(GroupsInitial()) {
-    // 1. Загрузка групп
     on<LoadGroupsEvent>((event, emit) async {
       emit(GroupsLoading());
       try {

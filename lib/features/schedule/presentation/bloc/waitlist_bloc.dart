@@ -19,12 +19,12 @@ class WaitlistBloc extends Bloc<WaitlistEvent, WaitlistState> {
 
     on<AddToWaitlist>((event, emit) async {
       await repository.addToWaitlist(event.data);
-      add(LoadWaitlist(event.date)); // Перезагружаем список после добавления
+      add(LoadWaitlist(event.date));
     });
 
     on<RemoveFromWaitlist>((event, emit) async {
       await repository.removeFromWaitlist(event.id);
-      add(LoadWaitlist(event.date)); // Перезагружаем список после удаления
+      add(LoadWaitlist(event.date));
     });
   }
 }

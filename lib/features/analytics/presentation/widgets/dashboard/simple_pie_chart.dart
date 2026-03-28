@@ -1,6 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import '../../../data/models/analytics_model.dart';
+import '../../../data/models/chart_data.dart';
 
 class SimplePieChart extends StatelessWidget {
   final List<ChartData> data;

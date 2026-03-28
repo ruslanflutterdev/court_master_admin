@@ -28,7 +28,9 @@ class AppRouter {
 
           if (role == 'COACH') {
             return '/coach-dashboard';
-          } else if (role == 'SUPER_ADMIN' || role == 'HEAD_ADMIN' || role == 'ADMIN') {
+          } else if (role == 'SUPER_ADMIN' ||
+              role == 'HEAD_ADMIN' ||
+              role == 'ADMIN') {
             return '/dashboard'; // Админы идут в админку
           } else if (role == 'CLIENT') {
             return '/client-stub'; // <--- Клиенты идут в свою зону
@@ -70,9 +72,7 @@ class AppRouter {
       GoRoute(
         path: '/client-stub',
         builder: (context, state) => Scaffold(
-          appBar: AppBar(
-            title: const Text('Кабинет клиента'),
-          ),
+          appBar: AppBar(title: const Text('Кабинет клиента')),
           body: const Center(
             child: Text(
               'Приложение для клиентов\nнаходится в разработке',
@@ -92,7 +92,7 @@ class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();
     _subscription = stream.asBroadcastStream().listen(
-          (dynamic _) => notifyListeners(),
+      (dynamic _) => notifyListeners(),
     );
   }
 

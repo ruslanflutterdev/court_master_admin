@@ -40,3 +40,10 @@ class UpdateScheduleEvent extends ScheduleEvent {
     required this.currentDate,
   });
 }
+
+class CancelScheduleEventRequested extends ScheduleEvent {
+  final String eventId;
+  final DateTime currentDate;
+
+  CancelScheduleEventRequested(this.eventId, this.currentDate);
+}

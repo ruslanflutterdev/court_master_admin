@@ -15,6 +15,43 @@ class ClientPaymentsList extends StatelessWidget {
     required this.transactions,
   });
 
+  void _showRefundDialog(BuildContext context, TransactionModel tx) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Подтверждение возврата'),
+        content: Text(
+          'Вы уверены, что хотите сделать возврат по операции на сумму ${tx.amount} ₸?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Отмена'),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<ClientDetailsBloc>().add(
+                RefundTransactionEvent(
+                  clientId: clientId,
+                  transactionId: tx.id,
+                ),
+              );
+              Navigator.pop(dialogContext);
+            },
+            child: const Text(
+              'Да, вернуть',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
   @override
   Widget build(BuildContext context) {
     if (transactions.isEmpty) {
@@ -81,42 +118,5 @@ class ClientPaymentsList extends StatelessWidget {
         );
       },
     );
-  }
-
-  void _showRefundDialog(BuildContext context, TransactionModel tx) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Подтверждение возврата'),
-        content: Text(
-          'Вы уверены, что хотите сделать возврат по операции на сумму ${tx.amount} ₸?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Отмена'),
-          ),
-          TextButton(
-            onPressed: () {
-              context.read<ClientDetailsBloc>().add(
-                RefundTransactionEvent(
-                  clientId: clientId,
-                  transactionId: tx.id,
-                ),
-              );
-              Navigator.pop(dialogContext);
-            },
-            child: const Text(
-              'Да, вернуть',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 }

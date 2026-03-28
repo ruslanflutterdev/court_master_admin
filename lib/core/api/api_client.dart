@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiClient {
@@ -8,16 +9,13 @@ class ApiClient {
   ApiClient(this._storage) {
     String baseUrl = 'https://courtmaster-api.duckdns.org/api';
 
-    // Временно отключаем подмену на localhost, чтобы тестировать реальный сервер
-    /*
-  if (kDebugMode) {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      baseUrl = 'http://10.0.2.2:5000/api';
-    } else {
-      baseUrl = 'http://localhost:5000/api';
+    if (kDebugMode) {
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        baseUrl = 'http://10.0.2.2:5000/api';
+      } else {
+        baseUrl = 'http://localhost:5000/api';
+      }
     }
-  }
-  */
 
     dio = Dio(
       BaseOptions(

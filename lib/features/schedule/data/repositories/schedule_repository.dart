@@ -51,8 +51,12 @@ class ScheduleRepository {
     await apiClient.dio.post('/events', data: data);
   }
 
-  Future<void> deleteEvent(String id) async {
-    await apiClient.dio.delete('/events/$id');
+  Future<void> cancelEvent(String id) async {
+    try {
+      await apiClient.dio.post('/events/$id/cancel');
+    } catch (e) {
+      throw Exception('Не удалось отменить событие: $e');
+    }
   }
 
   Future<List<AttendanceStudentModel>> getEventAttendance(
@@ -86,10 +90,19 @@ class ScheduleRepository {
     }
   }
 
-  Future<List<WaitlistModel>> getWaitlist(DateTime date) async {
+  Future<List<WaitlistModel>> getWaitlists({
+    required String type,
+    DateTime? date,
+  }) async {
+    final queryParams = <String, dynamic>{'type': type};
+    if (date != null) {
+      queryParams['date'] =
+          "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+    }
+
     final response = await apiClient.dio.get(
       '/waitlists',
-      queryParameters: {'date': date.toIso8601String()},
+      queryParameters: queryParams,
     );
     return (response.data as List)
         .map((json) => WaitlistModel.fromJson(json))

@@ -128,6 +128,7 @@ class ScheduleCourtColumn extends StatelessWidget {
                     event: e,
                     isPastDate: isPastDate,
                     onTap: () => onEventTapped(e),
+                    allEvents: courtEvents,
                   ),
                 ),
               ],

@@ -32,6 +32,24 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 1;
 
+  List<Widget> _getTabs() {
+    return const [
+      AdminAnalyticsTab(),
+      AdminScheduleTab(),
+      AdminEmployeesTab(),
+      AdminGroupsTab(),
+      AdminClientsTab(),
+      CashboxScreen(),
+    ];
+  }
+
+  void _onTabSelected(BuildContext context, int index) {
+    setState(() => _currentIndex = index);
+    if (index == 5) {
+      context.read<CashboxBloc>().add(LoadCashboxStatus());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -58,37 +76,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ],
       child: Builder(
         builder: (context) {
-          final List<Widget> tabs = [
-            const AdminAnalyticsTab(),
-            const AdminScheduleTab(),
-            const AdminEmployeesTab(),
-            const AdminGroupsTab(),
-            const AdminClientsTab(),
-            const CashboxScreen(),
-          ];
+          final tabs = _getTabs();
 
           return LayoutBuilder(
             builder: (context, constraints) {
               if (constraints.maxWidth < 800) {
                 return DashboardMobileView(
                   currentIndex: _currentIndex,
-                  onTabSelected: (i) {
-                    setState(() => _currentIndex = i);
-                    if (i == 5) {
-                      context.read<CashboxBloc>().add(LoadCashboxStatus());
-                    }
-                  },
+                  onTabSelected: (i) => _onTabSelected(context, i),
                   tabs: tabs,
                 );
               }
               return DashboardDesktopView(
                 currentIndex: _currentIndex,
-                onTabSelected: (i) {
-                  setState(() => _currentIndex = i);
-                  if (i == 5) {
-                    context.read<CashboxBloc>().add(LoadCashboxStatus());
-                  }
-                },
+                onTabSelected: (i) => _onTabSelected(context, i),
                 tabs: tabs,
               );
             },

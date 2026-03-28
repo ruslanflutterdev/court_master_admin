@@ -76,6 +76,7 @@ class WeekDayColumn extends StatelessWidget {
                     event: e,
                     isPastDate: isPastDate,
                     onTap: () => onEventTapped(e),
+                    allEvents: dayEvents,
                   ),
                 ),
               ],

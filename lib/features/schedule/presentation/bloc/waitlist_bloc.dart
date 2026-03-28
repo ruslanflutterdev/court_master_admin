@@ -10,8 +10,18 @@ class WaitlistBloc extends Bloc<WaitlistEvent, WaitlistState> {
     on<LoadWaitlist>((event, emit) async {
       emit(WaitlistLoading());
       try {
-        final data = await repository.getWaitlist(event.date);
-        emit(WaitlistLoaded(waitlist: data, date: event.date));
+        final results = await Future.wait([
+          repository.getWaitlists(type: 'RENTAL', date: event.date),
+          repository.getWaitlists(type: 'GROUP'),
+        ]);
+
+        emit(
+          WaitlistLoaded(
+            rentalWaitlist: results[0],
+            groupWaitlist: results[1],
+            date: event.date,
+          ),
+        );
       } catch (e) {
         emit(WaitlistError(e.toString()));
       }
@@ -19,12 +29,12 @@ class WaitlistBloc extends Bloc<WaitlistEvent, WaitlistState> {
 
     on<AddToWaitlist>((event, emit) async {
       await repository.addToWaitlist(event.data);
-      add(LoadWaitlist(event.date)); // Перезагружаем список после добавления
+      add(LoadWaitlist(event.date));
     });
 
     on<RemoveFromWaitlist>((event, emit) async {
       await repository.removeFromWaitlist(event.id);
-      add(LoadWaitlist(event.date)); // Перезагружаем список после удаления
+      add(LoadWaitlist(event.date));
     });
   }
 }

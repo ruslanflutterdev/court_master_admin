@@ -30,6 +30,9 @@ class AuthRepositoryImpl implements AuthRepository {
       await _storage.write(key: 'auth_token', value: token);
       await _storage.write(key: 'user_role', value: user.role);
       await _storage.write(key: 'user_id', value: user.id);
+      await _storage.write(key: 'user_first_name', value: user.firstName);
+      await _storage.write(key: 'user_last_name', value: user.lastName);
+      await _storage.write(key: 'user_email', value: user.email);
 
       return AuthResponse(token: token, user: user);
     } on DioException catch (e) {
@@ -44,6 +47,9 @@ class AuthRepositoryImpl implements AuthRepository {
     await _storage.delete(key: 'auth_token');
     await _storage.delete(key: 'user_role');
     await _storage.delete(key: 'user_id');
+    await _storage.delete(key: 'user_first_name');
+    await _storage.delete(key: 'user_last_name');
+    await _storage.delete(key: 'user_email');
   }
 
   @override
@@ -55,12 +61,15 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final role = await _storage.read(key: 'user_role') ?? 'CLIENT';
       final id = await _storage.read(key: 'user_id') ?? '';
+      final firstName = await _storage.read(key: 'user_first_name') ?? '';
+      final lastName = await _storage.read(key: 'user_last_name') ?? '';
+      final email = await _storage.read(key: 'user_email') ?? '';
 
       return UserModel(
         id: id,
-        firstName: '',
-        lastName: '',
-        email: '',
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
         role: role,
       );
     } catch (e) {

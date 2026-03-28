@@ -43,7 +43,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ];
   }
 
-  void _onTabSelected(int index) {
+  void _onTabSelected(BuildContext context, int index) {
     setState(() => _currentIndex = index);
     if (index == 5) {
       context.read<CashboxBloc>().add(LoadCashboxStatus());
@@ -83,13 +83,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               if (constraints.maxWidth < 800) {
                 return DashboardMobileView(
                   currentIndex: _currentIndex,
-                  onTabSelected: (i) => _onTabSelected(i),
+                  onTabSelected: (i) => _onTabSelected(context, i),
                   tabs: tabs,
                 );
               }
               return DashboardDesktopView(
                 currentIndex: _currentIndex,
-                onTabSelected: (i) => _onTabSelected(i),
+                onTabSelected: (i) => _onTabSelected(context, i),
                 tabs: tabs,
               );
             },

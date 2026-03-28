@@ -51,8 +51,12 @@ class ScheduleRepository {
     await apiClient.dio.post('/events', data: data);
   }
 
-  Future<void> deleteEvent(String id) async {
-    await apiClient.dio.delete('/events/$id');
+  Future<void> cancelEvent(String id) async {
+    try {
+      await apiClient.dio.post('/events/$id/cancel');
+    } catch (e) {
+      throw Exception('Не удалось отменить событие: $e');
+    }
   }
 
   Future<List<AttendanceStudentModel>> getEventAttendance(

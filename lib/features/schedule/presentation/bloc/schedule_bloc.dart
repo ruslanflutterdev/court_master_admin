@@ -91,5 +91,14 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         emit(ScheduleError(e.toString().replaceAll('Exception: ', '')));
       }
     });
+
+    on<CancelScheduleEventRequested>((event, emit) async {
+      try {
+        await scheduleRepo.cancelEvent(event.eventId);
+        add(LoadScheduleData(event.currentDate));
+      } catch (e) {
+        emit(ScheduleError(e.toString().replaceAll('Exception: ', '')));
+      }
+    });
   }
 }

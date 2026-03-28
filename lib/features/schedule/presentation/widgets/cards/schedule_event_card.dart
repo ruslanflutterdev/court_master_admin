@@ -11,12 +11,14 @@ class ScheduleEventCard extends StatelessWidget {
   final ScheduleEventModel event;
   final bool isPastDate;
   final VoidCallback onTap;
+  final List<ScheduleEventModel> allEvents;
 
   const ScheduleEventCard({
     super.key,
     required this.event,
     required this.isPastDate,
     required this.onTap,
+    required this.allEvents,
   });
 
   String _fmt(TimeOfDay t) =>
@@ -38,36 +40,69 @@ class ScheduleEventCard extends StatelessWidget {
         ((endHour - startHour) * 80.0) +
         ((endMinute - startMinute) / 60.0 * 80.0);
 
-    final color = ScheduleColorHelper.getColorForEventType(
-      event.eventType,
-      dbColorHex: event.colorHex,
-    );
+    final isCanceled = event.status == 'canceled';
+
+    final bool hasCanceledOverlay =
+        !isCanceled &&
+        allEvents.any(
+          (e) =>
+              e.id != event.id &&
+              e.status == 'canceled' &&
+              e.courtId == event.courtId &&
+              e.startTime == event.startTime &&
+              e.endTime == event.endTime,
+        );
+
+    double leftMargin = 4;
+    double rightMargin = 4;
+
+    if (hasCanceledOverlay) {
+      rightMargin = 30;
+    }
+
+    final color = isCanceled
+        ? Colors.grey.shade500
+        : ScheduleColorHelper.getColorForEventType(
+            event.eventType,
+            dbColorHex: event.colorHex,
+          );
 
     final cardWidget = Container(
-      margin: const EdgeInsets.only(top: 2, bottom: 3),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withAlpha(isPastDate ? 80 : 150),
+        color: color.withAlpha(isPastDate || isCanceled ? 100 : 150),
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(150),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: isCanceled
+            ? Border.all(color: Colors.grey.shade400, style: BorderStyle.solid)
+            : null,
+        boxShadow: isCanceled || isPastDate
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withAlpha(100),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          ScheduleEventTitleText(
-            event: event,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 11,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: ScheduleEventTitleText(
+                  event: event,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                    decoration: isCanceled ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 2),
           Text(
@@ -87,21 +122,31 @@ class ScheduleEventCard extends StatelessWidget {
       ),
     );
 
-    if (isCoach) {
+    if (isCanceled) {
       return Positioned(
-        top: topOffset,
-        height: height,
+        top: topOffset + 2,
+        height: height - 5,
         left: 4,
         right: 4,
+        child: IgnorePointer(child: Opacity(opacity: 0.7, child: cardWidget)),
+      );
+    }
+
+    if (isCoach) {
+      return Positioned(
+        top: topOffset + 2,
+        height: height - 5,
+        left: leftMargin,
+        right: rightMargin,
         child: cardWidget,
       );
     }
 
     return Positioned(
-      top: topOffset,
-      height: height,
-      left: 4,
-      right: 4,
+      top: topOffset + 2,
+      height: height - 5,
+      left: leftMargin,
+      right: rightMargin,
       child: isPastDate
           ? GestureDetector(onTap: onTap, child: cardWidget)
           : LongPressDraggable<ScheduleEventModel>(

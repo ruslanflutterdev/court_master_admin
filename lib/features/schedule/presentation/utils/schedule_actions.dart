@@ -55,6 +55,15 @@ class ScheduleActions {
     if (user?.role == AppRoles.coach) {
       return;
     }
+    if (existingEvent != null) {
+      if (existingEvent.eventType == 'group') {
+        _openAttendanceSheet(context, existingEvent.id);
+        return;
+      }
+
+      _showCancelDialog(context, existingEvent, state.scheduleDate);
+      return;
+    }
     final scheduleBloc = context.read<ScheduleBloc>();
     final clientsBloc = context.read<ClientsBloc>();
     final groupsBloc = context.read<GroupsBloc>();
@@ -99,6 +108,41 @@ class ScheduleActions {
       builder: (_) => BlocProvider(
         create: (_) => sl<EventAttendanceBloc>(),
         child: EventAttendanceSheet(eventId: eventId, groupName: 'Группа'),
+      ),
+    );
+  }
+
+  static void _showCancelDialog(
+    BuildContext context,
+    ScheduleEventModel event,
+    DateTime currentDate,
+  ) {
+    final bloc = context.read<ScheduleBloc>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Управление бронью'),
+        content: Text(
+          'Вы уверены, что хотите отменить запись клиента ${event.clientName ?? "Без имени"}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Назад'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              bloc.add(CancelScheduleEventRequested(event.id, currentDate));
+              Navigator.pop(ctx);
+            },
+            child: const Text(
+              'Отменить бронь',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
       ),
     );
   }

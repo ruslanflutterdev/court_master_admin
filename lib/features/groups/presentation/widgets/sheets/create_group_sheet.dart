@@ -22,6 +22,7 @@ class _CreateGroupSheetState extends State<CreateGroupSheet> {
   final _maxAgeCtrl = TextEditingController();
 
   String _selectedLevel = 'Новичок';
+  String _selectedType = 'TENNIS';
   String? _selectedCoachId;
 
   @override
@@ -44,6 +45,7 @@ class _CreateGroupSheetState extends State<CreateGroupSheet> {
 
     final groupData = {
       'name': _nameCtrl.text.trim(),
+      'type': _selectedType,
       'maxStudents': int.tryParse(_maxStudentsCtrl.text) ?? 4,
       'minAge': int.tryParse(_minAgeCtrl.text) ?? 5,
       'maxAge': int.tryParse(_maxAgeCtrl.text) ?? 99,
@@ -89,6 +91,9 @@ class _CreateGroupSheetState extends State<CreateGroupSheet> {
                 selectedLevel: _selectedLevel,
                 onLevelChanged: (val) =>
                     setState(() => _selectedLevel = val ?? 'Новичок'),
+                selectedType: _selectedType,
+                onTypeChanged: (val) =>
+                    setState(() => _selectedType = val ?? 'TENNIS'),
               ),
 
               const SizedBox(height: 24),

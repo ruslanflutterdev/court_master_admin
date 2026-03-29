@@ -47,3 +47,10 @@ class CancelScheduleEventRequested extends ScheduleEvent {
 
   CancelScheduleEventRequested(this.eventId, this.currentDate);
 }
+
+class CancelScheduleEventSeriesRequested extends ScheduleEvent {
+  final String seriesId;
+  final DateTime currentDate;
+
+  CancelScheduleEventSeriesRequested(this.seriesId, this.currentDate);
+}

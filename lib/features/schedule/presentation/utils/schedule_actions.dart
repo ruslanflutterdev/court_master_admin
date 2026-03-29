@@ -118,13 +118,16 @@ class ScheduleActions {
     DateTime currentDate,
   ) {
     final bloc = context.read<ScheduleBloc>();
+    final hasSeries = event.seriesId != null;
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Управление бронью'),
         content: Text(
-          'Вы уверены, что хотите отменить запись клиента ${event.clientName ?? "Без имени"}?',
+          hasSeries
+              ? 'Эта запись является частью повторяющейся серии (регулярной тренировки). Что вы хотите отменить?'
+              : 'Вы уверены, что хотите отменить запись клиента ${event.clientName ?? "Без имени"}?',
         ),
         actions: [
           TextButton(
@@ -132,16 +135,35 @@ class ScheduleActions {
             child: const Text('Назад'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: hasSeries ? Colors.red.shade300 : Colors.red,
+            ),
             onPressed: () {
               bloc.add(CancelScheduleEventRequested(event.id, currentDate));
               Navigator.pop(ctx);
             },
-            child: const Text(
-              'Отменить бронь',
-              style: TextStyle(color: Colors.white),
+            child: Text(
+              hasSeries ? 'Только эту' : 'Отменить бронь',
+              style: const TextStyle(color: Colors.white),
             ),
           ),
+          if (hasSeries)
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () {
+                bloc.add(
+                  CancelScheduleEventSeriesRequested(
+                    event.seriesId!,
+                    currentDate,
+                  ),
+                );
+                Navigator.pop(ctx);
+              },
+              child: const Text(
+                'Отменить ВСЮ серию',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
         ],
       ),
     );

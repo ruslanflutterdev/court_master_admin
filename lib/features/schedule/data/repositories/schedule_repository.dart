@@ -59,6 +59,14 @@ class ScheduleRepository {
     }
   }
 
+  Future<void> cancelEventSeries(String seriesId) async {
+    try {
+      await apiClient.dio.post('/events/series/$seriesId/cancel');
+    } catch (e) {
+      throw Exception('Не удалось отменить серию событий: $e');
+    }
+  }
+
   Future<List<AttendanceStudentModel>> getEventAttendance(
     String eventId,
   ) async {

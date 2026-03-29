@@ -7,13 +7,14 @@ import '../../../../clients/presentation/bloc/clients_state.dart';
 import '../../../../groups/data/models/group_model.dart';
 import '../../../../groups/presentation/bloc/groups_bloc.dart';
 import '../../../../groups/presentation/bloc/groups_state.dart';
-import '../../../data/models/court_model.dart'; // Добавлен импорт модели
+import '../../../data/models/court_model.dart';
 import '../../bloc/schedule_bloc.dart';
 import '../../bloc/schedule_event.dart';
 import '../../bloc/schedule_state.dart';
 import '../../utils/time_picker_utils.dart';
 import '../forms/schedule_color_picker_row.dart';
 import '../forms/schedule_dynamic_form_section.dart';
+import '../forms/schedule_recurrence_form.dart';
 import 'create_event_time_row.dart';
 import 'event_court_selector.dart';
 import 'event_type_selector.dart';
@@ -46,6 +47,8 @@ class _CreateScheduleEventSheetState extends State<CreateScheduleEventSheet> {
   String _type = 'rent';
   String? _courtId, _groupId;
   String _colorHex = '#2196F3';
+  bool _isRecurring = false;
+  int _recurrenceWeeks = 4;
 
   @override
   void initState() {
@@ -88,10 +91,20 @@ class _CreateScheduleEventSheetState extends State<CreateScheduleEventSheet> {
       'colorHex': _colorHex,
       'clientName': '${_firstCtrl.text} ${_lastCtrl.text}'.trim(),
       'clientPhone': _phoneCtrl.text,
+      'isRecurring': _isRecurring,
+      if (_isRecurring) 'recurrenceWeeks': _recurrenceWeeks,
     };
 
     context.read<ScheduleBloc>().add(CreateScheduleEventRequested(data));
     Navigator.of(context).pop();
+  }
+
+  @override
+  void dispose() {
+    _firstCtrl.dispose();
+    _lastCtrl.dispose();
+    _phoneCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -157,6 +170,13 @@ class _CreateScheduleEventSheetState extends State<CreateScheduleEventSheet> {
                 lastNameController: _lastCtrl,
                 phoneController: _phoneCtrl,
                 allClients: allClients,
+              ),
+              const Divider(height: 32),
+              ScheduleRecurrenceForm(
+                isRecurring: _isRecurring,
+                recurrenceWeeks: _recurrenceWeeks,
+                onRecurringChanged: (val) => setState(() => _isRecurring = val),
+                onWeeksChanged: (val) => setState(() => _recurrenceWeeks = val),
               ),
               const SizedBox(height: 24),
               PrimaryButton(text: 'Создать', onPressed: _submit),

@@ -10,21 +10,17 @@ import 'package:court_master_admin/features/auth/presentation/screens/login_scre
 
 class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
 
-class FakeAuthEvent extends Fake implements AuthEvent {}
-
-class FakeAuthState extends Fake implements AuthState {}
-
 void main() {
   setUpAll(() {
-    registerFallbackValue(FakeAuthEvent());
-    registerFallbackValue(FakeAuthState());
+    registerFallbackValue(const CheckAuthEvent());
+    registerFallbackValue(const AuthInitial());
   });
 
   late MockAuthBloc mockAuthBloc;
 
   setUp(() {
     mockAuthBloc = MockAuthBloc();
-    when(() => mockAuthBloc.state).thenReturn(AuthInitial());
+    when(() => mockAuthBloc.state).thenReturn(const AuthInitial());
   });
 
   Widget buildTestableWidget() {
@@ -42,8 +38,8 @@ void main() {
     ) async {
       await tester.pumpWidget(buildTestableWidget());
 
-      expect(find.byType(TextField), findsNWidgets(2)); // Email и Пароль
-      expect(find.byType(ElevatedButton), findsOneWidget); // Кнопка входа
+      expect(find.byType(TextField), findsNWidgets(2));
+      expect(find.byType(ElevatedButton), findsOneWidget);
     });
 
     testWidgets('2. Нажатие на кнопку отправляет событие', (

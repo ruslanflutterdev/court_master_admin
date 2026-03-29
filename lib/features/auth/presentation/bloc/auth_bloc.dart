@@ -6,18 +6,16 @@ import 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository repository;
 
-  AuthBloc({required this.repository}) : super(AuthInitial()) {
+  AuthBloc({required this.repository}) : super(const AuthInitial()) {
     // 1. Логин
     on<LoginRequested>((event, emit) async {
-      emit(AuthLoading());
+      emit(const AuthLoading());
       try {
-        // Теперь repository.login возвращает объект AuthResponse
         final authResponse = await repository.login(
           event.email,
           event.password,
         );
 
-        // Передаем модель юзера в стейт
         emit(AuthAuthenticated(user: authResponse.user));
       } catch (e) {
         emit(AuthError(e.toString().replaceAll('Exception: ', '')));
@@ -27,21 +25,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     // 2. Выход
     on<LogoutEvent>((event, emit) async {
       await repository.logout();
-      emit(AuthUnauthenticated());
+      emit(const AuthUnauthenticated());
     });
 
+    // 3. Проверка авторизации
     on<CheckAuthEvent>((event, emit) async {
-      emit(AuthLoading());
+      emit(const AuthLoading());
       try {
         final user = await repository.checkAuth();
 
         if (user != null) {
           emit(AuthAuthenticated(user: user));
         } else {
-          emit(AuthUnauthenticated());
+          emit(const AuthUnauthenticated());
         }
       } catch (e) {
-        emit(AuthUnauthenticated());
+        emit(const AuthUnauthenticated());
       }
     });
   }

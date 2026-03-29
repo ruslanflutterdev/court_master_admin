@@ -112,7 +112,10 @@ void main() {
         await tester.pumpWidget(createWidgetUnderTest(canceledEvent, false));
 
         // Отмененное событие кликаться не должно (сквозной клик)
-        expect(find.byType(IgnorePointer), findsOneWidget);
+        final ignorePointerFinder = find.byWidgetPredicate(
+          (widget) => widget is IgnorePointer && widget.ignoring == true,
+        );
+        expect(ignorePointerFinder, findsOneWidget);
         // Двигать его тоже нельзя
         expect(
           find.byType(LongPressDraggable<ScheduleEventModel>),

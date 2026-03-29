@@ -8,8 +8,6 @@ class GroupDetailsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final studentsCount = group.students?.length ?? 0;
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -33,7 +31,7 @@ class GroupDetailsHeader extends StatelessWidget {
           const SizedBox(height: 8),
           Chip(
             label: Text(
-              'Учеников: $studentsCount',
+              'Учеников: ${group.studentsCount}',
               style: const TextStyle(color: Colors.white),
             ),
             backgroundColor: Colors.orange,

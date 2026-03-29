@@ -8,6 +8,8 @@ class GroupBasicInfoInputs extends StatelessWidget {
   final TextEditingController maxAgeCtrl;
   final String selectedLevel;
   final ValueChanged<String?> onLevelChanged;
+  final String selectedType;
+  final ValueChanged<String?> onTypeChanged;
 
   const GroupBasicInfoInputs({
     super.key,
@@ -17,6 +19,8 @@ class GroupBasicInfoInputs extends StatelessWidget {
     required this.maxAgeCtrl,
     required this.selectedLevel,
     required this.onLevelChanged,
+    required this.selectedType,
+    required this.onTypeChanged,
   });
 
   @override
@@ -34,6 +38,24 @@ class GroupBasicInfoInputs extends StatelessWidget {
           label: 'Название группы (например: Младшие профи)',
           prefixIcon: Icons.group,
         ),
+
+        DropdownButtonFormField<String>(
+          initialValue: selectedType,
+          decoration: InputDecoration(
+            labelText: 'Направление (Теннис/Фитнес)',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            filled: true,
+            fillColor: Colors.white,
+            prefixIcon: const Icon(Icons.sports),
+          ),
+          items: const [
+            DropdownMenuItem(value: 'TENNIS', child: Text('Теннис')),
+            DropdownMenuItem(value: 'FITNESS', child: Text('Фитнес')),
+          ],
+          onChanged: onTypeChanged,
+        ),
+        const SizedBox(height: 8),
+
         CustomTextField(
           controller: maxStudentsCtrl,
           label: 'Максимум учеников',

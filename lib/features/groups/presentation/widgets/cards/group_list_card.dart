@@ -26,7 +26,7 @@ class GroupListCard extends StatelessWidget {
         ),
         trailing: Chip(
           label: Text(
-            '${group.students?.length ?? 0} чел.',
+            '${group.studentsCount} чел.',
             style: const TextStyle(fontSize: 12),
           ),
           backgroundColor: Colors.green.withAlpha(51),

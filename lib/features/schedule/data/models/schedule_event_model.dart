@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class ScheduleEventModel {
   final String id;
+  final String? seriesId;
   final String eventType;
   final DateTime date;
   final TimeOfDay startTime;
@@ -23,6 +24,7 @@ class ScheduleEventModel {
 
   ScheduleEventModel({
     required this.id,
+    this.seriesId,
     required this.eventType,
     required this.date,
     required this.startTime,
@@ -49,6 +51,7 @@ class ScheduleEventModel {
 
     return ScheduleEventModel(
       id: json['id'],
+      seriesId: json['seriesId'],
       eventType: json['type'] ?? json['eventType'] ?? 'rent',
       date: DateTime.parse(json['date']),
       startTime: parseTime(json['startTime']),

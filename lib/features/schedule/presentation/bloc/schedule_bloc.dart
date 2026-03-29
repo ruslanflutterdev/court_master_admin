@@ -75,8 +75,12 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     });
 
     on<CreateScheduleEventRequested>((event, emit) async {
-      await scheduleRepo.createEvent(event.eventData);
-      add(LoadScheduleData(_currentDate));
+      try {
+        await scheduleRepo.createEvent(event.eventData);
+        add(LoadScheduleData(_currentDate));
+      } catch (e) {
+        emit(ScheduleError(e.toString().replaceAll('Exception: ', '')));
+      }
     });
 
     on<ChangeScheduleViewTypeRequested>((event, emit) {
@@ -95,6 +99,15 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     on<CancelScheduleEventRequested>((event, emit) async {
       try {
         await scheduleRepo.cancelEvent(event.eventId);
+        add(LoadScheduleData(event.currentDate));
+      } catch (e) {
+        emit(ScheduleError(e.toString().replaceAll('Exception: ', '')));
+      }
+    });
+
+    on<CancelScheduleEventSeriesRequested>((event, emit) async {
+      try {
+        await scheduleRepo.cancelEventSeries(event.seriesId);
         add(LoadScheduleData(event.currentDate));
       } catch (e) {
         emit(ScheduleError(e.toString().replaceAll('Exception: ', '')));

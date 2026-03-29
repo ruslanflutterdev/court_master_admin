@@ -30,6 +30,17 @@ class ApiClient {
         onRequest: (options, handler) async {
           final token = await _storage.read(key: 'auth_token');
 
+          // ЗАЩИТА ОТ 401: Если токена нет, и это не эндпоинт авторизации,
+          // мы рубим запрос на корню до отправки на бэкенд!
+          if (token == null && !options.path.contains('/auth/login')) {
+            return handler.reject(
+              DioException(
+                requestOptions: options,
+                error: 'Отмена запроса: Токен еще загружается или отсутствует.',
+              ),
+            );
+          }
+
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }

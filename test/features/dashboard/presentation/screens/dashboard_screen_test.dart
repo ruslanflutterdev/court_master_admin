@@ -54,8 +54,6 @@ class MockGroupsBloc extends MockBloc<GroupsEvent, GroupsState>
 class MockCashboxBloc extends MockBloc<CashboxEvent, CashboxState>
     implements CashboxBloc {}
 
-class FakeAuthEvent extends Fake implements AuthEvent {}
-
 class FakeClientsEvent extends Fake implements ClientsEvent {}
 
 class FakeScheduleEvent extends Fake implements ScheduleEvent {}
@@ -78,7 +76,9 @@ void main() {
   late MockCashboxBloc mockCashboxBloc;
 
   setUpAll(() {
-    registerFallbackValue(FakeAuthEvent());
+    // Используем реальный эвент вместо FakeAuthEvent
+    registerFallbackValue(const CheckAuthEvent());
+
     registerFallbackValue(FakeClientsEvent());
     registerFallbackValue(FakeScheduleEvent());
     registerFallbackValue(FakeAnalyticsEvent());

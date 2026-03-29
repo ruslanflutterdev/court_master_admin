@@ -15,15 +15,28 @@ class AppRouter {
   AppRouter(this.authBloc);
 
   late final GoRouter router = GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/splash',
     refreshListenable: GoRouterRefreshStream(authBloc.stream),
 
     redirect: (context, state) {
       final authState = authBloc.state;
       final isLoggingIn = state.matchedLocation == '/login';
+      final isSplash = state.matchedLocation == '/splash';
 
+      // 1. БЛОКИРОВКА: Если идет проверка токена (App запускается),
+      // жестко держим пользователя на экране загрузки.
+      if (authState is AuthInitial || authState is AuthLoading) {
+        return '/splash';
+      }
+
+      // 2. Если токена нет или ошибка авторизации
+      if (authState is AuthUnauthenticated || authState is AuthError) {
+        return isLoggingIn ? null : '/login';
+      }
+
+      // 3. Если авторизован успешно
       if (authState is AuthAuthenticated) {
-        if (isLoggingIn || state.matchedLocation == '/') {
+        if (isLoggingIn || isSplash || state.matchedLocation == '/') {
           final role = authState.user.role;
 
           if (role == 'COACH') {
@@ -31,23 +44,25 @@ class AppRouter {
           } else if (role == 'SUPER_ADMIN' ||
               role == 'HEAD_ADMIN' ||
               role == 'ADMIN') {
-            return '/dashboard'; // Админы идут в админку
+            return '/dashboard';
           } else if (role == 'CLIENT') {
-            return '/client-stub'; // <--- Клиенты идут в свою зону
+            return '/client-stub';
           } else {
             return '/login';
           }
         }
       }
 
-      if (authState is AuthUnauthenticated && !isLoggingIn) {
-        return '/login';
-      }
-
       return null;
     },
 
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const Scaffold(
+          body: Center(child: CircularProgressIndicator(color: Colors.green)),
+        ),
+      ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/dashboard',
@@ -68,7 +83,7 @@ class AppRouter {
             GroupDetailsScreen(groupId: state.pathParameters['id']!),
       ),
 
-      // ВРЕМЕННАЯ ЗАГЛУШКА ДЛЯ КЛИЕНТА (чтобы не пускать его в админку)
+      // ЗАГЛУШКА ДЛЯ КЛИЕНТА
       GoRoute(
         path: '/client-stub',
         builder: (context, state) => Scaffold(

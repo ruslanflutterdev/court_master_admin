@@ -1,4 +1,4 @@
-abstract class EventAttendanceEvent {}
+sealed class EventAttendanceEvent {}
 
 class LoadAttendanceEvent extends EventAttendanceEvent {
   final String eventId;

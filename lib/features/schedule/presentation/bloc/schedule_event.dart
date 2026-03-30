@@ -1,6 +1,6 @@
 import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_state.dart';
 
-abstract class ScheduleEvent {}
+sealed class ScheduleEvent {}
 
 class LoadScheduleData extends ScheduleEvent {
   final DateTime date;

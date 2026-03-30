@@ -56,7 +56,7 @@ class MockCashboxBloc extends MockBloc<CashboxEvent, CashboxState>
 
 class FakeClientsEvent extends Fake implements ClientsEvent {}
 
-class FakeScheduleEvent extends Fake implements ScheduleEvent {}
+// ❌ УБРАЛИ FakeScheduleEvent, так как ScheduleEvent теперь sealed class
 
 class FakeAnalyticsEvent extends Fake implements AnalyticsEvent {}
 
@@ -80,7 +80,10 @@ void main() {
     registerFallbackValue(const CheckAuthEvent());
 
     registerFallbackValue(FakeClientsEvent());
-    registerFallbackValue(FakeScheduleEvent());
+
+    // ✅ ИСПОЛЬЗУЕМ РЕАЛЬНОЕ СОБЫТИЕ ВМЕСТО FAKE (Так как класс Sealed)
+    registerFallbackValue(LoadScheduleData(DateTime.now()));
+
     registerFallbackValue(FakeAnalyticsEvent());
     registerFallbackValue(FakeEmployeesEvent());
     registerFallbackValue(FakeGroupsEvent());
@@ -105,7 +108,7 @@ void main() {
     );
 
     when(
-      () => mockAuthBloc.state,
+          () => mockAuthBloc.state,
     ).thenReturn(AuthAuthenticated(user: dummyUser));
     when(() => mockClientsBloc.state).thenReturn(ClientsLoading());
     when(() => mockScheduleBloc.state).thenReturn(ScheduleLoading());
@@ -137,7 +140,7 @@ void main() {
   group('DashboardScreen Widget Tests', () {
     testWidgets(
       'Отрисовывает DashboardDesktopView на широком экране (>800px)',
-      (tester) async {
+          (tester) async {
         tester.view.physicalSize = const Size(1200, 800);
         tester.view.devicePixelRatio = 1.0;
         await tester.pumpWidget(createWidgetUnderTest());
@@ -149,8 +152,8 @@ void main() {
     );
 
     testWidgets('Отрисовывает DashboardMobileView на узком экране (<800px)', (
-      tester,
-    ) async {
+        tester,
+        ) async {
       tester.view.physicalSize = const Size(400, 800);
       tester.view.devicePixelRatio = 1.0;
       await tester.pumpWidget(createWidgetUnderTest());

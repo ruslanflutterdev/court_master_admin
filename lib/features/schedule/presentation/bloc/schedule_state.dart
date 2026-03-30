@@ -5,7 +5,7 @@ import '../../../employees/data/models/coach_model.dart';
 
 enum ScheduleViewType { day, week, month }
 
-abstract class ScheduleState {}
+sealed class ScheduleState {}
 
 class ScheduleLoading extends ScheduleState {}
 

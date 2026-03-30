@@ -1,6 +1,6 @@
 import '../../data/models/attendance_student_model.dart';
 
-abstract class EventAttendanceState {}
+sealed class EventAttendanceState {}
 
 class EventAttendanceLoading extends EventAttendanceState {}
 

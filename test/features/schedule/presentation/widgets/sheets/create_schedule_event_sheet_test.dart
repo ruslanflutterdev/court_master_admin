@@ -27,7 +27,7 @@ class MockClientsBloc extends MockBloc<ClientsEvent, ClientsState>
 class MockGroupsBloc extends MockBloc<GroupsEvent, GroupsState>
     implements GroupsBloc {}
 
-class FakeScheduleEvent extends Fake implements ScheduleEvent {}
+// ❌ УБРАЛИ FakeScheduleEvent, так как ScheduleEvent теперь sealed class
 
 void main() {
   late MockScheduleBloc mockScheduleBloc;
@@ -35,7 +35,8 @@ void main() {
   late MockGroupsBloc mockGroupsBloc;
 
   setUpAll(() {
-    registerFallbackValue(FakeScheduleEvent());
+    // ✅ ИСПОЛЬЗУЕМ РЕАЛЬНОЕ СОБЫТИЕ
+    registerFallbackValue(LoadScheduleData(DateTime.now()));
   });
 
   setUp(() {
@@ -88,7 +89,7 @@ void main() {
 
     testWidgets(
       'Блокирует отправку события при пустой форме (срабатывает валидация)',
-      (tester) async {
+          (tester) async {
         await tester.pumpWidget(createWidgetUnderTest());
         await tester.pumpAndSettle();
 
@@ -100,7 +101,7 @@ void main() {
 
         // Убеждаемся, что Bloc.add НЕ был вызван, так как форма пустая и не прошла валидацию
         verifyNever(
-          () => mockScheduleBloc.add(
+              () => mockScheduleBloc.add(
             any(that: isA<CreateScheduleEventRequested>()),
           ),
         );

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
+
 import 'package:court_master_admin/features/schedule/presentation/bloc/waitlist_bloc.dart';
 import 'package:court_master_admin/features/schedule/presentation/bloc/waitlist_event.dart';
 import 'package:court_master_admin/features/schedule/presentation/bloc/waitlist_state.dart';
@@ -11,7 +12,7 @@ import 'package:court_master_admin/features/schedule/presentation/widgets/sheets
 class MockWaitlistBloc extends MockBloc<WaitlistEvent, WaitlistState>
     implements WaitlistBloc {}
 
-class FakeWaitlistEvent extends Fake implements WaitlistEvent {}
+// ❌ УБРАЛИ FakeWaitlistEvent, так как WaitlistEvent теперь sealed class
 
 void main() {
   group('AddWaitlistSheet Widget Tests', () {
@@ -19,7 +20,8 @@ void main() {
     final testDate = DateTime(2026, 3, 14);
 
     setUpAll(() {
-      registerFallbackValue(FakeWaitlistEvent());
+      // ✅ Используем РЕАЛЬНОЕ событие для FallbackValue
+      registerFallbackValue(LoadWaitlist(testDate));
     });
 
     setUp(() {
@@ -39,23 +41,36 @@ void main() {
       );
     }
 
-    testWidgets('Отображает все необходимые поля ввода', (tester) async {
+    testWidgets('Отображает поля для Аренды по умолчанию', (tester) async {
       await tester.pumpWidget(buildWidget());
 
       expect(find.text('Записать в резерв'), findsOneWidget);
-      expect(
-        find.byType(TextField),
-        findsNWidgets(2),
-      ); // Поля "Имя" и "Телефон"
+      // По умолчанию выбрана 'Аренда', поэтому только 2 TextField: Имя и Телефон
+      expect(find.byType(TextField), findsNWidgets(2));
       expect(find.text('Добавить'), findsOneWidget);
     });
 
-    testWidgets('При нажатии "Добавить" отправляется событие AddToWaitlist', (
-      tester,
-    ) async {
+    testWidgets('Отображает дополнительные поля при переключении на "В группу"', (tester) async {
       await tester.pumpWidget(buildWidget());
 
-      // Находим поля
+      // Переключаемся на сегмент "В группу"
+      await tester.tap(find.text('В группу'));
+      await tester.pumpAndSettle(); // Ждем завершения анимации
+
+      // Проверяем, что появились новые текстовые поля (Имя, Телефон + Фамилия, Уровень, Комментарий = 5)
+      expect(find.byType(TextField), findsNWidgets(5));
+
+      // Убеждаемся, что специфичные тексты отрендерились
+      expect(find.text('Фамилия'), findsOneWidget);
+      expect(find.text('Уровень игры'), findsOneWidget);
+    });
+
+    testWidgets('При нажатии "Добавить" отправляется событие AddToWaitlist', (
+        tester,
+        ) async {
+      await tester.pumpWidget(buildWidget());
+
+      // Находим поля (по умолчанию мы в Аренде, их 2)
       final textFields = find.byType(TextField);
 
       // Вводим текст

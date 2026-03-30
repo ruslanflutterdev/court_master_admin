@@ -1,4 +1,4 @@
-abstract class WaitlistEvent {}
+sealed class WaitlistEvent {}
 
 class LoadWaitlist extends WaitlistEvent {
   final DateTime date;

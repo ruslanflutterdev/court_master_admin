@@ -1,6 +1,6 @@
 import '../../data/models/waitlist_model.dart';
 
-abstract class WaitlistState {}
+sealed class WaitlistState {}
 
 class WaitlistInitial extends WaitlistState {}
 

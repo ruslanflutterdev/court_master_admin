@@ -13,8 +13,7 @@ import 'package:court_master_admin/features/schedule/data/models/waitlist_model.
 class MockWaitlistBloc extends MockBloc<WaitlistEvent, WaitlistState>
     implements WaitlistBloc {}
 
-// Заглушка события для mocktail
-class FakeWaitlistEvent extends Fake implements WaitlistEvent {}
+// ❌ УБРАЛИ FakeWaitlistEvent, так как WaitlistEvent теперь sealed class
 
 void main() {
   group('WaitlistListSheet Widget Tests', () {
@@ -22,7 +21,8 @@ void main() {
     final testDate = DateTime(2026, 3, 14);
 
     setUpAll(() {
-      registerFallbackValue(FakeWaitlistEvent());
+      // ✅ ИСПОЛЬЗУЕМ РЕАЛЬНОЕ СОБЫТИЕ ДЛЯ FALLBACK
+      registerFallbackValue(LoadWaitlist(testDate));
     });
 
     setUp(() {
@@ -43,7 +43,7 @@ void main() {
 
     testWidgets(
       'Показывает CircularProgressIndicator при состоянии WaitlistLoading',
-      (tester) async {
+          (tester) async {
         when(() => mockBloc.state).thenReturn(WaitlistLoading());
 
         await tester.pumpWidget(buildWidget());
@@ -53,9 +53,8 @@ void main() {
     );
 
     testWidgets('Показывает сообщение "Пока никого нет", если списки пусты', (
-      tester,
-    ) async {
-      // Обновлено: теперь передаем rentalWaitlist и groupWaitlist
+        tester,
+        ) async {
       when(() => mockBloc.state).thenReturn(
         WaitlistLoaded(rentalWaitlist: [], groupWaitlist: [], date: testDate),
       );
@@ -68,7 +67,7 @@ void main() {
 
     testWidgets(
       'Отображает список аренды и кнопку удаления (Вкладка "Аренда")',
-      (tester) async {
+          (tester) async {
         final mockRentalWaitlist = [
           WaitlistModel(
             id: 'w1',
@@ -103,14 +102,14 @@ void main() {
 
         // Проверяем, что в BLoC улетело событие RemoveFromWaitlist
         verify(
-          () => mockBloc.add(any(that: isA<RemoveFromWaitlist>())),
+              () => mockBloc.add(any(that: isA<RemoveFromWaitlist>())),
         ).called(1);
       },
     );
 
     testWidgets(
       'Отображает список групп при переключении на вкладку "В группу"',
-      (tester) async {
+          (tester) async {
         final mockGroupWaitlist = [
           WaitlistModel(
             id: 'g1',

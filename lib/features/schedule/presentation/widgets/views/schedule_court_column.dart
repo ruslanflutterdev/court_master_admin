@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/models/court_model.dart';
 import '../../../data/models/schedule_event_model.dart';
-import '../../bloc/schedule_bloc.dart';
-import '../../bloc/schedule_event.dart';
+import '../../bloc/schedule/schedule_bloc.dart';
+import '../../bloc/schedule/schedule_event.dart';
 import '../cards/schedule_event_card.dart';
 import 'schedule_time_slot.dart'; // 🚀 Новый виджет
 

@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/waitlist_bloc.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/waitlist_event.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/waitlist_state.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/waitlist/waitlist_bloc.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/waitlist/waitlist_event.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/waitlist/waitlist_state.dart';
 import 'package:court_master_admin/features/schedule/presentation/widgets/sheets/waitlist_list_sheet.dart';
 import 'package:court_master_admin/features/schedule/data/models/waitlist_model.dart';
 
@@ -43,7 +43,7 @@ void main() {
 
     testWidgets(
       'Показывает CircularProgressIndicator при состоянии WaitlistLoading',
-          (tester) async {
+      (tester) async {
         when(() => mockBloc.state).thenReturn(WaitlistLoading());
 
         await tester.pumpWidget(buildWidget());
@@ -53,8 +53,8 @@ void main() {
     );
 
     testWidgets('Показывает сообщение "Пока никого нет", если списки пусты', (
-        tester,
-        ) async {
+      tester,
+    ) async {
       when(() => mockBloc.state).thenReturn(
         WaitlistLoaded(rentalWaitlist: [], groupWaitlist: [], date: testDate),
       );
@@ -67,7 +67,7 @@ void main() {
 
     testWidgets(
       'Отображает список аренды и кнопку удаления (Вкладка "Аренда")',
-          (tester) async {
+      (tester) async {
         final mockRentalWaitlist = [
           WaitlistModel(
             id: 'w1',
@@ -102,14 +102,14 @@ void main() {
 
         // Проверяем, что в BLoC улетело событие RemoveFromWaitlist
         verify(
-              () => mockBloc.add(any(that: isA<RemoveFromWaitlist>())),
+          () => mockBloc.add(any(that: isA<RemoveFromWaitlist>())),
         ).called(1);
       },
     );
 
     testWidgets(
       'Отображает список групп при переключении на вкладку "В группу"',
-          (tester) async {
+      (tester) async {
         final mockGroupWaitlist = [
           WaitlistModel(
             id: 'g1',

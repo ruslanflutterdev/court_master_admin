@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/schedule_event_model.dart';
-import '../../bloc/schedule_state.dart';
+import '../../bloc/schedule/schedule_state.dart';
 import 'schedule_court_column.dart';
 
 class ScheduleGridView extends StatelessWidget {

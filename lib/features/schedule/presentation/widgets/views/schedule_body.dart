@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../bloc/schedule_state.dart';
+import '../../bloc/schedule/schedule_state.dart';
 import '../../../../schedule/data/models/schedule_event_model.dart';
 import 'schedule_grid_view.dart';
 import 'common/time_column.dart';

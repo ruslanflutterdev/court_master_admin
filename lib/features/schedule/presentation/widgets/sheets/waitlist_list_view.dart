@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/models/waitlist_model.dart';
-import '../../bloc/waitlist_bloc.dart';
-import '../../bloc/waitlist_event.dart';
+import '../../bloc/waitlist/waitlist_bloc.dart';
+import '../../bloc/waitlist/waitlist_event.dart';
 import 'waitlist_item_tile.dart';
 
 class WaitlistListView extends StatelessWidget {

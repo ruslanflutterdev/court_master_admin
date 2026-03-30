@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/dependencies_container.dart';
 import '../../../clients/presentation/bloc/clients_bloc.dart';
 import '../../../clients/presentation/bloc/clients_event.dart';
-import '../../../schedule/presentation/bloc/schedule_bloc.dart';
-import '../../../schedule/presentation/bloc/schedule_event.dart';
+import '../../../schedule/presentation/bloc/schedule/schedule_bloc.dart';
+import '../../../schedule/presentation/bloc/schedule/schedule_event.dart';
 import '../../../employees/presentation/bloc/employees_bloc.dart';
 import '../../../employees/presentation/bloc/employees_event.dart';
 import '../../../groups/presentation/bloc/groups_bloc.dart';
@@ -18,9 +18,9 @@ import '../../../schedule/presentation/screens/admin_schedule_tab.dart';
 import '../../../employees/presentation/screens/admin_employees_tab.dart';
 import '../../../groups/presentation/screens/admin_groups_tab.dart';
 import '../../../clients/presentation/screens/admin_clients_tab.dart';
-import '../../../cashbox/presentation/screens/cashbox_screen.dart';
-import '../../../cashbox/presentation/bloc/cashbox_bloc.dart';
-import '../../../cashbox/presentation/bloc/cashbox_event.dart';
+import '../../../settings/presentation/screens/settings_screen.dart';
+import '../../../schedule/presentation/bloc/cashbox/cashbox_bloc.dart';
+import '../../../schedule/presentation/bloc/cashbox/cashbox_event.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -39,15 +39,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       AdminEmployeesTab(),
       AdminGroupsTab(),
       AdminClientsTab(),
-      CashboxScreen(),
+      SettingsScreen(),
     ];
   }
 
   void _onTabSelected(BuildContext context, int index) {
     setState(() => _currentIndex = index);
-    if (index == 5) {
-      context.read<CashboxBloc>().add(LoadCashboxStatus());
-    }
   }
 
   @override

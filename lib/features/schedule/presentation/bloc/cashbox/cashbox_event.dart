@@ -1,4 +1,4 @@
-abstract class CashboxEvent {}
+sealed class CashboxEvent {}
 
 class LoadCashboxStatus extends CashboxEvent {}
 

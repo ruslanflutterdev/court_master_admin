@@ -1,11 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../employees/data/models/coach_model.dart';
-import '../../../groups/data/models/group_model.dart';
-import '../../data/models/court_model.dart';
-import '../../data/repositories/schedule_repository.dart';
-import '../../../groups/data/repositories/groups_repository.dart';
-import '../../../employees/data/repositories/employees_repository.dart';
-import '../utils/schedule_date_helper.dart';
+import '../../../../employees/data/models/coach_model.dart';
+import '../../../../groups/data/models/group_model.dart';
+import '../../../data/models/court_model.dart';
+import '../../../data/repositories/schedule_repository.dart';
+import '../../../../groups/data/repositories/groups_repository.dart';
+import '../../../../employees/data/repositories/employees_repository.dart';
+import '../../utils/schedule_date_helper.dart';
 import 'schedule_event.dart';
 import 'schedule_state.dart';
 

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/presentation/widgets/primary_button.dart';
-import '../bloc/cashbox_bloc.dart';
-import '../bloc/cashbox_event.dart';
-import '../bloc/cashbox_state.dart';
-import '../widgets/cashbox_status_card.dart';
-import '../widgets/cashbox_shift_report_dialog.dart';
+import '../bloc/cashbox/cashbox_bloc.dart';
+import '../bloc/cashbox/cashbox_event.dart';
+import '../bloc/cashbox/cashbox_state.dart';
+import '../widgets/cards/cashbox_status_card.dart';
+import '../widgets/dialogs/cashbox_shift_report_dialog.dart';
 
 class CashboxScreen extends StatelessWidget {
   const CashboxScreen({super.key});
@@ -15,7 +15,8 @@ class CashboxScreen extends StatelessWidget {
     final cashboxBloc = context.read<CashboxBloc>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Сверка кассы')),
+      // 👇 ИЗМЕНЕНО ЗДЕСЬ
+      appBar: AppBar(title: const Text('Настройки')),
       body: BlocConsumer<CashboxBloc, CashboxState>(
         listener: (context, state) {
           if (state is CashboxError) {

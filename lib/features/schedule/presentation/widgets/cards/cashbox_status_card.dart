@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../../core/presentation/widgets/primary_button.dart';
-import '../bloc/cashbox_bloc.dart';
-import '../bloc/cashbox_event.dart';
-import '../utils/cashbox_helper.dart';
+import '../../../../../core/presentation/widgets/primary_button.dart';
+import '../../bloc/cashbox/cashbox_bloc.dart';
+import '../../bloc/cashbox/cashbox_event.dart';
+import '../../utils/cashbox_helper.dart';
 
 class CashboxStatusCard extends StatelessWidget {
   final Map<String, dynamic> data;

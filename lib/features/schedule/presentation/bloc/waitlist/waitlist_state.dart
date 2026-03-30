@@ -1,4 +1,4 @@
-import '../../data/models/waitlist_model.dart';
+import '../../../data/models/waitlist_model.dart';
 
 sealed class WaitlistState {}
 

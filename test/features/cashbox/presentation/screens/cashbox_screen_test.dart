@@ -1,23 +1,24 @@
+import 'package:court_master_admin/features/schedule/presentation/bloc/cashbox/cashbox_bloc.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/cashbox/cashbox_event.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/cashbox/cashbox_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:court_master_admin/features/cashbox/presentation/screens/cashbox_screen.dart';
-import 'package:court_master_admin/features/cashbox/presentation/bloc/cashbox_bloc.dart';
-import 'package:court_master_admin/features/cashbox/presentation/bloc/cashbox_state.dart';
-import 'package:court_master_admin/features/cashbox/presentation/bloc/cashbox_event.dart';
+import 'package:court_master_admin/features/schedule/presentation/screens/cashbox_screen.dart';
 import 'package:bloc_test/bloc_test.dart';
 
 class MockCashboxBloc extends MockBloc<CashboxEvent, CashboxState>
     implements CashboxBloc {}
 
-class FakeCashboxEvent extends Fake implements CashboxEvent {}
+// ❌ УДАЛИЛИ FakeCashboxEvent, так как CashboxEvent теперь sealed class
 
 void main() {
   late MockCashboxBloc mockCashboxBloc;
 
   setUpAll(() {
-    registerFallbackValue(FakeCashboxEvent());
+    // ✅ ИСПОЛЬЗУЕМ РЕАЛЬНОЕ СОБЫТИЕ ДЛЯ FALLBACK VALUE
+    registerFallbackValue(LoadCashboxStatus());
   });
 
   setUp(() {
@@ -38,7 +39,7 @@ void main() {
   ) async {
     when(
       () => mockCashboxBloc.state,
-    ).thenReturn(CashboxLoaded(const {'isOpen': false, 'status': 'CLOSED'}));
+    ).thenReturn(const CashboxLoaded({'isOpen': false, 'status': 'CLOSED'}));
 
     await tester.pumpWidget(createWidgetUnderTest());
 
@@ -50,7 +51,7 @@ void main() {
     'Отображает состояние "Смена открыта" и суммы, если status: OPEN',
     (tester) async {
       when(() => mockCashboxBloc.state).thenReturn(
-        CashboxLoaded(const {
+        const CashboxLoaded({
           'status': 'OPEN',
           'transactions': [
             {'amount': 1000, 'type': 'income', 'paymentMethod': 'CASH'},
@@ -75,7 +76,7 @@ void main() {
   ) async {
     when(
       () => mockCashboxBloc.state,
-    ).thenReturn(CashboxLoaded(const {'status': 'OPEN', 'transactions': []}));
+    ).thenReturn(const CashboxLoaded({'status': 'OPEN', 'transactions': []}));
 
     await tester.pumpWidget(createWidgetUnderTest());
     await tester.tap(find.text('Закрыть смену'));

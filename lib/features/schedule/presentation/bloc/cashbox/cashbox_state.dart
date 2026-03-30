@@ -1,4 +1,4 @@
-abstract class CashboxState {
+sealed class CashboxState {
   const CashboxState();
 }
 

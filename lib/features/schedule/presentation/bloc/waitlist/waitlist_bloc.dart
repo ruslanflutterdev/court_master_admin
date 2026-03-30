@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'waitlist_event.dart';
 import 'waitlist_state.dart';
-import '../../data/repositories/schedule_repository.dart';
+import '../../../data/repositories/schedule_repository.dart';
 
 class WaitlistBloc extends Bloc<WaitlistEvent, WaitlistState> {
   final ScheduleRepository repository;

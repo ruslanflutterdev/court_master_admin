@@ -1,3 +1,6 @@
+import 'package:court_master_admin/features/schedule/presentation/bloc/cashbox/cashbox_bloc.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/cashbox/cashbox_event.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/cashbox/cashbox_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -17,9 +20,9 @@ import 'package:court_master_admin/features/auth/data/models/user_model.dart';
 import 'package:court_master_admin/features/clients/presentation/bloc/clients_bloc.dart';
 import 'package:court_master_admin/features/clients/presentation/bloc/clients_event.dart';
 import 'package:court_master_admin/features/clients/presentation/bloc/clients_state.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_bloc.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_event.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_state.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/schedule/schedule_bloc.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/schedule/schedule_event.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/schedule/schedule_state.dart';
 import 'package:court_master_admin/features/analytics/presentation/bloc/analytics_bloc.dart';
 import 'package:court_master_admin/features/analytics/presentation/bloc/analytics_event.dart';
 import 'package:court_master_admin/features/analytics/presentation/bloc/analytics_state.dart';
@@ -29,11 +32,7 @@ import 'package:court_master_admin/features/employees/presentation/bloc/employee
 import 'package:court_master_admin/features/groups/presentation/bloc/groups_bloc.dart';
 import 'package:court_master_admin/features/groups/presentation/bloc/groups_event.dart';
 import 'package:court_master_admin/features/groups/presentation/bloc/groups_state.dart';
-import 'package:court_master_admin/features/cashbox/presentation/bloc/cashbox_bloc.dart';
-import 'package:court_master_admin/features/cashbox/presentation/bloc/cashbox_event.dart';
-import 'package:court_master_admin/features/cashbox/presentation/bloc/cashbox_state.dart';
 
-// Подделки
 class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
 
 class MockClientsBloc extends MockBloc<ClientsEvent, ClientsState>
@@ -56,15 +55,13 @@ class MockCashboxBloc extends MockBloc<CashboxEvent, CashboxState>
 
 class FakeClientsEvent extends Fake implements ClientsEvent {}
 
-// ❌ УБРАЛИ FakeScheduleEvent, так как ScheduleEvent теперь sealed class
-
 class FakeAnalyticsEvent extends Fake implements AnalyticsEvent {}
 
 class FakeEmployeesEvent extends Fake implements EmployeesEvent {}
 
 class FakeGroupsEvent extends Fake implements GroupsEvent {}
 
-class FakeCashboxEvent extends Fake implements CashboxEvent {}
+// ❌ УДАЛИЛИ FakeCashboxEvent
 
 void main() {
   late MockAuthBloc mockAuthBloc;
@@ -81,13 +78,15 @@ void main() {
 
     registerFallbackValue(FakeClientsEvent());
 
-    // ✅ ИСПОЛЬЗУЕМ РЕАЛЬНОЕ СОБЫТИЕ ВМЕСТО FAKE (Так как класс Sealed)
+    // ИСПОЛЬЗУЕМ РЕАЛЬНОЕ СОБЫТИЕ ВМЕСТО FAKE
     registerFallbackValue(LoadScheduleData(DateTime.now()));
 
     registerFallbackValue(FakeAnalyticsEvent());
     registerFallbackValue(FakeEmployeesEvent());
     registerFallbackValue(FakeGroupsEvent());
-    registerFallbackValue(FakeCashboxEvent());
+
+    // ✅ ИСПОЛЬЗУЕМ РЕАЛЬНОЕ СОБЫТИЕ КАССЫ ВМЕСТО FAKE
+    registerFallbackValue(LoadCashboxStatus());
   });
 
   setUp(() {
@@ -108,7 +107,7 @@ void main() {
     );
 
     when(
-          () => mockAuthBloc.state,
+      () => mockAuthBloc.state,
     ).thenReturn(AuthAuthenticated(user: dummyUser));
     when(() => mockClientsBloc.state).thenReturn(ClientsLoading());
     when(() => mockScheduleBloc.state).thenReturn(ScheduleLoading());
@@ -140,7 +139,7 @@ void main() {
   group('DashboardScreen Widget Tests', () {
     testWidgets(
       'Отрисовывает DashboardDesktopView на широком экране (>800px)',
-          (tester) async {
+      (tester) async {
         tester.view.physicalSize = const Size(1200, 800);
         tester.view.devicePixelRatio = 1.0;
         await tester.pumpWidget(createWidgetUnderTest());
@@ -152,8 +151,8 @@ void main() {
     );
 
     testWidgets('Отрисовывает DashboardMobileView на узком экране (<800px)', (
-        tester,
-        ) async {
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(400, 800);
       tester.view.devicePixelRatio = 1.0;
       await tester.pumpWidget(createWidgetUnderTest());

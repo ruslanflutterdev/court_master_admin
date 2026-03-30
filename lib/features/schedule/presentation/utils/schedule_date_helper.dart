@@ -1,4 +1,4 @@
-import '../bloc/schedule_state.dart';
+import '../bloc/schedule/schedule_state.dart';
 
 class ScheduleDateHelper {
   static Map<String, DateTime> getDateRange(

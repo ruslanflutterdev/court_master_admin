@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/repositories/schedule_repository.dart';
+import '../../../data/repositories/schedule_repository.dart';
 import 'event_attendance_event.dart';
 import 'event_attendance_state.dart';
 

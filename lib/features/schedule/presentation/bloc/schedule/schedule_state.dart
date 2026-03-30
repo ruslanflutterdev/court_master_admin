@@ -1,7 +1,7 @@
-import '../../data/models/court_model.dart';
-import '../../data/models/schedule_event_model.dart';
-import '../../../groups/data/models/group_model.dart';
-import '../../../employees/data/models/coach_model.dart';
+import '../../../data/models/court_model.dart';
+import '../../../data/models/schedule_event_model.dart';
+import '../../../../groups/data/models/group_model.dart';
+import '../../../../employees/data/models/coach_model.dart';
 
 enum ScheduleViewType { day, week, month }
 

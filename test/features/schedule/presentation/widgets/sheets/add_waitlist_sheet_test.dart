@@ -1,12 +1,11 @@
+import 'package:court_master_admin/features/schedule/presentation/bloc/waitlist/waitlist_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
-
-import 'package:court_master_admin/features/schedule/presentation/bloc/waitlist_bloc.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/waitlist_event.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/waitlist_state.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/waitlist/waitlist_bloc.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/waitlist/waitlist_state.dart';
 import 'package:court_master_admin/features/schedule/presentation/widgets/sheets/add_waitlist_sheet.dart';
 
 class MockWaitlistBloc extends MockBloc<WaitlistEvent, WaitlistState>
@@ -50,7 +49,9 @@ void main() {
       expect(find.text('Добавить'), findsOneWidget);
     });
 
-    testWidgets('Отображает дополнительные поля при переключении на "В группу"', (tester) async {
+    testWidgets('Отображает дополнительные поля при переключении на "В группу"', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildWidget());
 
       // Переключаемся на сегмент "В группу"
@@ -66,8 +67,8 @@ void main() {
     });
 
     testWidgets('При нажатии "Добавить" отправляется событие AddToWaitlist', (
-        tester,
-        ) async {
+      tester,
+    ) async {
       await tester.pumpWidget(buildWidget());
 
       // Находим поля (по умолчанию мы в Аренде, их 2)

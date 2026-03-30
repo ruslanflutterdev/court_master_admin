@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/dependencies_container.dart';
-import '../bloc/waitlist_bloc.dart';
-import '../bloc/waitlist_event.dart';
+import '../bloc/waitlist/waitlist_bloc.dart';
+import '../bloc/waitlist/waitlist_event.dart';
 import '../widgets/sheets/add_waitlist_sheet.dart';
 import '../widgets/sheets/waitlist_list_sheet.dart';
 

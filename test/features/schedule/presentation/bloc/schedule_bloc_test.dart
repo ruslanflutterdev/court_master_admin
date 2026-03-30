@@ -4,9 +4,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:court_master_admin/features/schedule/data/repositories/schedule_repository.dart';
 import 'package:court_master_admin/features/groups/data/repositories/groups_repository.dart';
 import 'package:court_master_admin/features/employees/data/repositories/employees_repository.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_bloc.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_event.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_state.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/schedule/schedule_bloc.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/schedule/schedule_event.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/schedule/schedule_state.dart';
 
 // Создаем сразу 3 "фейковых" репозитория
 class MockScheduleRepo extends Mock implements ScheduleRepository {}

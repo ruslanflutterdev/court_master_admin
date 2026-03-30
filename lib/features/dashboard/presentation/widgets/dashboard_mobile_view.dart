@@ -41,8 +41,8 @@ class DashboardMobileView extends StatelessWidget {
             label: 'Клиенты',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet),
-            label: 'Касса',
+            icon: Icon(Icons.settings),
+            label: 'Настройки',
           ),
         ],
       ),

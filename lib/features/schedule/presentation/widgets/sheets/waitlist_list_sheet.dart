@@ -2,8 +2,8 @@ import 'package:court_master_admin/features/schedule/presentation/widgets/sheets
 import 'package:court_master_admin/features/schedule/presentation/widgets/sheets/waitlist_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/waitlist_bloc.dart';
-import '../../bloc/waitlist_state.dart';
+import '../../bloc/waitlist/waitlist_bloc.dart';
+import '../../bloc/waitlist/waitlist_state.dart';
 
 class WaitlistListSheet extends StatelessWidget {
   final DateTime date;

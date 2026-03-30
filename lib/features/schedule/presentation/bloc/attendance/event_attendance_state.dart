@@ -1,4 +1,4 @@
-import '../../data/models/attendance_student_model.dart';
+import '../../../data/models/attendance_student_model.dart';
 
 sealed class EventAttendanceState {}
 

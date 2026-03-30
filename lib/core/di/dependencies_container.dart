@@ -11,16 +11,16 @@ import '../../features/groups/data/repositories/students_repository.dart';
 import '../../features/groups/presentation/bloc/group_details_bloc.dart';
 import '../../features/groups/presentation/bloc/groups_bloc.dart';
 import '../../features/schedule/data/repositories/schedule_repository.dart';
-import '../../features/schedule/presentation/bloc/event_attendance_bloc.dart';
-import '../../features/schedule/presentation/bloc/schedule_bloc.dart';
-import '../../features/schedule/presentation/bloc/waitlist_bloc.dart';
+import '../../features/schedule/presentation/bloc/attendance/event_attendance_bloc.dart';
+import '../../features/schedule/presentation/bloc/schedule/schedule_bloc.dart';
+import '../../features/schedule/presentation/bloc/waitlist/waitlist_bloc.dart';
 import '../../features/clients/data/repositories/clients_repository.dart';
 import '../../features/clients/presentation/bloc/client_details_bloc.dart';
 import '../../features/clients/presentation/bloc/clients_bloc.dart';
 import '../../features/analytics/data/repositories/analytics_repository.dart';
 import '../../features/analytics/presentation/bloc/analytics_bloc.dart';
-import '../../features/cashbox/data/repositories/cashbox_repository.dart';
-import '../../features/cashbox/presentation/bloc/cashbox_bloc.dart';
+import '../../features/schedule/data/repositories/cashbox_repository.dart';
+import '../../features/schedule/presentation/bloc/cashbox/cashbox_bloc.dart';
 
 final sl = GetIt.instance;
 

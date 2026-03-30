@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../schedule/presentation/bloc/schedule_bloc.dart';
-import '../../../schedule/presentation/bloc/schedule_event.dart';
-import '../../../schedule/presentation/bloc/schedule_state.dart';
+import '../../../schedule/presentation/bloc/schedule/schedule_bloc.dart';
+import '../../../schedule/presentation/bloc/schedule/schedule_event.dart';
+import '../../../schedule/presentation/bloc/schedule/schedule_state.dart';
 
 class SidebarCalendar extends StatelessWidget {
   const SidebarCalendar({super.key});

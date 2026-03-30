@@ -2,8 +2,8 @@ import 'package:court_master_admin/features/schedule/presentation/widgets/sheets
 import 'package:court_master_admin/features/schedule/presentation/widgets/sheets/waitlist_type_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/waitlist_bloc.dart';
-import '../../bloc/waitlist_event.dart';
+import '../../bloc/waitlist/waitlist_bloc.dart';
+import '../../bloc/waitlist/waitlist_event.dart';
 import '../forms/schedule_time_picker_row.dart';
 
 class AddWaitlistSheet extends StatefulWidget {

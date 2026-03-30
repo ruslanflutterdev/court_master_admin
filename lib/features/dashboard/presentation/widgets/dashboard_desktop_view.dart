@@ -84,13 +84,13 @@ class DashboardDesktopView extends StatelessWidget {
                           ),
                         ),
                         NavigationRailDestination(
-                          icon: Icon(Icons.account_balance_wallet_outlined),
+                          icon: Icon(Icons.settings_outlined),
                           selectedIcon: Icon(
-                            Icons.account_balance_wallet,
+                            Icons.settings,
                             color: Colors.green,
                           ),
                           label: Text(
-                            'Касса',
+                            'Настройки',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),

@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/repositories/cashbox_repository.dart';
+import '../../../data/repositories/cashbox_repository.dart';
 import 'cashbox_event.dart';
 import 'cashbox_state.dart';
 

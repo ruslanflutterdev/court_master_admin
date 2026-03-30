@@ -1,4 +1,4 @@
-import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_state.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/schedule/schedule_state.dart';
 
 sealed class ScheduleEvent {}
 

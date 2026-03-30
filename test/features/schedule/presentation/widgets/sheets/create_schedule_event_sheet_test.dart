@@ -4,9 +4,9 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_bloc.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_event.dart';
-import 'package:court_master_admin/features/schedule/presentation/bloc/schedule_state.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/schedule/schedule_bloc.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/schedule/schedule_event.dart';
+import 'package:court_master_admin/features/schedule/presentation/bloc/schedule/schedule_state.dart';
 import 'package:court_master_admin/features/schedule/presentation/widgets/sheets/create_schedule_event_sheet.dart';
 import 'package:court_master_admin/features/schedule/presentation/widgets/forms/schedule_color_picker_row.dart'; // Импорт нового виджета
 
@@ -89,7 +89,7 @@ void main() {
 
     testWidgets(
       'Блокирует отправку события при пустой форме (срабатывает валидация)',
-          (tester) async {
+      (tester) async {
         await tester.pumpWidget(createWidgetUnderTest());
         await tester.pumpAndSettle();
 
@@ -101,7 +101,7 @@ void main() {
 
         // Убеждаемся, что Bloc.add НЕ был вызван, так как форма пустая и не прошла валидацию
         verifyNever(
-              () => mockScheduleBloc.add(
+          () => mockScheduleBloc.add(
             any(that: isA<CreateScheduleEventRequested>()),
           ),
         );
